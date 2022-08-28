@@ -2,6 +2,7 @@ build/
 *.swp
 *~
 autom4te.cache/
+m4/
 configure
 COPYING
 INSTALL
@@ -9,3 +10,8 @@ Makefile.in
 aclocal.m4
 install-sh
 missing
+compile
+depcomp
+ltmain.sh
+config.guess
+config.sub
