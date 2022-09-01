@@ -106,6 +106,7 @@ lmd_create()
         result->scope = NULL;
         result->polling_expires_in = 0;
         result->interval = 0;
+        result->verbose_level = 0;
     }
     return result;
 }

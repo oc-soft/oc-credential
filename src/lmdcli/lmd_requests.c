@@ -180,6 +180,12 @@ lmd_requests_try_load_oauth(
         result = curl_res == CURLE_OK ? 0 : -1;
     }
     if (result == 0) {
+        curl_res = curl_easy_setopt(curl,
+            CURLOPT_SSL_OPTIONS, 
+            CURLSSLOPT_NATIVE_CA);
+        result = curl_res == CURLE_OK ? 0 : -1;
+    }
+    if (result == 0) {
         curl_res = curl_easy_perform(curl);
         result = curl_res == CURLE_OK ? 0 : -1;
     }
@@ -384,9 +390,12 @@ lmd_requests_load_oauth(
         if (having_oauth) {
             break;
         }
+        sleep(1);
+#if 0
         if (nanosleep(&sleep_req, NULL) == -1) {
             errno = 0;
         }
+#endif
     }
     return result;
     
@@ -445,6 +454,12 @@ lmd_requests_load_device_and_user_code(
             if (result == 0) {
                 curl_res = curl_easy_setopt(curl,
                     CURLOPT_WRITEDATA, buffer);
+                result = curl_res == CURLE_OK ? 0 : -1;
+            }
+            if (result == 0) {
+                curl_res = curl_easy_setopt(curl,
+                    CURLOPT_SSL_OPTIONS,
+                    CURLSSLOPT_NATIVE_CA);
                 result = curl_res == CURLE_OK ? 0 : -1;
             }
             if (result == 0) {

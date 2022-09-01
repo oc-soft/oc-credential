@@ -6,15 +6,11 @@ LT_INIT([win32-dll])
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_SUBDIRS([oclib])
 
-
-
 AC_PROG_CC
 
-AC_CHECK_LIB([ssl], [SSL_library_init])
 AC_CHECK_LIB([json-c], [json_object_new_object])
 AC_CHECK_LIB([curl], [curl_url])
 
-AC_CHECK_HEADER([openssl/ssl.h])
 AC_CHECK_HEADER([json-c/json.h])
 AC_CHECK_HEADER([curl/curl.h])
 
