@@ -118,6 +118,7 @@ print_progress_for_oauth_token(
                         "Code:\n"
                         "\x1b[1m%s\x1b[0m\n"), 
                     verification_url, user_code); 
+
             } else {
             }
             printf(

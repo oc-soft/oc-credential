@@ -14,10 +14,48 @@ AC_CHECK_LIB([curl], [curl_url])
 AC_CHECK_HEADER([json-c/json.h])
 AC_CHECK_HEADER([curl/curl.h])
 
+OC_CHECK_RUN_ON_WIN
+if test "x$oc_run_win" = xyes; then
+LT_PROG_RC
+fi
+
+oc_ver_major=`echo ${PACKAGE_VERSION} | awk -e '{ split($1, vst, "."); print vst[[1]]; }'`
+oc_ver_minor=`echo ${PACKAGE_VERSION} | awk -e '{ split($1, vst, "."); print vst[[2]]; }'`
+oc_ver_rev=`echo ${PACKAGE_VERSION} | awk -e '{ split($1, vst, "."); print vst[[3]]; }'`
+
+oc_company_name=OC\ Soft
+
+AC_DEFINE_UNQUOTED([VERSION_MAJOR], [$oc_ver_major], [Major version])
+AC_DEFINE_UNQUOTED([VERSION_MINOR], [$oc_ver_minor], [Minor version])
+AC_DEFINE_UNQUOTED([VERSION_REVISION], [$oc_ver_rev], [Revision])
+AC_DEFINE([COMPANY_NAME], ["$oc_company_name"], [Company name])
+AC_DEFINE([COMPANY_NAME_W], [L"$oc_company_name"], [Wide char company name])
+AC_DEFINE_UNQUOTED([VERSION_W], [L"$VERSION"], [wide char package version])
+
+
+if [[ $host_os = "cygwin" ]]; then
+    case $build_cpu in
+        x86_64*)
+            oc_dll_root=/usr/x86_64-w64-mingw32/sys-root/mingw/bin
+        ;;
+        i*86)
+        ;;
+    esac
+fi
+OC_DLL_SYS_ROOT=$oc_dll_root
+OC_COMPANY_NAME=$oc_company_name
+
+AC_SUBST([OC_DLL_SYS_ROOT])
+AC_SUBST([OC_COMPANY_NAME])
+
+AC_CONFIG_HEADERS([include/config.h])
+
 AC_CONFIG_FILES([Makefile
     src/Makefile
     src/scripts/Makefile
-    src/lmdcli/Makefile])
+    src/lmdcli/Makefile
+    pkg/Makefile
+    pkg/win/Makefile])
 
 AC_OUTPUT
 
