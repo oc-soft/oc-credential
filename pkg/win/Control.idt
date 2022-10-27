@@ -115,20 +115,19 @@ FilesInUse	List	ListBox	20	87	330	130	7	FileInUseProcess
 FilesInUse	Retry	PushButton	304	243	56	17	3		[ButtonText_Retry]	Ignore	
 FilesInUse	Text	Text	20	55	330	30	3		The following applications are using files that need to be updated by this setup. Close these applications and then click Retry to continue the installation or Cancel to exit it.		
 FilesInUse	Title	Text	15	6	200	15	196611		[DlgTitleFont]Files in Use		
-InstallSettingDlg	Box	GroupBox	210	81	140	98	1				
-InstallSettingDlg	Browse	PushButton	304	200	56	17	3		[ButtonText_Browse]	Reset	
+InstallSettingDlg	Box	GroupBox	25	110	321	50	1				
+InstallSettingDlg	Browse	PushButton	304	185	56	15	3		[ButtonText_Browse]	Reset	
 InstallSettingDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Tree	
-InstallSettingDlg	Description	Text	25	23	280	15	196611		Select the way you want features to be installed.		
 InstallSettingDlg	DiskCost	PushButton	111	243	56	17	3		Disk &Usage	Install	
 InstallSettingDlg	Install	PushButton	236	243	56	17	3		[ButtonText_Install]	Cancel	
-InstallSettingDlg	ItemDescription	Text	215	90	131	30	3		Multiline description of the currently selected item.		
-InstallSettingDlg	ItemSize	Text	215	130	131	45	3		The size of the currently selected item.		
-InstallSettingDlg	Location	Text	75	200	215	20	3		[MAINPROGDIR]		
-InstallSettingDlg	LocationLabel	Text	25	200	50	10	3		Location:		
+InstallSettingDlg	ItemDescription	Text	35	120	300	15	3		Multiline description of the currently selected item.		
+InstallSettingDlg	ItemSize	Text	35	135	300	15	3		The size of the currently selected item.		
+InstallSettingDlg	Location	Text	25	185	215	20	3		[MAINPROGDIR]		
+InstallSettingDlg	LocationLabel	Text	25	175	50	10	3		Location:		
 InstallSettingDlg	Reset	PushButton	42	243	56	17	3		[ButtonText_Reset]	DiskCost	
-InstallSettingDlg	Text	Text	25	55	320	20	3		Click on the icons in the tree below to change the way features will be installed.		
-InstallSettingDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]Custom Setup		
-InstallSettingDlg	Tree	SelectionTree	25	85	175	95	7	_BrowseProperty	Tree of selections	Browse	
+InstallSettingDlg	Text	Text	25	15	320	20	3		Click on the icons in the tree below to change the way features will be installed.		
+InstallSettingDlg	Tree	SelectionTree	25	40	321	60	3	_BrowseProperty	Tree of selections	Browse	
+InstallSettingDlg	Env	CheckBox	25	210	265	10	3	WRITEENV	Write environment variables on installing		
 LicenseAgreementDlg	AgreementText	ScrollableText	20	60	330	120	7		{\rtf1\ansi\ansicpg1252\deff0\deftab720{\fonttbl{\f0\froman\fprq2 Times New Roman;}}{\colortbl\red0\green0\blue0;} \deflang1033\horzdoc{\*\fchars }{\*\lchars }\pard\plain\f0\fs20 <Your license agreement should go here.>\par }	Buttons	
 LicenseAgreementDlg	Back	PushButton	180	243	56	17	3		[ButtonText_Back]	Next	
 LicenseAgreementDlg	BannerBitmap	Bitmap	0	0	370	44	1		[BannerBitmap]	AgreementText	

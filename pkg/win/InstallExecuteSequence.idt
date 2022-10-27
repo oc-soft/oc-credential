@@ -37,7 +37,7 @@ RegisterProgIdInfo		4800
 RegisterTypeLibraries		5500
 RegisterUser		6000
 RemoveDuplicateFiles		3400
-RemoveEnvironmentStrings		3300
+RemoveEnvironmentStrings	WriteEnvironments	3300
 RemoveExistingProducts		6700
 RemoveFiles		3500
 RemoveFolders		3600
@@ -61,6 +61,6 @@ UnregisterMIMEInfo		3000
 UnregisterProgIdInfo		2900
 UnregisterTypeLibraries		2300
 ValidateProductID		700
-WriteEnvironmentStrings		5200
+WriteEnvironmentStrings	WRITEENV=1	5200
 WriteIniValues		5100
 WriteRegistryValues		5000
