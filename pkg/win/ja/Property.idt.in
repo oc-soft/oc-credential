@@ -1,8 +1,8 @@
 Property	Value
 s72	l0
-Property	Property
-ProductCode	{EB40F067-6FCD-41DC-91D8-D1F1FF94E0E2}
-ProductLanguage	0
+65001	Property	Property
+ProductCode	{88C1C6AC-10A8-4ACF-9C3D-DA61766EA8DA}
+ProductLanguage	1041
 Manufacturer	%MANUFACTURER%
 ProductVersion	%VERSION%
 ProductName	%PRODUCT_NAME%
@@ -10,24 +10,24 @@ UpgradeCode	%UPGRADE_CODE%
 ARPHELPLINK	%HELP_LINK%
 AppsShutdownOption	All
 BannerBitmap	bannrbmp
-ButtonText_Back	< &Back
-ButtonText_Browse	Br&owse
-ButtonText_Cancel	Cancel
-ButtonText_Exit	&Exit
-ButtonText_Finish	&Finish
-ButtonText_Ignore	&Ignore
-ButtonText_Install	&Install
-ButtonText_Next	&Next >
-ButtonText_No	&No
+ButtonText_Back	< 戻る(&B)
+ButtonText_Browse	参照(&o)
+ButtonText_Cancel	キャンセル
+ButtonText_Exit	終了(&E)
+ButtonText_Finish	終了(&F)
+ButtonText_Ignore	無視(&I)
+ButtonText_Install	インストール(&I)
+ButtonText_Next	次(&N) >
+ButtonText_No	いいえ(&N)
 ButtonText_OK	OK
-ButtonText_Print	&Print
-ButtonText_Remove	&Remove
-ButtonText_Repair	&Repair
-ButtonText_Reset	&Reset
-ButtonText_Resume	&Resume
-ButtonText_Retry	&Retry
-ButtonText_Return	&Return
-ButtonText_Yes	&Yes
+ButtonText_Print	印刷(&P)
+ButtonText_Remove	削除(&R)
+ButtonText_Repair	修復(&R)
+ButtonText_Reset	リセット(&R)
+ButtonText_Resume	中断(&R)
+ButtonText_Retry	再試行(&R)
+ButtonText_Return	戻る(&R)
+ButtonText_Yes	はい(&Y)
 CompleteSetupIcon	completi
 ComponentDownload	ftp://anonymous@microsoft.com/components/
 CustomSetupIcon	custicon
@@ -46,11 +46,11 @@ LinkURL	http://msdn2.microsoft.com/en-us/library/aa372834(VS.85).aspx
 PIDTemplate	12345<###-%%%%%%%>@@@@@
 PROMPTROLLBACKCOST	P
 ProductID	none
-Progress1	Installing
-Progress2	installs
+Progress1	インストール中
+Progress2	インストール
 RemoveIcon	removico
 RepairIcon	repairic
-Setup	Setup
+Setup	セットアップ
+Wizard	セットアップウィザード
 ShowUserRegistrationDlg	1
-Wizard	Setup Wizard
 WRITEENV	1

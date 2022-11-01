@@ -55,7 +55,8 @@ AC_CONFIG_FILES([Makefile
     src/scripts/Makefile
     src/lmdcli/Makefile
     pkg/Makefile
-    pkg/win/Makefile])
+    pkg/win/Makefile
+    pkg/win/ja/Makefile])
 
 AC_OUTPUT
 

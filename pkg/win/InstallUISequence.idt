@@ -10,7 +10,7 @@ ExitDlg		-1
 FatalErrorDlg		-3
 FileCost		900
 LaunchConditions		100
-MaintenanceWelcomeDlg	Installed AND NOT RESUME AND NOT Preselected	1250
+MaintenanceDlg	Installed AND NOT RESUME AND NOT Preselected	1250
 PrepareDlg		140
 ProgressDlg		1280
 ResumeDlg	Installed AND (RESUME OR Preselected)	1240

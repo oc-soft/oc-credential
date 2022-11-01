@@ -17,7 +17,8 @@ InstallSettingDlg	50	50	370	270	35	[ProductName] [Setup]	Tree	Install	Cancel
 LicenseAgreementDlg	50	50	370	270	3	[ProductName] License Agreement	Buttons	Next	Cancel
 MaintenanceTypeDlg	50	50	370	270	3	[ProductName] [Setup]	ChangeLabel	ChangeButton	Cancel
 MaintenanceWelcomeDlg	50	50	370	270	3	[ProductName] [Setup]	Next	Next	Cancel
-MsiRMFilesInUse	50	50	370	270	19	[ProductName] [Setup]	OK	OK	Cancel
+MaintenanceDlg	50	50	370	270	35	[ProductName] [Setup]	Tree	Install	Cancel
+LMsiRMFilesInUse	50	50	370	270	19	[ProductName] [Setup]	OK	OK	Cancel
 OutOfDiskDlg	50	50	370	270	3	[ProductName] [Setup]	OK	OK	OK
 OutOfRbDiskDlg	50	50	370	270	3	[ProductName] [Setup]	No	No	No
 PrepareDlg	50	50	370	270	1	[ProductName] [Setup]	Cancel	Cancel	Cancel

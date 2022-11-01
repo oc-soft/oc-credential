@@ -1,3 +1,4 @@
+SUBDIRS = ja
 
 
 MSIDB = msidb.exe
@@ -6,6 +7,8 @@ MSIINFO = msiinfo.exe
 lmdprog_exe = lmdcli.exe
 lmdprog = $(top_builddir)/src/lmdcli/.libs/lmdcli.exe
 lang_map = $(top_srcdir)/win/lang_map.txt
+upgrade_code_txt = $(top_srcdir)/win/upgrade-code.txt
+link_csv = $(top_srcdir)/url/url.csv
 
 dll_sys_root=@OC_DLL_SYS_ROOT@
 company_name=@OC_COMPANY_NAME@
@@ -168,8 +171,27 @@ awk_cmd_1='BEGIN {\
 	} \
 '
 
+awk_cmd_2 = ' \
+	BEGIN { \
+		FS=","; \
+	} \
+	{ \
+		kv[$$1] = $$2; \
+	} \
+	END { \
+		print kv["help-link-msi"]; \
+	} \
+'
+awk_cmd_3 = ' \
+	{ \
+		sub("%HELP_LINK%", help_link); \
+		print; \
+	} \
+'
 
-all-am: Makefile $(PROGRAMS) oc-credential.msi
+
+
+all-am: Makefile $(PROGRAMS) oc-credential.msi oc-credential-ja.msi
 
 
 clean-generic:
@@ -183,11 +205,15 @@ Component.idt : Component.idt.in
 		s/%LIBINTL_DLL%/$(libintl_dll)/; \
 		s/%LIBJSON_C_DLL%/$(libjson_c_dll)/" $< > $@ 
 
-Property.idt : Property.idt.in
+Property.idt : Property.idt.in $(upgrade_code_txt) $(link_csv) 
+	upgrade_code=`cat $(upgrade_code_txt)`; \
+	help_link=`awk -e $(awk_cmd_2) $(link_csv)`; \
 	sed -e " \
 		s/%VERSION%/$(VERSION)/; \
 		s/%PRODUCT_NAME%/$(PACKAGE)/; \
-		s/%MANUFACTURER%/$(company_name)/" $< > $@
+		s/%MANUFACTURER%/$(company_name)/; \
+		s/%UPGRADE_CODE%/$$upgrade_code/" $< | \
+	awk -e $(awk_cmd_3) -v help_link=$$help_link - > $@
 
 
 File.idt : File.idt.in $(lang_map)
@@ -236,6 +262,16 @@ oc-credential.msi: oc-credential_msi_pre $(MSI_TABLES_0) $(MSI_TABLES_1) $(MSI_T
 		-g 500 \
 		-w 8 \
 		-p "$${msi_platform};$${msi_langs}"
+
+
+oc-credential-ja.msi: oc-credential.msi $(srcdir)/ja/Control.idt $(srcdir)/ja/UiText.idt $(builddir)/ja/Property.idt
+	cp $< $@
+	pkg_code=`uuidgen | tr [:lower:] [:upper:]`; \
+	$(MSIDB) -i -f `cygpath -a -w -d $(srcdir)/ja` -d $@ Control.idt && \
+	$(MSIDB) -i -f `cygpath -a -w -d $(srcdir)/ja` -d $@ UiText.idt && \
+	$(MSIDB) -i -f `cygpath -a -w -d $(builddir)/ja` -d $@ Property.idt && \
+	$(MSIINFO) $@ -v "{$$pkg_code}"
+	
 
 $(src_app_dir)/$(libcurl_dll) : $(src_libcurl_dll)
 	$(MKDIR_P) $(src_app_dir)
