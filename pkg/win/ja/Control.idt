@@ -88,7 +88,7 @@ ErrorDlg	O	PushButton	100	80	56	17	3		[ButtonText_OK]
 ErrorDlg	R	PushButton	100	80	56	17	3		[ButtonText_Retry]		
 ErrorDlg	Y	PushButton	100	80	56	17	3		[ButtonText_Yes]		
 ExitDlg	Finish	PushButton	236	243	56	17	3		[ButtonText_Finish]		
-ExitDialog	Title	Text	15	15	320	60	196611		[DltTitleFont][ProductName] [Wizard]は完了しました		
+ExitDlg	Title	Text	15	15	320	60	196611		[DltTitleFont][ProductName] [Wizard]は完了しました		
 FatalError	Back	PushButton	180	243	56	17	1		[ButtonText_Back]	Finish	
 FatalError	Bitmap	Bitmap	0	0	370	234	1		[DialogBitmap]	Back	
 FatalError	BottomLine	Line	0	234	370	0	1				
@@ -157,7 +157,7 @@ MaintenanceWelcomeDlg	Next	PushButton	236	243	56	17	3		[ButtonText_Next]	Cancel
 MaintenanceWelcomeDlg	Title	Text	135	20	220	60	196611		{\VerdanaBold13}[ProductName] [Wizard]		
 MaintenanceDlg	Box	GroupBox	25	110	321	50	1				
 MaintenanceDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Tree	
-MaintenanceDlg	DiskCost	PushButton	111	243	56	17	3		ボリュームの使用状況(&U)	Install	
+MaintenanceDlg	DiskCost	PushButton	111	243	56	17	3		容量一覧(&U)	Install	
 MaintenanceDlg	Install	PushButton	236	243	56	17	3		[ButtonText_Install]	Cancel	
 MaintenanceDlg	ItemDescription	Text	35	120	300	15	3		Multiline description of the currently selected item.		
 MaintenanceDlg	ItemSize	Text	35	135	300	15	3		The size of the currently selected item.		
