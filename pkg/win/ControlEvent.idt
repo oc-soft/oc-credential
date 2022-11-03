@@ -42,7 +42,7 @@ ErrorDlg	N	EndDialog	ErrorNo	1
 ErrorDlg	O	EndDialog	ErrorOk	1	
 ErrorDlg	R	EndDialog	ErrorRetry	1	
 ErrorDlg	Y	EndDialog	ErrorYes	1	
-ExitDialog	Finish	EndDialog	Return	1	
+ExitDlg	Finish	EndDialog	Return	1	
 FatalError	Finish	EndDialog	Exit	1	
 FilesInUse	Exit	EndDialog	Exit	1	
 FilesInUse	Ignore	EndDialog	Ignore	1	

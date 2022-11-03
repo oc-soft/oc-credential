@@ -10,7 +10,7 @@ CancelDlg	50	10	260	85	3	[ProductName] [Setup]	No	No	No
 CustomizeDlg	50	50	370	270	35	[ProductName] [Setup]	Tree	Next	Cancel
 DiskCostDlg	50	50	370	270	3	[ProductName] [Setup]	OK	OK	OK
 ErrorDlg	50	10	270	105	65539	Installer Information	ErrorText		
-ExitDialog	50	50	370	270	3	[ProductName] [Setup]	Finish	Finish	Finish
+ExitDlg	50	50	370	270	3	[ProductName] [Setup]	Finish	Finish	Finish
 FatalError	50	50	370	270	3	[ProductName] [Setup]	Finish	Finish	Finish
 FilesInUse	50	50	370	270	19	[ProductName] [Setup]	Retry	Retry	Retry
 InstallSettingDlg	50	50	370	270	35	[ProductName] [Setup]	Tree	Install	Cancel

@@ -87,12 +87,8 @@ ErrorDlg	N	PushButton	100	80	56	17	3		[ButtonText_No]
 ErrorDlg	O	PushButton	100	80	56	17	3		[ButtonText_OK]		
 ErrorDlg	R	PushButton	100	80	56	17	3		[ButtonText_Retry]		
 ErrorDlg	Y	PushButton	100	80	56	17	3		[ButtonText_Yes]		
-ExitDialog	Back	PushButton	180	243	56	17	1		[ButtonText_Back]	Finish	
-ExitDialog	Cancel	PushButton	304	243	56	17	1		[ButtonText_Cancel]	LaunchAppBox	
-ExitDialog	Description	Text	135	70	220	20	196611		クリックして[Wizard]を終了します。		
-ExitDialog	Finish	PushButton	236	243	56	17	3		[ButtonText_Finish]	Cancel	
-ExitDialog	LaunchAppBox	CheckBox	135	120	140	20	3	LaunchApp	Launch Application When finished	Back	
-ExitDialog	Title	Text	135	20	220	60	196611		{\VerdanaBold13}[ProductName] [Wizard]を完了しています		
+ExitDlg	Finish	PushButton	236	243	56	17	3		[ButtonText_Finish]		
+ExitDialog	Title	Text	15	15	320	60	196611		[DltTitleFont][ProductName] [Wizard]は完了しました		
 FatalError	Back	PushButton	180	243	56	17	1		[ButtonText_Back]	Finish	
 FatalError	Bitmap	Bitmap	0	0	370	234	1		[DialogBitmap]	Back	
 FatalError	BottomLine	Line	0	234	370	0	1				
@@ -210,7 +206,7 @@ ProgressDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Cancel
 ProgressDlg	ProgressBar	ProgressBar	35	115	300	10	65537		Progress done		
 ProgressDlg	StatusLabel	Text	35	100	35	10	3		状態:		
 ProgressDlg	Text	Text	35	65	300	20	3		[Wizard][ProductName]を[Progress2]。この処理は時間がかかるかもしれません。		
-rogressDlg	Title	Text	20	15	200	15	196611		[DlgTitleFont][Progress1] [ProductName]		
+rogressDlg	Title	Text	20	15	200	15	196611		[DlgTitleFont][ProductName]を[Progress1] 		
 ResumeDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Install	
 ResumeDlg	Description	Text	25	15	330	30	196611		[Wizard]は[ProductName]のインストールを完了中です。インストールを継続する場合は'継続'をクリックしてください。		
 ResumeDlg	Install	PushButton	236	243	56	17	3		[ButtonText_Install]	Cancel	

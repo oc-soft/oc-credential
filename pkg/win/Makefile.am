@@ -264,11 +264,12 @@ oc-credential.msi: oc-credential_msi_pre $(MSI_TABLES_0) $(MSI_TABLES_1) $(MSI_T
 		-p "$${msi_platform};$${msi_langs}"
 
 
-oc-credential-ja.msi: oc-credential.msi $(srcdir)/ja/Control.idt $(srcdir)/ja/UiText.idt $(builddir)/ja/Property.idt
+oc-credential-ja.msi: oc-credential.msi $(srcdir)/ja/Control.idt $(srcdir)/ja/UiText.idt $(srcdir)/ja/Error.idt $(builddir)/ja/Property.idt
 	cp $< $@
 	pkg_code=`uuidgen | tr [:lower:] [:upper:]`; \
 	$(MSIDB) -i -f `cygpath -a -w -d $(srcdir)/ja` -d $@ Control.idt && \
 	$(MSIDB) -i -f `cygpath -a -w -d $(srcdir)/ja` -d $@ UiText.idt && \
+	$(MSIDB) -i -f `cygpath -a -w -d $(srcdir)/ja` -d $@ Error.idt && \
 	$(MSIDB) -i -f `cygpath -a -w -d $(builddir)/ja` -d $@ Property.idt && \
 	$(MSIINFO) $@ -v "{$$pkg_code}"
 	

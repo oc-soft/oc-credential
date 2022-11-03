@@ -88,12 +88,8 @@ ErrorDlg	N	PushButton	100	80	56	17	3		[ButtonText_No]
 ErrorDlg	O	PushButton	100	80	56	17	3		[ButtonText_OK]		
 ErrorDlg	R	PushButton	100	80	56	17	3		[ButtonText_Retry]		
 ErrorDlg	Y	PushButton	100	80	56	17	3		[ButtonText_Yes]		
-ExitDialog	Back	PushButton	180	243	56	17	1		[ButtonText_Back]	Finish	
-ExitDialog	Cancel	PushButton	304	243	56	17	1		[ButtonText_Cancel]	LaunchAppBox	
-ExitDialog	Description	Text	135	70	220	20	196611		Click the Finish button to exit the [Wizard].		
-ExitDialog	Finish	PushButton	236	243	56	17	3		[ButtonText_Finish]	Cancel	
-ExitDialog	LaunchAppBox	CheckBox	135	120	140	20	3	LaunchApp	Launch Application When finished	Back	
-ExitDialog	Title	Text	135	20	220	60	196611		{\VerdanaBold13}Completing the [ProductName] [Wizard]		
+ExitDlg	Finish	PushButton	236	243	56	17	3		[ButtonText_Finish]		
+ExitDlg	Title	Text	20	15	320	60	196611		[DlgTitleFont]Completed the [ProductName] [Wizard]		
 FatalError	Back	PushButton	180	243	56	17	1		[ButtonText_Back]	Finish	
 FatalError	Bitmap	Bitmap	0	0	370	234	1		[DialogBitmap]	Back	
 FatalError	BottomLine	Line	0	234	370	0	1				
