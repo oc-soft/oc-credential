@@ -190,8 +190,9 @@ awk_cmd_3 = ' \
 '
 
 
-
+if RUN_WIN
 all-am: Makefile $(PROGRAMS) oc-credential.msi oc-credential-ja.msi
+endif
 
 
 clean-generic:
