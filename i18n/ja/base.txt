@@ -1,0 +1,2 @@
+MANUFACTURER	OCソフト
+PRODUCT_NAME	OCクレデンシャルヘルパー
