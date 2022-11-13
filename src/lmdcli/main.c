@@ -1,6 +1,8 @@
+#include "config.h"
 #include <stdio.h>
 #include <curl/curl.h>
 #include <libintl.h>
+#include <locale.h>
 #include <string.h>
 
 #include "lmd_parser.h"
@@ -9,6 +11,7 @@
 #include "lmd_requests.h"
 #include "client_secret.h"
 #include "client_id.h"
+#include "l10n.h"
 
 /**
  * progress
@@ -34,6 +37,11 @@ print_progress_for_oauth_token(
     lmd_progress* progress, 
     int elapse,
     lmd* obj);
+/**
+ * initialize internationalization
+ */
+static int
+setup_l10n();
 
 /**
  * entry point
@@ -46,11 +54,16 @@ main(
     int result;
     lmd* limited_acc;
     lmd_progress progress;
+    setlocale(LC_ALL, "");
+    result = setup_l10n();    
+
     curl_global_init(CURL_GLOBAL_WIN32);
 
-    memset(&progress, 0, sizeof(progress));
-    limited_acc = lmd_parser_parse_from_commands(argc, argv);
-    result = limited_acc ? 0 : -1;
+    if (result == 0) {
+        memset(&progress, 0, sizeof(progress));
+        limited_acc = lmd_parser_parse_from_commands(argc, argv);
+        result = limited_acc ? 0 : -1;
+    }
     if (result == 0) {
         result = lmd_set_client_secret(limited_acc, client_secret_get());
     }
@@ -89,6 +102,28 @@ main(
     curl_global_cleanup();
     return result; 
 }
+/**
+ * setup internationalization
+ */
+static int
+setup_l10n()
+{
+    int result;
+    char* locale_dir;
+    result = 0;
+    locale_dir = l10n_get_locale_dir();
+    result = locale_dir ? 0 : -1;
+    if (result == 0) {
+        bindtextdomain(GETTEXT_DOMAIN, locale_dir);
+        textdomain(GETTEXT_DOMAIN);
+    }
+    if (locale_dir) {
+        l10n_free(locale_dir);
+    }
+    return result;
+}
+
+
 
 /**
  * print progress for oauth token

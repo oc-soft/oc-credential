@@ -1,6 +1,7 @@
 AC_INIT([credential-helper-oc],[0.1.0],[toshi@oc-soft.net])
 
 AM_INIT_AUTOMAKE
+AM_GNU_GETTEXT_VERSION([0.21.1])
 LT_INIT([win32-dll])
 
 AC_CONFIG_MACRO_DIRS([m4])
@@ -19,6 +20,20 @@ if test "x$oc_run_win" = xyes; then
 LT_PROG_RC
 fi
 
+if [[ "x$oc_run_win" = xyes ]]; then
+    AC_SUBST([pkg_src_localedir], [/app/locale])
+    AC_SUBST([pkg_src_bindir], [/app])
+else
+    AC_SUBST([pkg_src_localedir], [/locale])
+    AC_SUBST([pkg_src_bindir], [/])
+fi
+
+AC_ARG_VAR([DEPLOY_DIR], [specifiy directory to deploy programs])
+AC_ARG_VAR([DEPLOY_LIB_DIR], [specify library directory deploy image])
+
+
+AM_GNU_GETTEXT([external])
+
 oc_ver_major=`echo ${PACKAGE_VERSION} | awk -e '{ split($1, vst, "."); print vst[[1]]; }'`
 oc_ver_minor=`echo ${PACKAGE_VERSION} | awk -e '{ split($1, vst, "."); print vst[[2]]; }'`
 oc_ver_rev=`echo ${PACKAGE_VERSION} | awk -e '{ split($1, vst, "."); print vst[[3]]; }'`
@@ -28,10 +43,10 @@ oc_company_name=OC\ Soft
 AC_DEFINE_UNQUOTED([VERSION_MAJOR], [$oc_ver_major], [Major version])
 AC_DEFINE_UNQUOTED([VERSION_MINOR], [$oc_ver_minor], [Minor version])
 AC_DEFINE_UNQUOTED([VERSION_REVISION], [$oc_ver_rev], [Revision])
-AC_DEFINE([COMPANY_NAME], ["$oc_company_name"], [Company name])
-AC_DEFINE([COMPANY_NAME_W], [L"$oc_company_name"], [Wide char company name])
+AC_DEFINE_UNQUOTED([COMPANY_NAME], ["$oc_company_name"], [Company name])
+AC_DEFINE_UNQUOTED([COMPANY_NAME_W], [L"$oc_company_name"], [Wide char company name])
 AC_DEFINE_UNQUOTED([VERSION_W], [L"$VERSION"], [wide char package version])
-
+AC_DEFINE_UNQUOTED([GETTEXT_DOMAIN], ["$PACKAGE_NAME"], [gettext domain name])
 
 if [[ $host_os = "cygwin" ]]; then
     case $build_cpu in
@@ -48,6 +63,15 @@ OC_COMPANY_NAME=$oc_company_name
 AC_SUBST([OC_DLL_SYS_ROOT])
 AC_SUBST([OC_COMPANY_NAME])
 
+case $host_os in
+    linux*)
+        oc_run_linux=yes
+    ;;
+esac
+AM_CONDITIONAL(RUN_LINUX, test "x$oc_run_linux" = xyes)
+
+AM_EXTRA_RECURSIVE_TARGETS([pkg-install pkg-uninstall])
+
 AC_CONFIG_HEADERS([include/config.h])
 
 AC_CONFIG_FILES([Makefile
@@ -56,7 +80,8 @@ AC_CONFIG_FILES([Makefile
     src/lmdcli/Makefile
     pkg/Makefile
     pkg/win/Makefile
-    pkg/win/ja/Makefile])
+    pkg/win/ja/Makefile
+    po/Makefile.in])
 
 AC_OUTPUT
 

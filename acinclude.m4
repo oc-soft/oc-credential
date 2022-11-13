@@ -79,3 +79,4 @@ int main(int argc, char** argv) {
 	AM_CONDITIONAL(USE_LIB_UUID, [test "x$oc_lib_uuid" == xyes])
 ])
 
+

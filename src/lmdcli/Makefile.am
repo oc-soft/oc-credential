@@ -1,6 +1,7 @@
 
 bin_PROGRAMS = lmdcli
 
+
 lmdcli_src = main.c \
 	lmd.c \
 	lmd_parser.c \
@@ -10,17 +11,33 @@ lmdcli_src = main.c \
 	lmd_requests.c \
 	lmd_i.c 
 
-if RUN_WIN
-lmdcli_SOURCES = $(lmdcli_src) \
-	lmd_res.rc
-else
 lmdcli_SOURCES = $(lmdcli_src) 
+
+deploy_dir = @DEPLOY_DIR@
+pkg_src_bindir = @pkg_src_bindir@
+deploy_dir_def = $(abs_top_builddir)/pkg-img
+
+if RUN_WIN
+lmdcli_SOURCES += exe_info_win.c
+lmdcli_SOURCES += l10n_user_win.c
+endif
+if RUN_LINUX
+lmdcli_SOURCES += exe_info_linux.c
+lmdcli_SOURCES += l10n_user_linux.c
+endif
+
+if RUN_WIN
+lmdcli_SOURCES += lmd_res.rc
 endif
 
 AM_FLAGS= -g -O0
-lmdcli_LDFLAGS= -g
+lmdcli_LDFLAGS= -g -static
+
+limdcli_lib_flags=$(LTLIBINTL) -ljson-c -lcurl -lm
+
+
 lmdcli_LDADD= $(top_builddir)/oclib/buffer/src/libocbuffer.la \
-	-lintl -ljson-c -lcurl -lm
+	$(limdcli_lib_flags)
 
 CLIENT_ID_TXT=$(top_srcdir)/src/config/client-id.txt
 CLIENT_SECRET_TXT=$(top_srcdir)/src/config/client-secret.txt
@@ -91,6 +108,21 @@ lmd_const.h : lmd_const.h.in
 
 lmd_res.rc : lmd_res.rc.in lmd_const.h
 	awk $(awk_cmd_2) $(top_srcdir)/win/lang_map.txt > $@
+
+pkg-install-local:
+	depdir=$(deploy_dir) ; \
+	if test -z $$depdir ;  then \
+		depdir=$(deploy_dir_def); \
+	fi; \
+	$(MAKE) $(AM_MAKEFLAGS) DESTDIR=$$depdir bindir=$(pkg_src_bindir) install-exec-am install-data-am
+
+pkg-uninstall-local:
+	depdir=$(deploy_dir) \
+	if test -z $$depdir ; then \
+		depdir=$(deploy_dir_def); \
+	fi; \
+	$(MAKE) $(AM_MAKEFLAGS) DESTDIR=$$depdir bindir=$(pkg_src_bindir) uninstall-am
+
 
 clean-generic:
 	rm -f *.rc	

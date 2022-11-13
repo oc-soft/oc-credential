@@ -1,0 +1,11 @@
+*.gmo
+*.pot
+stamp-po
+boldquot.sed
+en@boldquot.header
+en@quot.header
+Makevars.template
+Rules-quot
+insert-header.sin
+quot.sed
+remove-potcdate.sin
