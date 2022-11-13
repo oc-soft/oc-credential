@@ -21,11 +21,11 @@ LT_PROG_RC
 fi
 
 if [[ "x$oc_run_win" = xyes ]]; then
-    AC_SUBST([pkg_src_localedir], [/app/locale])
-    AC_SUBST([pkg_src_bindir], [/app])
+    AC_SUBST([pkg_localedir], [/app/locale])
+    AC_SUBST([pkg_bindir], [/app])
 else
-    AC_SUBST([pkg_src_localedir], [/locale])
-    AC_SUBST([pkg_src_bindir], [/])
+    AC_SUBST([pkg_localedir], [/locale])
+    AC_SUBST([pkg_bindir], [/])
 fi
 
 AC_ARG_VAR([DEPLOY_DIR], [specifiy directory to deploy programs])

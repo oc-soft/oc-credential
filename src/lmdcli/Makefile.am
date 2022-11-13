@@ -14,7 +14,7 @@ lmdcli_src = main.c \
 lmdcli_SOURCES = $(lmdcli_src) 
 
 deploy_dir = @DEPLOY_DIR@
-pkg_src_bindir = @pkg_src_bindir@
+pkg_bindir = @pkg_bindir@
 deploy_dir_def = $(abs_top_builddir)/pkg-img
 
 if RUN_WIN
@@ -114,14 +114,14 @@ pkg-install-local:
 	if test -z $$depdir ;  then \
 		depdir=$(deploy_dir_def); \
 	fi; \
-	$(MAKE) $(AM_MAKEFLAGS) DESTDIR=$$depdir bindir=$(pkg_src_bindir) install-exec-am install-data-am
+	$(MAKE) $(AM_MAKEFLAGS) DESTDIR=$$depdir bindir=$(pkg_bindir) install-exec-am install-data-am
 
 pkg-uninstall-local:
-	depdir=$(deploy_dir) \
+	depdir=$(deploy_dir); \
 	if test -z $$depdir ; then \
 		depdir=$(deploy_dir_def); \
 	fi; \
-	$(MAKE) $(AM_MAKEFLAGS) DESTDIR=$$depdir bindir=$(pkg_src_bindir) uninstall-am
+	$(MAKE) $(AM_MAKEFLAGS) DESTDIR=$$depdir bindir=$(pkg_bindir) uninstall-am
 
 
 clean-generic:

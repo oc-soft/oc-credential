@@ -29,8 +29,10 @@ datarootdir = @datarootdir@
 datadir = @datadir@
 localedir = @localedir@
 gettextsrcdir = $(datadir)/gettext/po
-pkg_src_localedir= @pkg_src_localedir@
-pkg_rootdir = $(abs_top_buildir)/pkg-image
+
+deploy_dir = @DEPLOY_DIR@
+deploy_dir_def = $(abs_top_builddir)/pkg-img
+pkg_localedir= @pkg_localedir@
 
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
@@ -328,7 +330,11 @@ pkg-install-data: pkg-install-data-@USE_NLS@
 
 pkg-install-data-no:
 pkg-install-data-yes:
-	$(MAKE) DESTDIR=$(pkg_rootdir) localedir=$(pkg_src_localedir) install-data-yes
+	pkgdir=$(deploy_dir); \
+	if test -z $$pkgdir ; then \
+		pkgdir=$(deploy_dir_def); \
+	fi; \
+	$(MAKE) DESTDIR=$$pkgdir localedir=$(pkg_localedir) install-data-yes
 
 install-strip: install
 
@@ -377,7 +383,11 @@ installdirs-data-yes:
 
 pkg-installdirs-data-no:
 pkg-installdirs-data-yes:
-	$(MAKE) DESTDIR=$(pkg_rootdir) localedir=$(pkg_src_localedir) installdirs-data-yes
+	pkgdir=$(deploy_dir); \
+	if test -z $$pkgdir ; then \
+		pkgdir=$(deploy_dir_def); \
+	fi; \
+	$(MAKE) DESTDIR=$$pkgdir localedir=$(pkg_localedir) installdirs-data-yes
 
 # Define this as empty until I found a useful application.
 installcheck:
@@ -409,7 +419,11 @@ pkg-uninstall-data: pkg-uninstall-data-@USE_NLS@
 
 pkg-uninstall-data-no:
 pkg-uninstall-data-yes:
-	$(MAKE) DESTDIR=$(pkg_rootdir) localedir=$(pkg_src_localedir) uninstall-data-yes
+	pkgdir=$(deploy_dir); \
+	if test -z $$pkgdir ; then \
+		pkgdir=$(deploy_dir_def); \
+	fi; \
+	$(MAKE) DESTDIR=$$pkgdir localedir=$(pkg_localedir) uninstall-data-yes
 
 
 check: all
@@ -533,3 +547,5 @@ force:
 # Tell versions [3.59,3.63) of GNU make not to export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
+
+# vi: se ts=4 sw=4 noet:
