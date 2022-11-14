@@ -4,6 +4,7 @@
 #include <libintl.h>
 #include <locale.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "lmd_parser.h"
 #include "lmd.h"
@@ -114,8 +115,8 @@ setup_l10n()
     locale_dir = l10n_get_locale_dir();
     result = locale_dir ? 0 : -1;
     if (result == 0) {
-        bindtextdomain(GETTEXT_DOMAIN, locale_dir);
         textdomain(GETTEXT_DOMAIN);
+        bindtextdomain(GETTEXT_DOMAIN, locale_dir);
     }
     if (locale_dir) {
         l10n_free(locale_dir);
@@ -156,9 +157,9 @@ print_progress_for_oauth_token(
 
             } else {
             }
+            printf("\r");
             printf(
                 gettext(
-                    "\r"
                     "Open browser, visit the url and input the code as above" 
                     " in %d seconds."),
                 expires_in - elapse); 

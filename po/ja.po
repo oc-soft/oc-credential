@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: credential-helper-oc 0.1.0\n"
 "Report-Msgid-Bugs-To: toshi@oc-soft.net\n"
-"POT-Creation-Date: 2022-11-05 11:26+0900\n"
+"POT-Creation-Date: 2022-11-14 09:25+0900\n"
 "PO-Revision-Date: 2022-11-05 11:30+0900\n"
 "Last-Translator: Toshiyuki Ogawa <info@oc-soft.net>\n"
 "Language-Team: Japanese <info@oc-soft.net>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: src/lmdcli/main.c:116
+#: src/lmdcli/main.c:158
 #, c-format
 msgid ""
 "URL:\n"
@@ -25,9 +25,12 @@ msgid ""
 "Code:\n"
 "[1m%s[0m\n"
 msgstr ""
+"URL:\n"
+"[1m%s[0m\n"
+"コード:\n"
+"[1m%s[0m\n"
 
-#: src/lmdcli/main.c:126
+#: src/lmdcli/main.c:169
 #, c-format
-msgid ""
-"\rブラウザでURLを開いて、%d秒以内にCodeを入力してください。"
-msgstr ""
+msgid "Open browser, visit the url and input the code as above in %d seconds."
+msgstr "ブラウザでURLを開いて、コードを%d秒以内に入力してください。"

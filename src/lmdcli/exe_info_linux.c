@@ -27,7 +27,8 @@ exe_info_get_exe_dir()
             size_t i;
             for (i = size - 1; i > 0; i--) {
                 if (result[i] == '/') {
-                    result[size] = '\0';
+                    result[i] = '\0';
+                    break;
                 }
             }
         }
