@@ -6,6 +6,7 @@ const createWindow = () => {
     height: 600
   })
   win.loadFile('./dist/index.html')
+  win.webContents.openDevTools()
 }
 (async ()=> {
   await app.whenReady()
