@@ -6,11 +6,27 @@
     <option value="apple">Apple</option>
     <option value="github">Github</option>
   </select>
+  <div>
+    <button @click="signIn">Sign In</button>
+  </div>
 </template>
+<script lang="ts">
+import Message from './Message.vue'
+import { saveOauthToken } from 'oc-soft/io'
+export default {
+  components: {
+    Message
+  }
+}
+</script>
 <script setup lang="ts">
 import { ref } from 'vue'
 
 const msg = ref('')
+
+/**
+ * handle selected event.
+ */
 function selected(event: Event) {
   const selected = (event.target as HTMLSelectElement).selectedOptions
   if (selected.length) {
@@ -18,14 +34,13 @@ function selected(event: Event) {
   }
 }
 
-</script>
-<script lang="ts">
-import Message from './Message.vue'
-export default {
-  components: {
-    Message
-  }
+/**
+ * sign in with token
+ */
+function signIn(event: Event) {
+  saveOauthToken('it is a dummy token')  
 }
+
 </script>
 
 <!-- /* vi: se ts=2 sw=2 et: */ -->
