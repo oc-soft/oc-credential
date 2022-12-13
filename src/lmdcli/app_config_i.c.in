@@ -1,0 +1,19 @@
+#include "app_config_i.h"
+
+static const char
+config_data[] = { 
+@APP_CONFIG@
+};
+
+/**
+ * get app configuration raw data
+ */
+void
+app_config_i_get_raw_data(
+    const char** raw_data,
+    size_t* length)
+{
+    *raw_data = config_data;    
+    *length = sizeof(config_data);
+}
+/* vi: se ts=4 sw=4 et: */

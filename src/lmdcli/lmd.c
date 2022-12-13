@@ -76,6 +76,11 @@ struct _lmd {
      */
     int interval;
 
+
+    /**
+     * credential operation from git 
+     */
+    credential_op credential_operation;
     
     /* verbose level */
     int verbose_level;
@@ -106,6 +111,7 @@ lmd_create()
         result->scope = NULL;
         result->polling_expires_in = 0;
         result->interval = 0;
+        result->credential_operation = CDT_OP_UNKNOWN;
         result->verbose_level = 0;
     }
     return result;
@@ -1115,6 +1121,42 @@ lmd_set_interval(
 
 
 /**
+ * set credential operation
+ */
+int
+lmd_set_credential_op(
+    lmd* obj,
+    credential_op op)
+{
+    int result;
+    if (obj) {
+        result = 0;
+        obj->credential_operation = op;
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * get credential operation
+ */
+credential_op
+lmd_get_credential_op(
+    lmd* obj)
+{
+    credential_op result;
+    result = CDT_OP_GET;
+    if (obj) {
+        result = obj->credential_operation;
+    } else {
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
  * set verbose level
  */
 int
@@ -1225,7 +1267,11 @@ lmd_get_str_representation(
         {
             .name = "expires_in",
             .value = lmd_get_expires_in(obj)
-        }
+        },
+        {
+            .name = "credential_operation",
+            .value = (int)lmd_get_credential_op(obj)
+        } 
     };
 
     int i;

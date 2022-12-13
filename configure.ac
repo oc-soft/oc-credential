@@ -8,6 +8,9 @@ AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_SUBDIRS([oclib])
 
 AC_PROG_CC
+AC_CHECK_PROG([GPERF], [gperf --version], [gperf])
+
+AC_CHECK_PROG([HEXDUMP], [hexdump --version], [hexdump])
 
 AC_CHECK_LIB([json-c], [json_object_new_object])
 AC_CHECK_LIB([curl], [curl_url])
@@ -19,6 +22,15 @@ OC_CHECK_RUN_ON_WIN
 if test "x$oc_run_win" = xyes; then
 LT_PROG_RC
 fi
+
+if test "x$oc_run_win" = xyes; then
+    oc_data_dir_name='oc-credential'
+else
+    oc_data_dir_name='.oc-credential'
+fi
+AC_SUBST([OC_DATA_DIR_NAME], [$oc_data_dir_name])
+AC_SUBST([OC_DB_FILE_NAME], [user-token])
+AC_SUBST([OC_DB_FILE_EXT], [.bsql])
 
 if [[ "x$oc_run_win" = xyes ]]; then
     AC_SUBST([pkg_localedir], [/app/locale])
@@ -72,12 +84,14 @@ AM_CONDITIONAL(RUN_LINUX, test "x$oc_run_linux" = xyes)
 
 AM_EXTRA_RECURSIVE_TARGETS([pkg-install pkg-uninstall])
 
-AC_CONFIG_HEADERS([include/config.h])
+AC_CONFIG_HEADERS([
+    include/config.h])
 
 AC_CONFIG_FILES([Makefile
     src/Makefile
     src/scripts/Makefile
     src/lmdcli/Makefile
+    src/lmdcli/user_resource_const.h
     pkg/Makefile
     pkg/win/Makefile
     pkg/win/ja/Makefile

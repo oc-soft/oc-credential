@@ -2,14 +2,14 @@
 #define __OPTION_H__
 
 #ifdef __cplusplus
-#define _OPTION_ITFC_BEGION extern "C" {
+#define _OPTION_ITFC_BEGIN extern "C" {
 #define _OPTION_ITFC_END }
 #else
-#define _OPTION_ITFC_BEGION 
+#define _OPTION_ITFC_BEGIN 
 #define _OPTION_ITFC_END 
 #endif
 
-_OPTION_ITFC_BEGION 
+_OPTION_ITFC_BEGIN 
 
 /**
  * general option

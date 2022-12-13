@@ -9,7 +9,17 @@ lmdcli_src = main.c \
 	client_id.c \
 	lmd_connections.c \
 	lmd_requests.c \
-	lmd_i.c 
+	lmd_credential_op.c \
+	lmd_i.c \
+	credential.c \
+	credential_i.c \
+	app_config_i.c \
+	app_config.c \
+	credential_desc.gpf \
+	credential_storage_sqlite.c
+	credential_i.c \
+	user_resource.c \
+	user_resource_i.c 
 
 lmdcli_SOURCES = $(lmdcli_src) 
 
@@ -93,6 +103,20 @@ awk_cmd_2 = 'BEGIN { \
 		} \
 	}'
 
+awk_cmd_3 = 'BEGIN { \
+		line_num = 0; \
+		lines_0[] = ""; \
+	} \
+	{ \
+		line = "   "; \
+		for (i = 0; i < $$NF; i++) { \
+			if ("0x  ," != $$(i)) { \
+				line = line " " $$(i); \
+			} \
+		} \
+		print line; \
+	}'
+
 lmdcli_CPPFLAGS=-I$(top_srcdir)/oclib/buffer/include
 
 
@@ -108,6 +132,9 @@ lmd_const.h : lmd_const.h.in
 
 lmd_res.rc : lmd_res.rc.in lmd_const.h
 	awk $(awk_cmd_2) $(top_srcdir)/win/lang_map.txt > $@
+
+app_config_i.c: app_config_i.c.in $(top_srcdir)/rc/rc.json 
+	config_contents=`$(HEXDUMP) -e "\"    \" 12/1 \"0x%02x\" \"\n\"" $(top_srcdir)/rc/rc.json | awk $(awk_cmd_3)` && sed -e 's/@APP_CONFIG@/$$config_contents/' < $< >$@
 
 pkg-install-local:
 	depdir=$(deploy_dir) ; \
@@ -139,4 +166,6 @@ clean-generic:
 			--preprocessor-arg -I$(srcdir) \
 			-i $< -o $@
 
+.gpf.c:
+	$(GPERF) --output-file=$@ $< 
 # vi: se ts=4 sw=4 noet:

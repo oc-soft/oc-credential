@@ -2,7 +2,8 @@
 #define __LMD_H__
 
 #include <stddef.h>
-
+#include "lmd_types.h"
+#include "credential_op.h"
 #ifdef __cplusplus
 #define _LMD_ITFC_BEGIN extern "C" {
 #define _LMD_ITFC_END }
@@ -12,11 +13,6 @@
 #endif
 
 _LMD_ITFC_BEGIN 
-
-/**
- * limited device information
- */
-typedef struct _lmd lmd;
 
 /**
  * create instance
@@ -96,6 +92,21 @@ lmd_set_verification_url_0(
     lmd* obj,
     const char* url,
     size_t length);
+
+/**
+ * set credential operation
+ */
+int
+lmd_set_credential_op(
+    lmd* obj,
+    credential_op op);
+
+/**
+ * get credential operation
+ */
+credential_op
+lmd_get_credential_op(
+    lmd* obj);
 
 
 /**

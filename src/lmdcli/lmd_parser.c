@@ -81,6 +81,16 @@ lmd_parser_parse_from_commands(
             }
         }
 
+        while (optind < argc) {
+            if (strcmp(argv[optind], "get") == 0) {
+                lmd_set_credential_op(result, CDT_OP_GET);
+            } else if (strcmp(argv[optind], "store") == 0) {
+                lmd_set_credential_op(result, CDT_OP_STORE);
+            } else if (strcmp(argv[optind], "erase") == 0) {
+                lmd_set_credential_op(result, CDT_OP_ERASE);
+            }
+            optind++;
+        }
         if (print_help) {
             lmd_parser_display_usage();
         }
@@ -99,7 +109,8 @@ lmd_parser_display_usage()
         "-i, --cid=[CID]           set client id\n"
         "-u, --auth-url=[URL]      set authentication url\n"
         "-v, --verbose=[LEVEL?]    set verbose level\n"
-        "-h, --help                display this message\n");
+        "-h, --help                display this message\n"
+        "[GIT_OPERATION]           get, store, erase");
 }
 
 /* vi: se ts=4 sw=4 et: */
