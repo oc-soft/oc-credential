@@ -21,7 +21,7 @@ user_resource_get_credential_data_directory();
  * get credential data path
  */
 char*
-user_resource_get_credentail_data_path();
+user_resource_get_credential_data_path();
 
 /**
  * free object

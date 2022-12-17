@@ -15,11 +15,12 @@ lmdcli_src = main.c \
 	credential_i.c \
 	app_config_i.c \
 	app_config.c \
+	user_resource.c \
+	user_resource_i.c \
 	credential_desc.gpf \
 	credential_storage_sqlite.c
-	credential_i.c \
-	user_resource.c \
-	user_resource_i.c 
+	credential_i.c 
+
 
 lmdcli_SOURCES = $(lmdcli_src) 
 
@@ -43,11 +44,13 @@ endif
 AM_FLAGS= -g -O0
 lmdcli_LDFLAGS= -g -static
 
-limdcli_lib_flags=$(LTLIBINTL) -ljson-c -lcurl -lm
+limdcli_lib_flags=$(LTLIBINTL) -ljson-c -lcurl -lsqlite3 -lm
 
-
-lmdcli_LDADD= $(top_builddir)/oclib/buffer/src/libocbuffer.la \
+lmdcli_LDADD=$(top_builddir)/oclib/buffer/src/libocbuffer.la \
+	$(top_builddir)/oclib/cstr/src/liboccstr.la \
 	$(limdcli_lib_flags)
+
+
 
 CLIENT_ID_TXT=$(top_srcdir)/src/config/client-id.txt
 CLIENT_SECRET_TXT=$(top_srcdir)/src/config/client-secret.txt
@@ -105,19 +108,38 @@ awk_cmd_2 = 'BEGIN { \
 
 awk_cmd_3 = 'BEGIN { \
 		line_num = 0; \
-		lines_0[] = ""; \
+		lines[0] = ""; \
 	} \
 	{ \
-		line = "   "; \
-		for (i = 0; i < $$NF; i++) { \
-			if ("0x  ," != $$(i)) { \
-				line = line " " $$(i); \
+		line = ""; \
+		for (i = 1; i <= NF; i++) { \
+			if ("0x" != $$(i)) { \
+				if (line == "") { \
+					line = "    " $$(i); \
+				} else { \
+					line = line ", " $$(i); \
+				} \
 			} \
 		} \
-		print line; \
+		lines[line_num] = line; \
+		line_num++; \
+	} \
+	END { \
+		replacement = ""; \
+		if (NR) { \
+			replacement = lines[0]; \
+			for (i = 1; i < NR; i++) { \
+				replacement = replacement ",\n" lines[i]; \
+			} \
+		} \
+		while (getline <in_file) { \
+			sub(/@APP_CONFIG@/, replacement); \
+			print $$0; \
+		} \
 	}'
 
-lmdcli_CPPFLAGS=-I$(top_srcdir)/oclib/buffer/include
+lmdcli_CPPFLAGS=-I$(top_srcdir)/oclib/buffer/include \
+	-I$(top_srcdir)/oclib/cstr/include
 
 
 client_secret.c : client_secret.in.c
@@ -134,7 +156,7 @@ lmd_res.rc : lmd_res.rc.in lmd_const.h
 	awk $(awk_cmd_2) $(top_srcdir)/win/lang_map.txt > $@
 
 app_config_i.c: app_config_i.c.in $(top_srcdir)/rc/rc.json 
-	config_contents=`$(HEXDUMP) -e "\"    \" 12/1 \"0x%02x\" \"\n\"" $(top_srcdir)/rc/rc.json | awk $(awk_cmd_3)` && sed -e 's/@APP_CONFIG@/$$config_contents/' < $< >$@
+	$(HEXDUMP) -e "\"    \" 12/1 \"0x%02x \" \"\n\"" $(top_srcdir)/rc/rc.json | awk -v in_file=$< -e $(awk_cmd_3) >$@ 
 
 pkg-install-local:
 	depdir=$(deploy_dir) ; \

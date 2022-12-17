@@ -1,13 +1,15 @@
 #include "credential_storage.h"
 #include <stdarg.h>
+#include <string.h>
+#include <stdarg.h>
 #include <sqlite3.h>
 #include <json-c/json_object.h>
 #include <json-c/json_object_iterator.h>
 #include <uuid/uuid.h>
-#include "buffer/char/buffer.h"
+#include "cstr.h"
 #include "credential_i.h"
 #include "app_config.h"
-#include "cstr.h"
+#include "user_resource.h"
 
 /**
  * find token by id
@@ -181,7 +183,7 @@ credential_storage_find_token(
     char* prepared_str;
     size_t prepared_str_len;
     int sql_state;
-    statements_arry_jobj = NULL;
+    statement_arry_jobj = NULL;
     prepared_str = NULL;
     prepared_str_len = 0;
     statement = NULL;
@@ -189,13 +191,13 @@ credential_storage_find_token(
     app_config = app_config_get(); 
     result = app_config ? 0 : -1;
     if (result == 0) {
-        statements_arry_jobj = credential_storage_get_json(app_config,
+        statement_arry_jobj = credential_storage_get_json(app_config,
             "db", "get", "statements", NULL);
         result = statement_arry_jobj ? 0 : -1;
     } 
     if (result == 0) {
         result = credential_storage_get_statement_str_from_json(
-            statement_array_jobj, &prepared_str, &prepared_str_len);
+            statement_arry_jobj, &prepared_str, &prepared_str_len);
     }
     
     if (result == 0) {
@@ -241,11 +243,10 @@ credential_storage_find_token(
         result = token_0 ? 0 : -1;
         if (result == 0) {
             token_length = strlen(token_0);
-            token_1 = credential_i_alloc(token_0, token_length + 1);
+            token_1 = credential_i_str_dup_0(token_0, token_length);
             result = token_1 ? 0 : -1;
         }
         if (result == 0) {
-            memcpy(token_1, token_0, token_length + 1); 
             *token = token_1;
         }
     }
@@ -279,7 +280,7 @@ credential_storage_find_token_by_id(
     char* prepared_str;
     size_t prepared_str_len;
     int sql_state;
-    statements_arry_jobj = NULL;
+    statement_arry_jobj = NULL;
     prepared_str = NULL;
     prepared_str_len = 0;
     statement = NULL;
@@ -287,13 +288,13 @@ credential_storage_find_token_by_id(
     app_config = app_config_get(); 
     result = app_config ? 0 : -1;
     if (result == 0) {
-        statements_arry_jobj = credential_storage_get_json(app_config,
+        statement_arry_jobj = credential_storage_get_json(app_config,
             "db", "select", "statements", "token",NULL);
         result = statement_arry_jobj ? 0 : -1;
     } 
     if (result == 0) {
         result = credential_storage_get_statement_str_from_json(
-            statement_array_jobj, &prepared_str, &prepared_str_len);
+            statement_arry_jobj, &prepared_str, &prepared_str_len);
     }
     
     if (result == 0) {
@@ -339,11 +340,10 @@ credential_storage_find_token_by_id(
         result = token_0 ? 0 : -1;
         if (result == 0) {
             token_length = strlen(token_0);
-            token_1 = credential_i_alloc(token_0, token_length + 1);
+            token_1 = credential_i_str_dup_0(token_0, token_length);
             result = token_1 ? 0 : -1;
         }
         if (result == 0) {
-            memcpy(token_1, token_0, token_length + 1); 
             *token = token_1;
         }
     }
@@ -372,6 +372,7 @@ credential_storage_insert_or_update_token(
     const char* token)
 {
     int result;
+    json_object* app_config;
     json_object* insert_or_update_jobj;
     const char* insert_or_update_str;
     sqlite3_stmt* statement;
@@ -385,8 +386,12 @@ credential_storage_insert_or_update_token(
     prepared_str_len = 0;
     statement = NULL;
     sql_state = 0;
-    result = credential_storage_find_token_by_id(
-        protocol_id, host_id, name_id, NULL);
+    app_config = app_config_get(); 
+    result = app_config ? 0 : -1;
+    if (result == 0) {
+        result = credential_storage_find_token_by_id(
+            protocol_id, host_id, path_id, name_id, NULL);
+    }
  
     if (result == 0) {
         insert_or_update_str = "update";
@@ -397,7 +402,7 @@ credential_storage_insert_or_update_token(
     if (result == 0) {
         insert_or_update_jobj = credential_storage_get_json(app_config,
             "db", "store", "statements", "token", insert_or_update_str, NULL);
-        result = statement_arry_jobj ? 0 : -1;
+        result = insert_or_update_jobj ? 0 : -1;
     } 
     if (result == 0) {
         result = credential_storage_get_statement_str_from_json(
@@ -445,6 +450,9 @@ credential_storage_insert_or_update_token(
     if (prepared_str) {
         credential_i_free(prepared_str);
     }
+    if (app_config) {
+        json_object_put(app_config);
+    } 
     return result;
 }
 
@@ -473,7 +481,7 @@ credential_storage_store_token(
         { "protocol", protocol, NULL  },
         { "host", host, NULL  },
         { "path", path, NULL  },
-        { "name", name, NULL  }
+        { "name", username, NULL  }
     };
 
     store_stmts_jobj = NULL;
@@ -504,7 +512,7 @@ credential_storage_store_token(
                     store_stmts_jobj, select_stmts_jobj,
                     key_id_table[idx].name,
                     key_id_table[idx].key,
-                    &key_id_table[id].id);
+                    &key_id_table[idx].id);
             }
             if (result) {
                 break;
@@ -518,6 +526,14 @@ credential_storage_store_token(
             key_id_table[2].id,
             key_id_table[3].id,
             token);
+    }
+    {
+        size_t i;
+        for (i = 0; i < sizeof(key_id_table) / sizeof(key_id_table[0]); i++) {
+            if (key_id_table[i].id) {
+                credential_i_free(key_id_table[i].id);
+            }
+        }
     }
     if (app_config) {
         json_object_put(app_config);
@@ -543,7 +559,7 @@ credential_storage_insert_if_not_exists(
     insert_statement_arry = NULL;
 
     id0 = NULL;
-    insert_statement_arry = json_object_get(
+    insert_statement_arry = json_object_object_get(
         insert_statement_obj, "insert");
     result = insert_statement_arry ? 0 : -1;
     if (result == 0) {
@@ -583,8 +599,8 @@ credential_storage_get_id(
     char* prepared_str;
     size_t prepared_str_len;
     sqlite3_stmt* statement;
-    statement_str = NULL;
-    statement_str_len = 0;
+    prepared_str = NULL;
+    prepared_str_len = 0;
 
     stmt_jobj = json_object_object_get(select_statements, table);
     result = stmt_jobj ? 0 : -1;
@@ -605,9 +621,6 @@ credential_storage_get_id(
     if (result == 0) {
         sql_state = sqlite3_bind_text(statement, 1, key, strlen(key), NULL);
         result = sql_state == SQLITE_OK ? 0 : -1;
-        if (result) {
-            break;
-        }
     }
     if (result == 0) {
         sql_state = sqlite3_step(statement);
@@ -621,11 +634,10 @@ credential_storage_get_id(
         result = id_0 ? 0 : -1;
         if (result == 0) {
             id_length = strlen(id_0);
-            id_1 = credential_i_alloc(id_0, id_length + 1);
-            result = token_1 ? 0 : -1;
+            id_1 = credential_i_str_dup_0(id_0, id_length);
+            result = id_1 ? 0 : -1;
         }
         if (result == 0) {
-            memcpy(id_1, id_0, id_length + 1); 
             *id = id_1;
         }
     }
@@ -633,8 +645,8 @@ credential_storage_get_id(
         sqlite3_finalize(statement);
     }
  
-    if (satement_str) {
-        credential_i_free(statement_str);
+    if (prepared_str) {
+        credential_i_free(prepared_str);
     }
     return result;
 }
@@ -762,7 +774,7 @@ credential_storage_remove_token(
         size_t i;
         for (i = 0; i < sizeof(table_key_id) / sizeof(table_key_id[0]); i++) {
             if (table_key_id[i].id) {
-                credential_storage_i_free(table_key_id[i].id);
+                credential_i_free(table_key_id[i].id);
             }
         }
     }
@@ -843,7 +855,7 @@ credential_storage_remove_token_by_id(
         sqlite3_finalize(statement);
     }
     if (prepared_str) {
-        prepared_storate_i_free(prepared_str); 
+        credential_i_free(prepared_str); 
     }
     if (app_config) {
         json_object_put(app_config);
@@ -895,9 +907,9 @@ credetial_storage_do_gc()
         struct json_object_iterator iter;
         struct json_object_iterator end_iter;
         iter = json_object_iter_init_default();
-        end_iter = json_object_iter_end(gs_stmts_jobj);
+        end_iter = json_object_iter_end(gc_stmts_jobj);
         for (iter = json_object_iter_begin(gc_stmts_jobj);
-            json_object_iter_equal(&iter, &end_iter);
+            !json_object_iter_equal(&iter, &end_iter);
             json_object_iter_next(&iter)) {
             json_object* stmt_jobj;
             stmt_jobj = json_object_iter_peek_value(&iter);
@@ -926,7 +938,7 @@ credetial_storage_do_gc()
                     sqlite3_finalize(statement);
                 }
                 if (prepared_str) {
-                    oc_crendential_i_free(prepared_str);
+                    credential_i_free(prepared_str);
                 }
                 if (result) {
                     break;
@@ -991,7 +1003,7 @@ credential_storage_need_to_gc(
     }
  
     if (prepared_str) {
-        prepared_storage_i_free(prepared_str); 
+        credential_i_free(prepared_str); 
     }
  
     if (app_config) {
@@ -1006,17 +1018,20 @@ credential_storage_need_to_gc(
 static int
 credentail_storage_update_remove_log()
 {
+    int result;
     json_object* app_config;
     json_object* statement_jobj;
     char* statement_str;
     size_t statement_str_len;
+    int sql_state;
     sqlite3_stmt* statement;
      
     statement_jobj = NULL;
     statement_str = NULL;
     statement_str_len = 0;
+    sql_state = 0;
     result = 0;
-    result = statement ? 0 : -1;
+    statement = NULL;
     if (result == 0) {
         app_config = app_config_get(); 
         result = app_config ? 0 : -1;
@@ -1028,7 +1043,7 @@ credentail_storage_update_remove_log()
     } 
     if (result == 0) {
         result = credential_storage_get_statement_str_from_json(statement_jobj,
-            &statement_str, &statemet_str_len);
+            &statement_str, &statement_str_len);
     }
     if (result == 0) {
         sql_state = sqlite3_prepare_v2(
@@ -1046,7 +1061,7 @@ credentail_storage_update_remove_log()
         sqlite3_finalize(statement);
     }
     if (statement_str) {
-        credential_storage_i_free(statement_str);
+        credential_i_free(statement_str);
     }
     if (app_config) {
         json_object_put(app_config);
@@ -1061,7 +1076,7 @@ void
 credential_storage_free_object(
     void* obj)
 {
-    credential_storage_i_free(obj);
+    credential_i_free(obj);
 }
 
 /**
@@ -1076,7 +1091,7 @@ credential_storage_get_json(
     json_object* parent_obj;
     result = NULL;
     parent_obj = root;
-    va_start(root, argp); 
+    va_start(argp, root); 
     
     while (1) {
         const char* jsname;
@@ -1130,7 +1145,7 @@ credential_storage_get_statement_str_from_json(
         statement_str = cstr_to_flat_str(statement_buffer);
         if (statement_str) {
             *statement = statement_str;
-            *statement_length = cstr_get_length(statement_buffer); 
+            *statement_length = cstr_length(statement_buffer); 
         } else {
             result = -1;
         }
@@ -1163,10 +1178,10 @@ credential_storage_init_table_statement(
     statement_run_str = NULL;
      
     name_value_array_jobj = json_object_object_get(
-        statment_jobj, "name_value"); 
-    result = name_values_array_jobj ? 0 : -1;
+        statement_jobj, "name-value"); 
+    result = name_value_array_jobj ? 0 : -1;
     if (result == 0) {
-        condition_jobj = json_object_object_get(statment_jobj, "condition"); 
+        condition_jobj = json_object_object_get(statement_jobj, "condition"); 
         result = condition_jobj ? 0 : -1;
     }
     if (result == 0) {
@@ -1184,7 +1199,7 @@ credential_storage_init_table_statement(
  
     if (result == 0) {
         statement_run_jobj = json_object_object_get(
-            statment_jobj, "statement"); 
+            statement_jobj, "statement"); 
         result = statement_run_jobj ? 0 : -1;
     }
     if (result == 0) {
@@ -1227,7 +1242,7 @@ credential_storage_init_table_statement(
                 if (result == 0) {
                     sql_state = sqlite3_bind_text(
                         condition_stmt, 1, name, 
-                        json_object_get_string_len(name_jobj));
+                        json_object_get_string_len(name_jobj), NULL);
                     result = sql_state == SQLITE_OK ? 0 : -1;
                 }
                 if (result == 0) {
@@ -1240,7 +1255,7 @@ credential_storage_init_table_statement(
                     if (cnd) {
                         sql_state = sqlite3_bind_text(
                             statement_run_stmt, 1, name, 
-                            json_objectt_get_string_len(name_jobj));    
+                            json_object_get_string_len(name_jobj), NULL);
                         result = sql_state == SQLITE_OK ? 0 : -1;
                         if (result == 0) {
                             sql_state = sqlite3_bind_int(
@@ -1269,10 +1284,10 @@ credential_storage_init_table_statement(
         sqlite3_finalize(condition_stmt);
     }
     if (statement_run_str) {
-        credential_storage_i_free(statement_run_str);
+        credential_i_free(statement_run_str);
     }
     if (condition_str) {
-        credential_storage_i_free(condition_str);
+        credential_i_free(condition_str);
     }
       
     return result;
@@ -1291,12 +1306,8 @@ credential_storage_init_db_statement(
     size_t statement_str_len;
     statement_str = NULL;
     statement_str_len = 0;
-    statement_buffer = credential_storage_create_cstr();
-    result = statement ? 0 : -1;
-    if (result == 0) {
-        result = credential_storage_get_statement_str_from_json(
-            statement_arry, &statement_str, &statement_str_len);
-    }
+    result = credential_storage_get_statement_str_from_json(
+        statement_arry, &statement_str, &statement_str_len);
     if (result == 0) {
         sql_state = sqlite3_exec(
             credential_get_connection(),
@@ -1306,10 +1317,6 @@ credential_storage_init_db_statement(
     if (statement_str) {
         credential_i_free(statement_str);
     }
-    if (statement_buffer) {
-        cstr_release(statement_buffer);
-    }
-     
     return result;
 }
 /**
@@ -1321,16 +1328,10 @@ credential_storage_init_db()
     int result;
     json_object* app_config;
     json_object* statements_arry_jobj;
-    db_jobj = NULL;
-    init_jobj = NULL;
     statements_arry_jobj = NULL;
-    statement = NULL;
     result = 0;
-    result = statement ? 0 : -1;
-    if (result == 0) {
-        app_config = app_config_get(); 
-        result = app_config ? 0 : -1;
-    }
+    app_config = app_config_get(); 
+    result = app_config ? 0 : -1;
     if (result == 0) {
         statements_arry_jobj = credential_storage_get_json(app_config,
             "db", "init", "statements", NULL);
@@ -1339,9 +1340,10 @@ credential_storage_init_db()
     if (result == 0) {
         size_t idx;
         for (idx = 0;
-            idx < json_object_array_length(statement_arry_jobj); idx++) {
+            idx < json_object_array_length(statements_arry_jobj); idx++) {
             json_object* statements;
-            statements = json_object_array_get_idx(statement_arry_jobj, idx);
+            statements = json_object_array_get_idx(
+                statements_arry_jobj, idx);
             result = credential_storage_init_db_statement(statements);
             if (result) {
                 break;
@@ -1363,16 +1365,9 @@ credential_storage_init_tables()
     int result;
     json_object* app_config;
     json_object* statements_arry_jobj;
-    db_jobj = NULL;
-    init_jobj = NULL;
     statements_arry_jobj = NULL;
-    statement = NULL;
-    result = 0;
-    result = statement ? 0 : -1;
-    if (result == 0) {
-        app_config = app_config_get(); 
-        result = app_config ? 0 : -1;
-    }
+    app_config = app_config_get(); 
+    result = app_config ? 0 : -1;
     if (result == 0) {
         statements_arry_jobj = credential_storage_get_json(app_config,
             "db", "init-tables", "statements", NULL);
@@ -1381,9 +1376,9 @@ credential_storage_init_tables()
     if (result == 0) {
         size_t idx;
         for (idx = 0;
-            idx < json_object_array_length(statement_arry_jobj); idx++) {
+            idx < json_object_array_length(statements_arry_jobj); idx++) {
             json_object* statements;
-            statements = json_object_array_get_idx(statement_arry_jobj, idx);
+            statements = json_object_array_get_idx(statements_arry_jobj, idx);
             result = credential_storage_init_table_statement(statements);
             if (result) {
                 break;
@@ -1394,6 +1389,27 @@ credential_storage_init_tables()
         json_object_put(app_config);
     } 
     return result;
+}
+
+/**
+ * generate uuid
+ */
+static int
+credential_storage_generate_uuid(
+    char** uuid)
+{
+    uuid_t uuid_0;
+    char* uuid_str;
+    int result;
+    result = 0;
+    uuid_str = (char*)credential_i_alloc(UUID_STR_LEN);
+    result = uuid_str ? 0 : -1;
+    if (result == 0) {
+        uuid_generate(uuid_0);
+        uuid_unparse(uuid_0, uuid_str);
+        *uuid = uuid_str;
+    }
+    return result; 
 }
 
 /**
@@ -1473,7 +1489,7 @@ credential_storage_create_cstr()
 {
     cstr* result;
     result = cstr_create_01(
-        credential_i_alloc,
+        credential_i_alloc_1,
         credential_i_free);
     return result;
 }

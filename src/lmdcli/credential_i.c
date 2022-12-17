@@ -31,6 +31,16 @@ credential_i_alloc(
 }
 
 /**
+ * allocate heap memory 
+ */
+void*
+credential_i_alloc_1(
+    unsigned int size)
+{
+    return credential_i_alloc(size);
+}
+
+/**
  * realocate heap object
  */
 void*

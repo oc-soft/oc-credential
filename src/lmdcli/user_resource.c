@@ -2,6 +2,10 @@
 
 #include <sys/types.h>
 #include <pwd.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 #include "user_resource_i.h"
 #include "user_resource_const.h"
@@ -17,7 +21,7 @@ user_resource_get_credential_data_directory()
     home_dir = NULL;
     home_dir = getenv("HOME"); 
     if (home_dir == NULL) {
-        passwd* pw;
+        struct passwd* pw;
         pw = getpwuid(getuid());
         if (pw) {
             home_dir = pw->pw_dir; 
@@ -49,10 +53,9 @@ user_resource_get_credential_data_path()
     char* result;
     char* data_dir;
     result = NULL;
-    data_dir = user_resource_get_credential_data_dir();
+    data_dir = user_resource_get_credential_data_directory();
     if (data_dir) {
         size_t buffer_size;
-        data_dir_name_len = strlen(OC_DATA_DIR_NAME);   
         buffer_size = strlen(data_dir); 
         buffer_size += strlen(OC_DB_FILE_NAME);
         buffer_size += strlen(OC_DB_FILE_EXT);
@@ -63,6 +66,9 @@ user_resource_get_credential_data_path()
                 data_dir, OC_DB_FILE_NAME, OC_DB_FILE_EXT);
         }
         
+    }
+    if (data_dir) {
+        user_resource_free(data_dir);
     }
     return result;
 }

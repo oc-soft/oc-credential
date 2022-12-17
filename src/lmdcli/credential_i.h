@@ -20,6 +20,14 @@ credential_i_alloc(
     size_t size);
 
 /**
+ * allocate heap memory 
+ */
+void*
+credential_i_alloc_1(
+    unsigned int size);
+
+
+/**
  * free heap memory
  */
 void
