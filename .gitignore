@@ -17,3 +17,5 @@ ltmain.sh
 config.guess
 config.sub
 ABOUT-NLS
+tap-driver.sh
+test-driver

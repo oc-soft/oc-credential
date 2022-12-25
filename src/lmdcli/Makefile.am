@@ -50,7 +50,10 @@ lmdcli_LDADD=$(top_builddir)/oclib/buffer/src/libocbuffer.la \
 	$(top_builddir)/oclib/cstr/src/liboccstr.la \
 	$(limdcli_lib_flags)
 
-
+TEST_LOG_DRIVER = $(SHELL) $(top_srcdir)/tap-driver.sh
+TEST_EXTENSIONS = .sh
+SH_LOG_COMPILER = $(SHELL)
+TESTS = t_store_01.sh
 
 CLIENT_ID_TXT=$(top_srcdir)/src/config/client-id.txt
 CLIENT_SECRET_TXT=$(top_srcdir)/src/config/client-secret.txt

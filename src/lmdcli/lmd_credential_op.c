@@ -158,7 +158,7 @@ print_progress_for_oauth_token(
             expires_in = lmd_get_polling_expires_in(lmd_obj);
 
             if (!progress->last_sec_updating) {
-                printf(
+                fprintf(stderr,
                     gettext(
                         "URL:\n"
                         "\x1b[1m%s\x1b[0m\n"
@@ -168,13 +168,13 @@ print_progress_for_oauth_token(
 
             } else {
             }
-            printf("\r");
-            printf(
+            fputs("\r", stderr);
+            fprintf(stderr,
                 gettext(
                     "Open browser, visit the url and input the code as above" 
                     " in %d seconds."),
                 expires_in - elapse); 
-            fflush(stdout);
+            fflush(stderr);
             
             progress->last_sec_updating = elapse; 
         }

@@ -84,6 +84,7 @@ AM_CONDITIONAL(RUN_LINUX, test "x$oc_run_linux" = xyes)
 
 AM_EXTRA_RECURSIVE_TARGETS([pkg-install pkg-uninstall])
 
+
 AC_CONFIG_HEADERS([
     include/config.h])
 
@@ -96,6 +97,8 @@ AC_CONFIG_FILES([Makefile
     pkg/win/Makefile
     pkg/win/ja/Makefile
     po/Makefile.in])
+
+AC_REQUIRE_AUX_FILE([tap-driver.sh])
 
 AC_OUTPUT
 

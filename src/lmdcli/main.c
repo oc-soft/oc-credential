@@ -34,12 +34,13 @@ main(
     result = setup_l10n();    
     curl_global_init(CURL_GLOBAL_WIN32);
     if (result == 0) {
-        result = credential_storage_start();
-    }
-    if (result == 0) {
         result = app_config_start();
     }
 
+
+    if (result == 0) {
+        result = credential_storage_start();
+    }
     if (result == 0) {
         limited_acc = lmd_parser_parse_from_commands(argc, argv);
         result = limited_acc ? 0 : -1;
@@ -50,8 +51,8 @@ main(
     if (limited_acc) {
         lmd_release(limited_acc);
     }
-    app_config_stop();
     credential_storage_stop();
+    app_config_stop();
     curl_global_cleanup();
     return result; 
 }
