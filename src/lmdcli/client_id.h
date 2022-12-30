@@ -16,8 +16,11 @@ _CLIENT_ID_ITFC_BEGIN
  * get client secret
  */
 const char*
-client_id_get();
+client_id_get(
+    const char* protocol,
+    const char* host,
+    const char* path);
 
 _CLIENT_ID_ITFC_END
-/* vi: se ts=4 sw=4 */
+/* vi: se ts=4 sw=4 et: */
 #endif

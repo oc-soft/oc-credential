@@ -10,6 +10,7 @@
 #include "credential_i.h"
 #include "app_config.h"
 #include "user_resource.h"
+#include <stdio.h>
 
 /**
  * find token by id
@@ -210,21 +211,18 @@ credential_storage_find_token(
     }
     if (result == 0) {
         const char* values[] = {
-            protocol,
-            host,
-            path, 
-            username
+            protocol ? protocol : "",
+            host ? host : "",
+            path ? path : "", 
+            username ? username : ""
         };
         size_t i;
         for (i = 0; i < sizeof(values) / sizeof(values[0]); i++) {
-            size_t length;
-            if (values[i]) {
-                length = strlen(values[i]); 
-            } else {
-                length = 0;
-            }
             sql_state = sqlite3_bind_text(
-                statement, i + 1, values[i], length, NULL);
+                statement, i + 1,
+                values[i], 
+                strlen(values[i]),
+                NULL);
             result = sql_state == SQLITE_OK ? 0 : -1;
             if (result) {
                 break;
@@ -289,9 +287,10 @@ credential_storage_find_token_by_id(
     result = app_config ? 0 : -1;
     if (result == 0) {
         statement_arry_jobj = credential_storage_get_json(app_config,
-            "db", "select", "statements", "token",NULL);
+            "db", "select", "statements", "token", NULL);
         result = statement_arry_jobj ? 0 : -1;
     } 
+
     if (result == 0) {
         result = credential_storage_get_statement_str_from_json(
             statement_arry_jobj, &prepared_str, &prepared_str_len);
@@ -307,21 +306,18 @@ credential_storage_find_token_by_id(
     }
     if (result == 0) {
         const char* values[] = {
-            protocol_id,
-            host_id,
-            path_id, 
-            name_id
+            protocol_id ? protocol_id : "",
+            host_id ? host_id : "",
+            path_id ? path_id : "", 
+            name_id ? name_id : ""
         };
         size_t i;
         for (i = 0; i < sizeof(values) / sizeof(values[0]); i++) {
-            size_t length;
-            if (values[i]) {
-                length = strlen(values[i]); 
-            } else {
-                length = 0;
-            }
             sql_state = sqlite3_bind_text(
-                statement, i + 1, values[i], length, NULL);
+                statement, i + 1, 
+                values[i], 
+                strlen(values[i]),
+                NULL);
             result = sql_state == SQLITE_OK ? 0 : -1;
             if (result) {
                 break;
@@ -392,7 +388,6 @@ credential_storage_insert_or_update_token(
         result = credential_storage_find_token_by_id(
             protocol_id, host_id, path_id, name_id, NULL);
     }
- 
     if (result == 0) {
         insert_or_update_str = "update";
     } else if (result == 1) {
@@ -418,22 +413,19 @@ credential_storage_insert_or_update_token(
     }
     if (result == 0) {
         const char* values[] = {
-            token,
-            protocol_id,
-            host_id,
-            path_id, 
-            name_id
+            token ? token : "",
+            protocol_id ? protocol_id : "",
+            host_id ? host_id : "",
+            path_id ? path_id : "", 
+            name_id ? name_id : ""
         };
         size_t i;
         for (i = 0; i < sizeof(values) / sizeof(values[0]); i++) {
-            size_t length;
-            if (values[i]) {
-                length = strlen(values[i]); 
-            } else {
-                length = 0;
-            }
             sql_state = sqlite3_bind_text(
-                statement, i + 1, values[i], length, NULL);
+                statement, i + 1,
+                values[i], 
+                strlen(values[i]),
+                NULL);
             result = sql_state == SQLITE_OK ? 0 : -1;
             if (result) {
                 break;
@@ -442,7 +434,7 @@ credential_storage_insert_or_update_token(
     }
     if (result == 0) {
         sql_state = sqlite3_step(statement);
-        result = sql_state == SQLITE_OK ? 0 : -1;
+        result = sql_state == SQLITE_DONE? 0 : -1;
     }
     if (statement) {
         sqlite3_finalize(statement);
@@ -481,13 +473,14 @@ credential_storage_store_token(
         { "protocol", protocol, NULL  },
         { "host", host, NULL  },
         { "path", path, NULL  },
-        { "name", username, NULL  }
+        { "user", username, NULL  }
     };
 
     store_stmts_jobj = NULL;
     select_stmts_jobj = NULL;
     app_config = app_config_get(); 
     result = app_config ? 0 : -1;
+
     if (result == 0) {
         store_stmts_jobj = credential_storage_get_json(app_config,
             "db", "store", "statements", NULL);
@@ -557,28 +550,35 @@ credential_storage_insert_if_not_exists(
     json_object* insert_statement_arry;
     json_object* table_name_jobj; 
     insert_statement_arry = NULL;
-
     id0 = NULL;
-    insert_statement_arry = json_object_object_get(
-        insert_statement_obj, "insert");
+    result = -1;
+    insert_statement_arry = credential_storage_get_json(
+        insert_statement_obj, table_name, "insert", NULL);
     result = insert_statement_arry ? 0 : -1;
+
     if (result == 0) {
         result = credential_storage_get_id(
             select_statements, 
             table_name,
             key,
             &id0);
+
         if (result == 1) {
             result = credential_storage_generate_uuid(&id0); 
             if (result == 0) {
                 result = credential_storage_insert_id(
-                   insert_statement_arry,
+                    insert_statement_arry,
                     key, id0); 
             } 
         }
         if (result == 0) {
             *id = id0;
+            id0 = NULL;
         }
+
+    }
+    if (id0) {
+        credential_i_free(id0);
     }
     return result; 
 }
@@ -599,8 +599,10 @@ credential_storage_get_id(
     char* prepared_str;
     size_t prepared_str_len;
     sqlite3_stmt* statement;
+    statement = NULL;
     prepared_str = NULL;
     prepared_str_len = 0;
+
 
     stmt_jobj = json_object_object_get(select_statements, table);
     result = stmt_jobj ? 0 : -1;
@@ -619,7 +621,12 @@ credential_storage_get_id(
         result = sql_state == SQLITE_OK ? 0 : -1;
     }
     if (result == 0) {
-        sql_state = sqlite3_bind_text(statement, 1, key, strlen(key), NULL);
+        const char* key_0;
+        key_0 = key ? key : "";
+        sql_state = sqlite3_bind_text(
+            statement, 1, 
+            key_0, 
+            strlen(key_0), NULL);
         result = sql_state == SQLITE_OK ? 0 : -1;
     }
     if (result == 0) {
@@ -667,6 +674,7 @@ credential_storage_insert_id(
     sqlite3_stmt* statement;
     prepared_str = NULL;
     prepared_str_len = 0;
+    statement = NULL;
     result = credential_storage_get_statement_str_from_json(
         insert_statement_jobj,
         &prepared_str, &prepared_str_len);
@@ -680,24 +688,27 @@ credential_storage_insert_id(
     }
     if (result == 0) {
         const char* str_values[] = {
-            key,
-            id
+            key ? key : "",
+            id ? id : ""
         };
         size_t idx;
         for (idx = 0; idx < sizeof(str_values) / sizeof(str_values[0]); idx++) {
             sql_state = sqlite3_bind_text(
-                statement, 1,
+                statement, idx + 1,
                 str_values[idx], 
-                strlen(str_values[idx]), NULL);
+                strlen(str_values[idx]),
+                NULL);
+
             result = sql_state == SQLITE_OK ? 0 : -1;
             if (result) {
                 break;
             }
         }
     }
+
     if (result == 0) {
         sql_state = sqlite3_step(statement);
-        result = sql_state == SQLITE_OK ? 0 : -1;
+        result = sql_state == SQLITE_DONE ? 0 : -1;
     }
     if (statement) {
         sqlite3_finalize(statement);
@@ -826,21 +837,18 @@ credential_storage_remove_token_by_id(
     }
     if (result == 0) {
         const char* values[] = {
-            protocol_id,
-            host_id,
-            path_id, 
-            name_id
+            protocol_id ? protocol_id : "",
+            host_id ? host_id : "",
+            path_id ? path_id : "", 
+            name_id ? name_id : ""
         };
         size_t i;
         for (i = 0; i < sizeof(values) / sizeof(values[0]); i++) {
-            size_t length;
-            if (values[i]) {
-                length = strlen(values[i]); 
-            } else {
-                length = 0;
-            }
             sql_state = sqlite3_bind_text(
-                statement, i + 1, values[i], length, NULL);
+                statement, i + 1, 
+                values[i], 
+                strlen(values[i]),
+                NULL);
             result = sql_state == SQLITE_OK ? 0 : -1;
             if (result) {
                 break;
@@ -1194,6 +1202,8 @@ credential_storage_init_table_statement(
             condition_str,
             condition_str_len,
             &condition_stmt, NULL); 
+
+        
         result = sql_state == SQLITE_OK ? 0 : -1;
     }
  
@@ -1211,7 +1221,7 @@ credential_storage_init_table_statement(
             credential_get_connection(),
             statement_run_str,
             statement_run_str_len,
-            &statement_run_stmt, NULL); 
+            &statement_run_stmt, NULL);
         result = sql_state == SQLITE_OK ? 0 : -1;
     }
      
@@ -1225,15 +1235,17 @@ credential_storage_init_table_statement(
             name_value_jobj = json_object_array_get_idx(
                 name_value_array_jobj, idx);
             result = name_value_jobj ? 0 : -1;
+            
             if (result == 0) {
                 name_jobj = json_object_array_get_idx(
-                    name_value_array_jobj, 0);
+                    name_value_jobj, 0);
                 result = name_jobj ? 0 : -1;
             }
             if (result == 0) {
                 value_jobj = json_object_array_get_idx(
-                    name_value_array_jobj, 1);
-                result = value_jobj ? 1 : -1;
+                    name_value_jobj, 1);
+
+                result = value_jobj ? 0 : -1;
             }
             if (result == 0) {
                 const char* name;
@@ -1245,6 +1257,7 @@ credential_storage_init_table_statement(
                         json_object_get_string_len(name_jobj), NULL);
                     result = sql_state == SQLITE_OK ? 0 : -1;
                 }
+                
                 if (result == 0) {
                     sql_state = sqlite3_step(condition_stmt);
                     result = sql_state == SQLITE_ROW ? 0 : -1;
@@ -1252,7 +1265,7 @@ credential_storage_init_table_statement(
                 if (result == 0) {
                     int cnd;
                     cnd = sqlite3_column_int(condition_stmt, 0);
-                    if (cnd) {
+                    if (!cnd) {
                         sql_state = sqlite3_bind_text(
                             statement_run_stmt, 1, name, 
                             json_object_get_string_len(name_jobj), NULL);
@@ -1265,7 +1278,7 @@ credential_storage_init_table_statement(
                         }
                         if (result == 0) {
                             sql_state = sqlite3_step(statement_run_stmt);
-                            result = sql_state == SQLITE_OK ? 0 : -1;
+                            result = sql_state == SQLITE_DONE ? 0 : -1;
                         }
                         sqlite3_reset(statement_run_stmt);
                     }
@@ -1436,16 +1449,19 @@ credential_storage_start()
     int sql_state;
     char* cred_data_path;
     result = 0;
-
     cred_data_path = user_resource_get_credential_data_path();
     result = cred_data_path ? 0 : -1;
-        
     if (result == 0) {
         sql_state = sqlite3_initialize();
-        if (sql_state == SQLITE_OK) {
+        result = sql_state == SQLITE_OK ? 0 : -1;
+        if (result == 0) {
+            result = user_resource_create_credential_data_directory_if_not();
+        }
+        if (result == 0) { 
             sql_state = sqlite3_open(cred_data_path, &db_connection);
             result = sql_state == SQLITE_OK ? 0 : -1;
         }
+
         if (result == 0) {
             result = credential_storage_init_db();
         }

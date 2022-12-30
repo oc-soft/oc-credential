@@ -65,7 +65,6 @@ user_resource_get_credential_data_path()
             snprintf(result, buffer_size, "%s%s%s", 
                 data_dir, OC_DB_FILE_NAME, OC_DB_FILE_EXT);
         }
-        
     }
     if (data_dir) {
         user_resource_free(data_dir);

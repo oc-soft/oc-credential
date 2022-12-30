@@ -34,9 +34,10 @@
           "CREATE TABLE IF NOT EXISTS token ",
           "(protocol CHAR(36), ",
           "host CHAR(36), ",
+          "path CHAR(36), ",
           "name CHAR(36), ",
           "token VARCHAR(511), ",
-          "PRIMARY KEY (protocol, host, name))"
+          "PRIMARY KEY (protocol, host, path, name))"
         ],
         [
           "CREATE TABLE IF NOT EXISTS config_int ",
@@ -56,15 +57,15 @@
       "statements": [
         {
           "name-value": [
-            [ "gc-threshold", 10 ]
+            [ "gc_threshold", 10 ]
           ],
           "condition": [
             "SELECT COUNT(*) FROM config_int ",
-            "WHRE name = ?"
+            "WHERE name = ?"
           ],
           "statement": [
             "INSERT INTO config_int ",
-            "(value) = VALUES (?)"
+            "(name, value) VALUES (?, ?)"
           ]
         },
         {
@@ -73,11 +74,11 @@
           ],
           "condition": [
             "SELECT COUNT(*) FROM log_int ",
-            "WHRE name = ?"
+            "WHERE name = ?"
           ],
           "statement": [
             "INSERT INTO log_int ",
-            "(value) = VALUES (?)"
+            "(name, value) VALUES (?, ?)"
           ]
         }
       ] 
@@ -93,14 +94,14 @@
         "path": [
           "SELECT id FROM path WHERE path=?"
         ],
-        "name": [
-          "SELECT id FROM name WHERE name=?"
+        "user": [
+          "SELECT id FROM user WHERE name=?"
         ],
         "token": [
           "SELECT token FROM token ",
           "WHERE protocol=? ",
-          "AND path=? ",
           "AND host=? ",
+          "AND path=? ",
           "AND name=? "
         ]
       }
@@ -113,11 +114,11 @@
           " left join protocol as prt ON pw.protocol = prt.id ",
           " left join host h ON pw.host = h.id ",
           " left join path pt ON pw.path = pt.id ",
-          " left join name n ON pw.name = n.id ",
+          " left join user u ON pw.name = u.id ",
           "WHERE prt.protocol=? ",
           "AND h.host=? ",
           "AND pt.path=? ",
-          "AND n.name=?"
+          "AND u.name=?"
         ]
       ]
     },
@@ -125,7 +126,7 @@
       "statements": {
         "protocol": {
           "insert": [
-            "INSERT INTO protocl (protocol, id) VALUES(?,?)"
+            "INSERT INTO protocol (protocol, id) VALUES(?,?)"
           ]
         },
         "host": {
@@ -138,9 +139,9 @@
             "INSERT INTO path (path, id) VALUES(?,?)"
           ]
         },
-        "name": {
+        "user": {
           "insert": [
-            "INSERT INTO name (name, id) VALUES(?,?)"
+            "INSERT INTO user (name, id) VALUES(?,?)"
           ]
         },
         "token": {
@@ -151,7 +152,7 @@
           "update": [
             "UPDATE token SET ",
             "token = ? ",
-            "WHRE protocol = ? ",
+            "WHERE protocol = ? ",
             "AND host = ? ",
             "AND path = ? ",
             "AND name = ?"
@@ -193,7 +194,7 @@
         "WHERE id NOT IN (SELECT DISTINCT path FROM token)"
       ],
       "name" : [
-        "DELETE FROM name ",
+        "DELETE FROM user ",
         "WHERE id NOT IN (SELECT DISTINCT name FROM token)"
       ]
     }

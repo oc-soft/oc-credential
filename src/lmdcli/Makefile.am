@@ -31,10 +31,12 @@ deploy_dir_def = $(abs_top_builddir)/pkg-img
 if RUN_WIN
 lmdcli_SOURCES += exe_info_win.c
 lmdcli_SOURCES += l10n_user_win.c
+lmdcli_SOURCES += user_resource_win.c
 endif
 if RUN_LINUX
 lmdcli_SOURCES += exe_info_linux.c
 lmdcli_SOURCES += l10n_user_linux.c
+lmdcli_SOURCES += user_resource_linux.c
 endif
 
 if RUN_WIN

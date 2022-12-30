@@ -39,11 +39,33 @@ print_progress_for_oauth_token(
     lmd* obj);
 
 /**
+ * find client id and clietn secret
+ */
+static int
+find_client_id_secret(
+    const char* protocol,
+    const char* host,
+    const char* path,
+    const char** client_id,
+    const char** client_secret);
+
+/**
  * get oauth token
  */
 static int
 get_oauth_token(
-    lmd* limited_acc);
+    lmd* limited_acc,
+    const char* protocol,
+    const char* host,
+    const char* path);
+/**
+ * get oauth token
+ */
+static int
+get_oauth_token_with_client(
+    lmd* limited_acc,
+    const char* client_id,
+    const char* client_secret);
 
 /**
  * read all data from stdin
@@ -110,6 +132,7 @@ lmd_credential_op_run(
     }
     if (!result) { 
         desc = lmd_credential_op_read_from_stdin();
+        result = desc ? 0 : -1; 
     }
     if (!result) {
 
@@ -183,11 +206,105 @@ print_progress_for_oauth_token(
 }
 
 /**
+ * find client id and clietn secret
+ */
+static int
+find_client_id_secret(
+    const char* protocol,
+    const char* host,
+    const char* path,
+    const char** client_id,
+    const char** client_secret)
+{
+    char* path_buffer;
+    size_t path_buffer_len; 
+    int result;
+    const char* client_id_0;
+    const char* client_secret_0;
+    result = 0;
+    path_buffer = NULL;
+    client_id_0 = NULL;
+    client_secret_0 = NULL;
+    if (!path) {
+        path = "";
+    } 
+    path_buffer_len = strlen(path);
+    path_buffer = (char*)lmd_i_alloc(path_buffer_len + 1); 
+    
+    result = path_buffer ? 0 : -1;
+    if (result == 0) {
+        memcpy(path_buffer, path, path_buffer_len + 1);
+    }
+    if (result == 0) {
+        
+        while (1) {
+            if (!client_id_0) {
+                client_id_0 = client_id_get(protocol, host, path);   
+            }
+            if (!client_secret) {
+                client_secret_0 = client_secret_get(protocol, host, path);
+            }
+            if (client_id_0 && client_secret_0) {
+                break;
+            } else {
+                char* tmp_char;
+                tmp_char = strrchr(path, '/');
+                if (tmp_char) {
+                    *tmp_char = '\0';
+                } else {
+                    break;
+                }
+            }
+        }
+    } 
+    if (client_id) {
+        *client_id = client_id_0;
+    }
+    if (client_secret) {
+        *client_secret = client_secret_0;
+    }
+    result = client_id_0 && client_secret_0 ? 0 : -1;
+    if (path_buffer) {
+        lmd_i_free(path_buffer);
+    }
+    return result;
+}
+
+
+/**
  * get oauth token
  */
 static int
 get_oauth_token(
-    lmd* limited_acc)
+    lmd* limited_acc,
+    const char* protocol,
+    const char* host,
+    const char* path)
+{
+    const char* client_id;
+    const char* client_secret;
+    int result; 
+    client_id = NULL;
+    client_secret = NULL;
+
+    result = find_client_id_secret(
+        protocol, host, path, &client_id, &client_secret);
+    if (result == 0) {
+        result = get_oauth_token_with_client(
+            limited_acc, client_id, client_secret);
+    }
+    return result;
+}
+    
+
+/**
+ * get oauth token
+ */
+static int
+get_oauth_token_with_client(
+    lmd* limited_acc,
+    const char* client_id,
+    const char* client_secret)
 {
     int result;
     lmd_progress progress;
@@ -196,10 +313,10 @@ get_oauth_token(
         memset(&progress, 0, sizeof(progress));
     }
     if (result == 0) {
-        result = lmd_set_client_secret(limited_acc, client_secret_get());
+        result = lmd_set_client_secret(limited_acc, client_secret);
     }
     if (result == 0 && !lmd_get_client_id_ref(limited_acc)) {
-        result = lmd_set_client_id(limited_acc, client_id_get());
+        result = lmd_set_client_id(limited_acc, client_id);
     }
 
     if (result == 0) {
@@ -256,7 +373,7 @@ lmd_credential_op_read_all(
 
     while (!result) {
         size_t read_size;
-        read_size = fread(tmp_buffer, tmp_buffer_size, 1, stdin);
+        read_size = fread(tmp_buffer, 1, tmp_buffer_size, stdin);
         result = buffer_char_buffer_append(buffer, tmp_buffer, read_size); 
         if (!read_size) {
             break;
@@ -296,7 +413,6 @@ lmd_credential_op_read_from_stdin()
     result = NULL;
     contents = NULL;
     contents_length = 0;
-
     state = lmd_credential_op_read_all(&contents, &contents_length);
     if (state == 0) {
         result = credential_desc_decode(contents, contents_length);
@@ -354,7 +470,7 @@ lmd_credential_op_get(
         desc->path, desc->username, &token);
 
     if (!token) {
-        result = get_oauth_token(obj);
+        result = get_oauth_token(obj, desc->protocol, desc->host, desc->path);
         if (result == 0) {
             const char* acc_token;
             acc_token = lmd_get_access_token_ref(obj);

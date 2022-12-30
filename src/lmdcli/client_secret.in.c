@@ -5,7 +5,10 @@
  * get client secret
  */
 const char*
-client_secret_get()
+client_secret_get(
+    const char* protocol,
+    const char* host,
+    const char* path)
 {
     return "@CLIENT_SECRET@";
 }

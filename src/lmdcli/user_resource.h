@@ -18,6 +18,12 @@ char*
 user_resource_get_credential_data_directory();
 
 /**
+ * create credential data directory if not exits
+ */
+int
+user_resource_create_credential_data_directory_if_not();
+
+/**
  * get credential data path
  */
 char*
@@ -29,6 +35,7 @@ user_resource_get_credential_data_path();
 void
 user_resource_free(
     void* obj);
+
 _USER_RESOURCE_ID_ITFC_END
 
 /* vi: se ts=4 sw=4 et: */

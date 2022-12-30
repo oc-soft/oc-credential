@@ -30,14 +30,14 @@ main(
 {
     int result;
     lmd* limited_acc;
+
+    limited_acc = NULL;
     setlocale(LC_ALL, "");
     result = setup_l10n();    
     curl_global_init(CURL_GLOBAL_WIN32);
     if (result == 0) {
         result = app_config_start();
     }
-
-
     if (result == 0) {
         result = credential_storage_start();
     }
