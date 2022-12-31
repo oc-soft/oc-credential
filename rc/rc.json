@@ -31,12 +31,12 @@
           "UNIQUE(id))"
         ],
         [
-          "CREATE TABLE IF NOT EXISTS token ",
+          "CREATE TABLE IF NOT EXISTS password ",
           "(protocol CHAR(36), ",
           "host CHAR(36), ",
           "path CHAR(36), ",
           "name CHAR(36), ",
-          "token VARCHAR(511), ",
+          "password VARCHAR(511), ",
           "PRIMARY KEY (protocol, host, path, name))"
         ],
         [
@@ -97,8 +97,8 @@
         "user": [
           "SELECT id FROM user WHERE name=?"
         ],
-        "token": [
-          "SELECT token FROM token ",
+        "password": [
+          "SELECT password FROM password ",
           "WHERE protocol=? ",
           "AND host=? ",
           "AND path=? ",
@@ -109,8 +109,8 @@
     "get": {
       "statements": [
         [
-          "SELECT token ",
-          "FROM token as pw ",
+          "SELECT password ",
+          "FROM password as pw ",
           " left join protocol as prt ON pw.protocol = prt.id ",
           " left join host h ON pw.host = h.id ",
           " left join path pt ON pw.path = pt.id ",
@@ -144,14 +144,14 @@
             "INSERT INTO user (name, id) VALUES(?,?)"
           ]
         },
-        "token": {
+        "password": {
           "insert": [
-            "INSERT INTO token (token, protocol, host, path, name) ",
+            "INSERT INTO password (password, protocol, host, path, name) ",
             "VALUES(?,?,?,?,?)"
           ],
           "update": [
-            "UPDATE token SET ",
-            "token = ? ",
+            "UPDATE password SET ",
+            "password = ? ",
             "WHERE protocol = ? ",
             "AND host = ? ",
             "AND path = ? ",
@@ -161,8 +161,8 @@
       } 
     },
     "remove": {
-      "token": [
-        "DELETE FROM token ",
+      "password": [
+        "DELETE FROM password ",
         "WHERE protocol = ? ",
         "AND host = ? ",
         "AND path = ? ",
@@ -183,19 +183,23 @@
     "gc" : {
       "protocol" : [
         "DELETE FROM protocol ",
-        "WHERE id NOT IN (SELECT DISTINCT protocol FROM token)"
+        "WHERE id NOT IN (SELECT DISTINCT protocol FROM password)"
       ],
       "host" : [
         "DELETE FROM host ",
-        "WHERE id NOT IN (SELECT DISTINCT host FROM token)"
+        "WHERE id NOT IN (SELECT DISTINCT host FROM password)"
       ],
       "path" : [
-        "DELETE FROM host ",
-        "WHERE id NOT IN (SELECT DISTINCT path FROM token)"
+        "DELETE FROM path ",
+        "WHERE id NOT IN (SELECT DISTINCT path FROM password)"
       ],
       "name" : [
         "DELETE FROM user ",
-        "WHERE id NOT IN (SELECT DISTINCT name FROM token)"
+        "WHERE id NOT IN (SELECT DISTINCT name FROM password)"
+      ],
+      "log" : [
+        "UPDATE log_int SET value = 0 ",
+        "WHERE name = 'remove_count' "
       ]
     }
   },

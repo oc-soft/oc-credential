@@ -98,6 +98,23 @@ lmd_credential_op_get(
     credential_desc* desc);
 
 /**
+ * do credential get operation 
+ */
+static int
+lmd_credential_op_get_0(
+    lmd* obj,
+    credential_desc* desc);
+
+/**
+ * do credential get operation 
+ */
+static int
+lmd_credential_op_get_for_test(
+    lmd* obj,
+    credential_desc* desc);
+
+
+/**
  * do credential store operation
  */
 static int
@@ -106,10 +123,10 @@ lmd_credential_op_store(
     credential_desc* desc);
 
 /**
- * do credential remove operation
+ * do credential erase operation
  */
 static int
-lmd_credential_op_remove(
+lmd_credential_op_erase(
     lmd* obj,
     credential_desc* desc);
 
@@ -147,7 +164,7 @@ lmd_credential_op_run(
             result = lmd_credential_op_store(obj, desc);
             break;
         case CDT_OP_ERASE:
-            result = lmd_credential_op_remove(obj, desc);
+            result = lmd_credential_op_erase(obj, desc);
             break;
         default:
             result = 0;
@@ -225,32 +242,37 @@ find_client_id_secret(
     path_buffer = NULL;
     client_id_0 = NULL;
     client_secret_0 = NULL;
-    if (!path) {
-        path = "";
-    } 
-    path_buffer_len = strlen(path);
-    path_buffer = (char*)lmd_i_alloc(path_buffer_len + 1); 
-    
-    result = path_buffer ? 0 : -1;
-    if (result == 0) {
-        memcpy(path_buffer, path, path_buffer_len + 1);
+    path_buffer_len = 0;
+    if (path) {
+        path_buffer_len = strlen(path);
+        path_buffer = (char*)lmd_i_alloc(path_buffer_len + 1); 
+        result = path_buffer ? 0 : -1;
+        if (result == 0) {
+            memcpy(path_buffer, path, path_buffer_len + 1);
+        }
     }
     if (result == 0) {
-        
         while (1) {
             if (!client_id_0) {
-                client_id_0 = client_id_get(protocol, host, path);   
+                client_id_0 = client_id_get(protocol, host,
+                    path_buffer);
             }
-            if (!client_secret) {
-                client_secret_0 = client_secret_get(protocol, host, path);
+            if (!client_secret_0) {
+                client_secret_0 = client_secret_get(protocol, host,
+                    path_buffer);
             }
+ 
             if (client_id_0 && client_secret_0) {
                 break;
             } else {
-                char* tmp_char;
-                tmp_char = strrchr(path, '/');
-                if (tmp_char) {
-                    *tmp_char = '\0';
+                if (path_buffer) {
+                    char* tmp_char;
+                    tmp_char = strrchr(path_buffer, '/');
+                    if (tmp_char) {
+                        *tmp_char = '\0';
+                    } else {
+                        break;
+                    }
                 } else {
                     break;
                 }
@@ -451,9 +473,6 @@ lmd_credential_op_write_into_stdout(
     return result;
 }
 
-
-
-
 /**
  * do credential get operation 
  */
@@ -463,19 +482,64 @@ lmd_credential_op_get(
     credential_desc* desc)
 {
     int result;
-    char* token;
+    result = 0;
+    if (lmd_is_test_mode_to_get(obj) == 0) {
+        result = lmd_credential_op_get_0(obj, desc);
+    } else {
+        result = lmd_credential_op_get_for_test(obj, desc); 
+    }
+    return result;
+}
 
-    token = NULL;
-    result = credential_storage_find_token(desc->protocol, desc->host,
-        desc->path, desc->username, &token);
+/**
+ * do credential get operation 
+ */
+static int
+lmd_credential_op_get_for_test(
+    lmd* obj,
+    credential_desc* desc)
+{
+    const char* client_id;
+    const char* client_secret;
+    int result;
 
-    if (!token) {
+    client_id = NULL;
+    client_secret = NULL;
+    result = find_client_id_secret(desc->protocol,
+        desc->host, desc->path, &client_id, &client_secret);
+    if (result == 0) {
+        result = credential_desc_set_username(desc, client_id);
+    }  
+    if (result == 0) {
+        result = credential_desc_set_password(desc, client_secret);
+    }
+    return result;
+}
+
+
+
+/**
+ * do credential get operation 
+ */
+static int
+lmd_credential_op_get_0(
+    lmd* obj,
+    credential_desc* desc)
+{
+    int result;
+    char* password;
+
+    password = NULL;
+    result = credential_storage_find_password(desc->protocol, desc->host,
+        desc->path, desc->username, &password);
+
+    if (!password) {
         result = get_oauth_token(obj, desc->protocol, desc->host, desc->path);
         if (result == 0) {
             const char* acc_token;
             acc_token = lmd_get_access_token_ref(obj);
             if (acc_token) {
-                result = credential_desc_set_username(desc, "bearer");
+                result = credential_desc_set_username(desc, "baerer");
                 if (result == 0) {
                     result = credential_desc_set_password(desc, acc_token);
                 }
@@ -496,21 +560,21 @@ lmd_credential_op_store(
     credential_desc* desc)
 {
     int result;
-    result = credential_storage_store_token(
+    result = credential_storage_store_password(
         desc->protocol, desc->host, desc->path, desc->username, desc->password);
     return result;
 }
 
 /**
- * do credential remove operation
+ * do credential erase operation
  */
 int
-lmd_credential_op_remove(
+lmd_credential_op_erase(
     lmd* obj,
     credential_desc* desc)
 {
     int result; 
-    result = credential_storage_remove_token(
+    result = credential_storage_remove_password(
         desc->protocol, desc->host, desc->path, desc->username);
     return result;
 }

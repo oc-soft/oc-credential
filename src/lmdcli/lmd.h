@@ -131,7 +131,6 @@ const char*
 lmd_get_token_endpoint_url_ref(
     lmd* obj);
 
-
 /**
  * set token end point url
  */
@@ -398,7 +397,21 @@ lmd_set_interval(
     lmd* obj,
     int interval);
 
+/**
+ * set test mode to get
+ */
+int
+lmd_set_test_mode_to_get(
+    lmd* obj,
+    int testing_mode);
 
+/**
+ * get test mode to get
+ */
+int
+lmd_is_test_mode_to_get(
+    lmd* obj);
+    
 
 /**
  * get string representation

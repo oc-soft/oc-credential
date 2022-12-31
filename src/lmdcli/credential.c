@@ -21,14 +21,14 @@ credential_get(
     cred_desc = credential_desc_decode(descriptor, descriptor_length);
     result = cred_desc ? 0 : -1;
     if (result == 0) {
-        char* token;
-        token = NULL;
-        result = credential_storage_find_token(cred_desc->protocol,
-            cred_desc->host, cred_desc->path, cred_desc->username, &token);
+        char* password;
+        password = NULL;
+        result = credential_storage_find_password(cred_desc->protocol,
+            cred_desc->host, cred_desc->path, cred_desc->username, &password);
         if (result == 0) {
-            if (token) {
-                result = credential_desc_set_password(cred_desc, token);
-                credential_storage_free_object(token);
+            if (password) {
+                result = credential_desc_set_password(cred_desc, password);
+                credential_storage_free_object(password);
             } 
         }
         if (result == 0) {
@@ -56,7 +56,7 @@ credential_erase(
     cred_desc = credential_desc_decode(descriptor, descriptor_length);
     result = cred_desc ? 0 : -1;
     if (result == 0) {
-        result = credential_storage_remove_token(cred_desc->protocol,
+        result = credential_storage_remove_password(cred_desc->protocol,
             cred_desc->host, cred_desc->path, cred_desc->username);
     }
     credential_desc_free(cred_desc);
@@ -79,7 +79,7 @@ credential_store(
     cred_desc = credential_desc_decode(descriptor, descriptor_length);
     result = cred_desc ? 0 : -1;
     if (result == 0) {
-        result = credential_storage_store_token(
+        result = credential_storage_store_password(
             cred_desc->protocol, cred_desc->host,
             cred_desc->path, cred_desc->username, cred_desc->password);
     }

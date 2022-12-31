@@ -43,6 +43,11 @@ struct _credential_desc {
      * password
      */
     char* password;
+
+    /**
+     * quit
+     */
+    int quit;
 };
 
 
@@ -78,6 +83,14 @@ int
 credential_desc_set_password(
     credential_desc* obj,
     const char* password);
+
+/**
+ * set quit option
+ */
+int
+credential_desc_set_quit(
+    credential_desc* obj,
+    int state);
 
 /**
  * free credential descriptor

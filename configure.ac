@@ -9,11 +9,12 @@ AC_CONFIG_SUBDIRS([oclib])
 
 AC_PROG_CC
 AC_CHECK_PROG([GPERF], [gperf --version], [gperf])
-
 AC_CHECK_PROG([HEXDUMP], [hexdump --version], [hexdump])
+AC_CHECK_PROG([SQLITE3], [sqlite3 --version], [sqlite])
 
 AC_CHECK_LIB([json-c], [json_object_new_object])
 AC_CHECK_LIB([curl], [curl_url])
+AC_CHECK_LIB([sqlite3], [sqlite3_initialize])
 
 AC_CHECK_HEADER([json-c/json.h])
 AC_CHECK_HEADER([curl/curl.h])

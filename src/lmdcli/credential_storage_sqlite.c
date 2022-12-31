@@ -13,26 +13,26 @@
 #include <stdio.h>
 
 /**
- * find token by id
+ * find password by id
  */
 int
-credential_storage_find_token_by_id(
+credential_storage_find_password_by_id(
     const char* protocol_id,
     const char* host_id,
     const char* path_id, 
     const char* name_id,
-    char** token);
+    char** password);
 
 /**
- * insert or update token
+ * insert or update password
  */
 int
-credential_storage_insert_or_update_token(
+credential_storage_insert_or_update_password(
     const char* protocol_id,
     const char* host_id,
     const char* path_id,
     const char* name_id,
-    const char* token);
+    const char* password);
 
 /**
  * insert 
@@ -65,10 +65,10 @@ credential_storage_insert_id(
     const char* id);
 
 /**
- * remove token by id parameters
+ * remove password by id parameters
  */
 static int
-credential_storage_remove_token_by_id(
+credential_storage_remove_password_by_id(
     const char* protocol_id,
     const char* host_id,
     const char* path_id,
@@ -167,15 +167,15 @@ credential_storage_create_cstr();
 
 
 /**
- * find token 
+ * find password 
  */
 int
-credential_storage_find_token(
+credential_storage_find_password(
     const char* protocol,
     const char* host,
     const char* path, 
     const char* username,
-    char** token)
+    char** password)
 {
     int result;
     json_object* app_config;
@@ -234,18 +234,18 @@ credential_storage_find_token(
         result = sql_state == SQLITE_ROW ? 0 : -1;
     }
     if (result == 0) {
-        const char* token_0;
-        size_t token_length;
-        char* token_1;
-        token_0 = sqlite3_column_text(statement, 0);
-        result = token_0 ? 0 : -1;
+        const char* password_0;
+        size_t password_length;
+        char* password_1;
+        password_0 = sqlite3_column_text(statement, 0);
+        result = password_0 ? 0 : -1;
         if (result == 0) {
-            token_length = strlen(token_0);
-            token_1 = credential_i_str_dup_0(token_0, token_length);
-            result = token_1 ? 0 : -1;
+            password_length = strlen(password_0);
+            password_1 = credential_i_str_dup_0(password_0, password_length);
+            result = password_1 ? 0 : -1;
         }
         if (result == 0) {
-            *token = token_1;
+            *password = password_1;
         }
     }
     if (statement) {
@@ -261,15 +261,15 @@ credential_storage_find_token(
 }
 
 /**
- * find token by id
+ * find password by id
  */
 int
-credential_storage_find_token_by_id(
+credential_storage_find_password_by_id(
     const char* protocol_id,
     const char* host_id,
     const char* path_id, 
     const char* name_id,
-    char** token)
+    char** password)
 {
     int result;
     json_object* app_config;
@@ -287,7 +287,7 @@ credential_storage_find_token_by_id(
     result = app_config ? 0 : -1;
     if (result == 0) {
         statement_arry_jobj = credential_storage_get_json(app_config,
-            "db", "select", "statements", "token", NULL);
+            "db", "select", "statements", "password", NULL);
         result = statement_arry_jobj ? 0 : -1;
     } 
 
@@ -328,19 +328,19 @@ credential_storage_find_token_by_id(
         sql_state = sqlite3_step(statement);
         result = sql_state == SQLITE_ROW ? 0 : 1;
     }
-    if (result == 0 && token) {
-        const char* token_0;
-        size_t token_length;
-        char* token_1;
-        token_0 = sqlite3_column_text(statement, 0);
-        result = token_0 ? 0 : -1;
+    if (result == 0 && password) {
+        const char* password_0;
+        size_t password_length;
+        char* password_1;
+        password_0 = sqlite3_column_text(statement, 0);
+        result = password_0 ? 0 : -1;
         if (result == 0) {
-            token_length = strlen(token_0);
-            token_1 = credential_i_str_dup_0(token_0, token_length);
-            result = token_1 ? 0 : -1;
+            password_length = strlen(password_0);
+            password_1 = credential_i_str_dup_0(password_0, password_length);
+            result = password_1 ? 0 : -1;
         }
         if (result == 0) {
-            *token = token_1;
+            *password = password_1;
         }
     }
     if (statement) {
@@ -357,15 +357,15 @@ credential_storage_find_token_by_id(
 
 
 /**
- * insert or update token
+ * insert or update password
  */
 int
-credential_storage_insert_or_update_token(
+credential_storage_insert_or_update_password(
     const char* protocol_id,
     const char* host_id,
     const char* path_id,
     const char* name_id,
-    const char* token)
+    const char* password)
 {
     int result;
     json_object* app_config;
@@ -385,7 +385,7 @@ credential_storage_insert_or_update_token(
     app_config = app_config_get(); 
     result = app_config ? 0 : -1;
     if (result == 0) {
-        result = credential_storage_find_token_by_id(
+        result = credential_storage_find_password_by_id(
             protocol_id, host_id, path_id, name_id, NULL);
     }
     if (result == 0) {
@@ -396,7 +396,7 @@ credential_storage_insert_or_update_token(
     }
     if (result == 0) {
         insert_or_update_jobj = credential_storage_get_json(app_config,
-            "db", "store", "statements", "token", insert_or_update_str, NULL);
+            "db", "store", "statements", "password", insert_or_update_str, NULL);
         result = insert_or_update_jobj ? 0 : -1;
     } 
     if (result == 0) {
@@ -413,7 +413,7 @@ credential_storage_insert_or_update_token(
     }
     if (result == 0) {
         const char* values[] = {
-            token ? token : "",
+            password ? password : "",
             protocol_id ? protocol_id : "",
             host_id ? host_id : "",
             path_id ? path_id : "", 
@@ -450,15 +450,15 @@ credential_storage_insert_or_update_token(
 
 
 /**
- * store token 
+ * store password 
  */
 int
-credential_storage_store_token(
+credential_storage_store_password(
     const char* protocol,
     const char* host,
     const char* path,
     const char* username,
-    const char* token)
+    const char* password)
 {
     int result;
     json_object* app_config;
@@ -513,12 +513,12 @@ credential_storage_store_token(
         }
     }
     if (result == 0) {
-        result = credential_storage_insert_or_update_token(
+        result = credential_storage_insert_or_update_password(
             key_id_table[0].id,
             key_id_table[1].id,
             key_id_table[2].id,
             key_id_table[3].id,
-            token);
+            password);
     }
     {
         size_t i;
@@ -723,10 +723,10 @@ credential_storage_insert_id(
 
 
 /**
- * remove token 
+ * remove password 
  */
 int
-credential_storage_remove_token(
+credential_storage_remove_password(
     const char* protocol,
     const char* host,
     const char* path,
@@ -750,7 +750,7 @@ credential_storage_remove_token(
             "path", path, NULL
         },
         {
-            "name", name, NULL
+            "user", name, NULL
         }
     };
     result = 0;
@@ -773,7 +773,7 @@ credential_storage_remove_token(
         }
     }
     if (result == 0) {
-        result = credential_storage_remove_token_by_id(
+        result = credential_storage_remove_password_by_id(
             table_key_id[0].id, table_key_id[1].id,
             table_key_id[2].id, table_key_id[3].id);
     }
@@ -792,14 +792,17 @@ credential_storage_remove_token(
     if (app_config) {
         json_object_put(app_config);
     } 
+    if (result == 1) {
+        result = 0;
+    }
     return result;
 }
 
 /**
- * remove token by id parameters
+ * remove password by id parameters
  */
 static int
-credential_storage_remove_token_by_id(
+credential_storage_remove_password_by_id(
     const char* protocol_id,
     const char* host_id,
     const char* path_id,
@@ -820,7 +823,7 @@ credential_storage_remove_token_by_id(
     result = app_config ? 0 : -1;
     if (result == 0) { 
         remove_stmts_jobj = credential_storage_get_json(app_config,
-            "db", "remove", "token", NULL);
+            "db", "remove", "password", NULL);
         result = remove_stmts_jobj ? 0 : -1;
     }
     if (result == 0) {
@@ -857,7 +860,7 @@ credential_storage_remove_token_by_id(
     }
     if (result == 0) {
         sql_state = sqlite3_step(statement);
-        result = sql_state == SQLITE_OK ? 0 : -1;
+        result = sql_state == SQLITE_DONE ? 0 : -1;
     }
     if (statement) {
         sqlite3_finalize(statement);
@@ -940,7 +943,7 @@ credetial_storage_do_gc()
                 }
                 if (result == 0) {
                     sql_state = sqlite3_step(statement);
-                    result = sql_state == SQLITE_OK ? 0 : -1;
+                    result = sql_state == SQLITE_DONE ? 0 : -1;
                 } 
                 if (statement) {
                     sqlite3_finalize(statement);

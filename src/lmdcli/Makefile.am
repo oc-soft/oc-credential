@@ -55,8 +55,8 @@ lmdcli_LDADD=$(top_builddir)/oclib/buffer/src/libocbuffer.la \
 TEST_LOG_DRIVER = $(SHELL) $(top_srcdir)/tap-driver.sh
 TEST_EXTENSIONS = .sh
 SH_LOG_COMPILER = $(SHELL)
-TESTS = t_store_01.sh
-
+TESTS = t_store_01.sh t_site_01.sh t_erase_01.sh
+AM_TESTS_ENVIRONMENT = HOME=$(builddir);
 CLIENT_ID_TXT=$(top_srcdir)/src/config/client-id.txt
 CLIENT_SECRET_TXT=$(top_srcdir)/src/config/client-secret.txt
 
@@ -64,18 +64,40 @@ pkgdatadir=$(datadir)/$(PACKAGE_NAME)
 
 textdomain_dir=$(pkgdatadir)/locale
 
+
 awk_cmd_0='BEGIN { \
-			getline client_id <"$(CLIENT_ID_TXT)"; \
-			getline client_secret <"$(CLIENT_SECRET_TXT)"; \
-			textdomain_dir = "$(textdomain_dir)" \
+		FS=","; \
+		entries[0,0] = ""; \
+	} \
+	{ \
+		protocol = $$1; \
+		host = $$2; \
+		path = $$3; \
+		client_data = $$4; \
+		key = protocol "://" host; \
+		if (length(path)) { \
+			key = key "/" path; \
 		} \
-		{ \
-			gsub(/@CLIENT_ID@/, client_id); \
-			gsub(/@CLIENT_SECRET@/, client_secret); \
-			gsub(/@TEXTDOMAIN_DIR@/, textdomain_dir); \
-			print \
+		entries[NR, 1] = key; \
+		entries[NR, 2] = client_data; \
+		rows = NR; \
+	} \
+	END { \
+		replacement = ""; \
+		for (ridx = 1; ridx <= rows; ridx++) { \
+			key = entries[ridx, 1]; \
+			value = "\"" entries[ridx, 2] "\""; \
+			replacement = replacement key ", " value; \
+			if (ridx <= rows - 1) { \
+				replacement = replacement "\n"; \
+			} \
 		} \
-	' 
+		while (getline <in_file) { \
+			sub(/@URI_CLIENT_ENTRIES@/, replacement); \
+			print $$0; \
+		} \
+	}' 
+
 awk_cmd_1 = '{ \
 			gsub(/@LMTD_APP_FILE_NAME@/, \
 				"\"lmdcli\""); \
@@ -146,13 +168,42 @@ awk_cmd_3 = 'BEGIN { \
 lmdcli_CPPFLAGS=-I$(top_srcdir)/oclib/buffer/include \
 	-I$(top_srcdir)/oclib/cstr/include
 
+$(builddir)/client-secret-dbg.txt:
+	: > $@
 
-client_secret.c : client_secret.in.c
-	awk $(awk_cmd_0) $< >$@
+$(builddir)/client-id-dbg.txt:
+	: > $@
+
+client-dbg:
+	cp $(srcdir)/../config/client-secret-dbg.txt \
+		$(builddir)/client-secret-dbg.txt 
+	cp $(srcdir)/../config/client-id-dbg.txt \
+		$(builddir)/client-id-dbg.txt 
+
+clean-client-dbg:
+	rm $(builddir)/client-secret-dbg.txt
+	rm $(builddir)/client-id-dbg.txt 
+
+.PHONY: client-dbg clean-client-dbg
 
 
-client_id.c : client_id.in.c
-	awk $(awk_cmd_0) $< >$@
+t_site_01.sh : t_site_01.sh.in
+	sed -e 's!%CLIENT_ID_PATH%!$(top_srcdir)/src/config/client-id.txt!' $< | \
+	sed -e 's!%CLIENT_ID_DBG_PATH%!$(builddir)/client-id-dbg.txt!' | \
+	sed -e 's!%CLIENT_SECRET_PATH%!$(top_srcdir)/src/config/client-secret.txt!' | \
+	sed -e 's!%CLIENT_SECRET_DBG_PATH%!$(builddir)/client-secret-dbg.txt!' | \
+	sed -e 's!%AWK%!$(AWK)!' \
+	> $@
+
+client_secret.gpf : client_secret.gpf.in $(srcdir)/../config/client-secret.txt $(builddir)/client-secret-dbg.txt 
+	awk -v in_file=$< -e $(awk_cmd_0) \
+		$(srcdir)/../config/client-secret.txt \
+		$(builddir)/client-secret-dbg.txt >$@
+
+client_id.gpf : client_id.gpf.in $(srcdir)/../config/client-id.txt $(builddir)/client-id-dbg.txt
+	awk -v in_file=$< -e $(awk_cmd_0) \
+		$(srcdir)/../config/client-id.txt \
+		$(builddir)/client-id-dbg.txt >$@
 
 lmd_const.h : lmd_const.h.in
 	awk $(awk_cmd_1) $< >$@

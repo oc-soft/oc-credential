@@ -84,6 +84,10 @@ struct _lmd {
     
     /* verbose level */
     int verbose_level;
+
+
+    /* test mode */
+    int test_mode_get:1;
 };
 
 /**
@@ -113,6 +117,7 @@ lmd_create()
         result->interval = 0;
         result->credential_operation = CDT_OP_UNKNOWN;
         result->verbose_level = 0;
+        result->test_mode_get = 0;
     }
     return result;
 }
@@ -1194,6 +1199,43 @@ lmd_get_verbose_level(
 }
 
 /**
+ * set test mode to get
+ */
+int
+lmd_set_test_mode_to_get(
+    lmd* obj,
+    int testing_mode)
+{
+    int result;
+    if (obj) {
+        obj->test_mode_get = testing_mode;
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+
+    return result;
+}
+
+/**
+ * get test mode to get
+ */
+int
+lmd_is_test_mode_to_get(
+    lmd* obj)
+{
+    int result;
+    result = 0;
+    if (obj) {
+        result = obj->test_mode_get;
+    } else {
+        errno = EINVAL;
+    }
+
+    return result;
+}
+ 
+/**
  * get string representation
  */
 char*
@@ -1271,7 +1313,11 @@ lmd_get_str_representation(
         {
             .name = "credential_operation",
             .value = (int)lmd_get_credential_op(obj)
-        } 
+        },
+        {
+            .name = "test_mode_to_get",
+            .value = lmd_is_test_mode_to_get(obj)
+        }
     };
 
     int i;

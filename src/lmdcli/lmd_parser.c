@@ -39,6 +39,12 @@ lmd_parser_parse_from_commands(
                     .val = 'v'
                 },
                 {
+                    .name = "get-test",
+                    .has_arg = no_argument,
+                    .flag = NULL,
+                    .val = 'u'
+                },
+                {
                     .name = "help",
                     .has_arg = no_argument,
                     .flag = NULL,
@@ -53,9 +59,12 @@ lmd_parser_parse_from_commands(
             };
             int do_parse;
             do_parse = 1;
-            switch (getopt_long(argc, argv, "hi:u:v::", long_opts, NULL)) {
+            switch (getopt_long(argc, argv, "hui:v::", long_opts, NULL)) {
             case 'i':
                 lmd_set_client_id(result, optarg); 
+                break;
+            case 'u':
+                lmd_set_test_mode_to_get(result, 1);
                 break;
             case 'v':
                 if (optarg) {

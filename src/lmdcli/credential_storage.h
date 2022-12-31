@@ -13,33 +13,33 @@ _CREDENTIAL_STORAGE_ITFC_BEGIN
 
 
 /**
- * find token 
+ * find password 
  */
 int
-credential_storage_find_token(
+credential_storage_find_password(
     const char* protocol,
     const char* host,
     const char* path, 
     const char* username,
-    char** token);
+    char** password);
 
 /**
- * store token 
+ * store password 
  */
 int
-credential_storage_store_token(
+credential_storage_store_password(
     const char* protocol,
     const char* host,
     const char* path,
     const char* username,
-    const char* token);
+    const char* password);
 
 
 /**
- * remove token
+ * remove password
  */
 int
-credential_storage_remove_token(
+credential_storage_remove_password(
     const char* protocol,
     const char* host,
     const char* path,
