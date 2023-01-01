@@ -529,10 +529,12 @@ lmd_credential_op_get_0(
     int result;
     char* password;
 
+    result = 0;
     password = NULL;
-    result = credential_storage_find_password(desc->protocol, desc->host,
-        desc->path, desc->username, &password);
-
+    if (!lmd_is_generator_mode(0)) {
+        result = credential_storage_find_password(desc->protocol, desc->host,
+            desc->path, desc->username, &password);
+    }
     if (!password) {
         result = get_oauth_token(obj, desc->protocol, desc->host, desc->path);
         if (result == 0) {
@@ -560,8 +562,13 @@ lmd_credential_op_store(
     credential_desc* desc)
 {
     int result;
-    result = credential_storage_store_password(
-        desc->protocol, desc->host, desc->path, desc->username, desc->password);
+    if (!lmd_is_generator_mode(obj)) {
+        result = credential_storage_store_password(
+            desc->protocol, desc->host, desc->path,
+            desc->username, desc->password);
+    } else {
+        result = 1;
+    }
     return result;
 }
 
@@ -574,8 +581,12 @@ lmd_credential_op_erase(
     credential_desc* desc)
 {
     int result; 
-    result = credential_storage_remove_password(
-        desc->protocol, desc->host, desc->path, desc->username);
+    if (!lmd_is_generator_mode(obj)) {
+        result = credential_storage_remove_password(
+            desc->protocol, desc->host, desc->path, desc->username);
+    } else {
+        result = 1;
+    }
     return result;
 }
 

@@ -19,6 +19,8 @@ AC_CHECK_LIB([sqlite3], [sqlite3_initialize])
 AC_CHECK_HEADER([json-c/json.h])
 AC_CHECK_HEADER([curl/curl.h])
 
+AC_CHECK_HEADERS([mcheck.h])
+
 OC_CHECK_RUN_ON_WIN
 if test "x$oc_run_win" = xyes; then
 LT_PROG_RC

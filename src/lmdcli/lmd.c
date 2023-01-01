@@ -88,6 +88,9 @@ struct _lmd {
 
     /* test mode */
     int test_mode_get:1;
+
+    /* generator mode */
+    int generator_mode:1;
 };
 
 /**
@@ -1234,6 +1237,40 @@ lmd_is_test_mode_to_get(
 
     return result;
 }
+/**
+ * set generator mode
+ */
+int
+lmd_set_generator_mode(
+    lmd* obj,
+    int mode)
+{
+    int result;
+    if (obj) {
+        obj->generator_mode = mode;
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * get non zero if limited device info is running on generator mode.
+ */
+int
+lmd_is_generator_mode(
+    lmd* obj)
+{
+    int result;
+    result = 0;
+    if (obj) {
+        result = obj->generator_mode;
+    } else {
+        errno = EINVAL;
+    }
+    return result;
+}
  
 /**
  * get string representation
@@ -1317,7 +1354,12 @@ lmd_get_str_representation(
         {
             .name = "test_mode_to_get",
             .value = lmd_is_test_mode_to_get(obj)
+        },
+        {
+            .name = "generator_mode",
+            .value = lmd_is_generator_mode(obj)
         }
+
     };
 
     int i;

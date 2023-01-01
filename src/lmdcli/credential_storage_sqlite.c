@@ -1161,6 +1161,9 @@ credential_storage_get_statement_str_from_json(
             result = -1;
         }
     }
+    if (statement_buffer) {
+        cstr_release(statement_buffer);
+    }
     return result;
 } 
 

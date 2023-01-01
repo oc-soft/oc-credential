@@ -35,7 +35,7 @@ client_id_get(
     const char* result;
     result = NULL;
 
-    if (protocol && host) {
+    if (protocol) {
         const uri_client_id* entry;
         char* buffer;
         size_t protocol_len;
@@ -45,7 +45,11 @@ client_id_get(
         entry = NULL;
         buffer = NULL;
         protocol_len = strlen(protocol);
-        host_len = strlen(host); 
+        if (host) {
+            host_len = strlen(host); 
+        } else {
+            host_len = 0; 
+        }
         buffer_size = protocol_len + 3 + host_len;
         if (path) {
             path_len = strlen(path);

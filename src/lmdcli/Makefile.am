@@ -18,8 +18,8 @@ lmdcli_src = main.c \
 	user_resource.c \
 	user_resource_i.c \
 	credential_desc.gpf \
-	credential_storage_sqlite.c
-	credential_i.c 
+	credential_storage_sqlite.c \
+	mem_dbg.c
 
 
 lmdcli_SOURCES = $(lmdcli_src) 
@@ -43,7 +43,7 @@ if RUN_WIN
 lmdcli_SOURCES += lmd_res.rc
 endif
 
-AM_FLAGS= -g -O0
+lmdcli_CFLAGS= -g -O0
 lmdcli_LDFLAGS= -g -static
 
 limdcli_lib_flags=$(LTLIBINTL) -ljson-c -lcurl -lsqlite3 -lm
@@ -55,7 +55,7 @@ lmdcli_LDADD=$(top_builddir)/oclib/buffer/src/libocbuffer.la \
 TEST_LOG_DRIVER = $(SHELL) $(top_srcdir)/tap-driver.sh
 TEST_EXTENSIONS = .sh
 SH_LOG_COMPILER = $(SHELL)
-TESTS = t_store_01.sh t_site_01.sh t_erase_01.sh
+TESTS = t_store_01.sh t_site_01.sh t_erase_01.sh t_erase_02.sh
 AM_TESTS_ENVIRONMENT = HOME=$(builddir);
 CLIENT_ID_TXT=$(top_srcdir)/src/config/client-id.txt
 CLIENT_SECRET_TXT=$(top_srcdir)/src/config/client-secret.txt
@@ -173,6 +173,15 @@ $(builddir)/client-secret-dbg.txt:
 
 $(builddir)/client-id-dbg.txt:
 	: > $@
+
+
+mem_dbg.c : mem_dbg_off.c.in
+	cp $< $@
+
+mem_dbg: mem_dbg_on.c.in
+	cp $< mem_dbg.c
+
+.PHONY: mem_dbg
 
 client-dbg:
 	cp $(srcdir)/../config/client-secret-dbg.txt \

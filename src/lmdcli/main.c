@@ -12,7 +12,7 @@
 #include "lmd_credential_op.h"
 #include "credential_storage.h"
 #include "l10n.h"
-
+#include "mem_dbg.h"
 /**
  * initialize internationalization
  */
@@ -32,6 +32,7 @@ main(
     lmd* limited_acc;
 
     limited_acc = NULL;
+    mem_dbg_start_trace();
     setlocale(LC_ALL, "");
     result = setup_l10n();    
     curl_global_init(CURL_GLOBAL_WIN32);

@@ -412,6 +412,22 @@ int
 lmd_is_test_mode_to_get(
     lmd* obj);
     
+/**
+ * set generator mode
+ */
+int
+lmd_set_generator_mode(
+    lmd* obj,
+    int mode);
+
+/**
+ * get non zero if limited device info is running on generator mode.
+ */
+int
+lmd_is_generator_mode(
+    lmd* obj);
+    
+
 
 /**
  * get string representation
