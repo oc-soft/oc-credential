@@ -94,8 +94,9 @@ AC_CONFIG_HEADERS([
 AC_CONFIG_FILES([Makefile
     src/Makefile
     src/scripts/Makefile
+    src/core/Makefile
+    src/core/user_resource_const.h
     src/lmdcli/Makefile
-    src/lmdcli/user_resource_const.h
     pkg/Makefile
     pkg/win/Makefile
     pkg/win/ja/Makefile

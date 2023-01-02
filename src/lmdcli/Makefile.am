@@ -11,14 +11,6 @@ lmdcli_src = main.c \
 	lmd_requests.c \
 	lmd_credential_op.c \
 	lmd_i.c \
-	credential.c \
-	credential_i.c \
-	app_config_i.c \
-	app_config.c \
-	user_resource.c \
-	user_resource_i.c \
-	credential_desc.gpf \
-	credential_storage_sqlite.c \
 	mem_dbg.c
 
 
@@ -31,12 +23,10 @@ deploy_dir_def = $(abs_top_builddir)/pkg-img
 if RUN_WIN
 lmdcli_SOURCES += exe_info_win.c
 lmdcli_SOURCES += l10n_user_win.c
-lmdcli_SOURCES += user_resource_win.c
 endif
 if RUN_LINUX
 lmdcli_SOURCES += exe_info_linux.c
 lmdcli_SOURCES += l10n_user_linux.c
-lmdcli_SOURCES += user_resource_linux.c
 endif
 
 if RUN_WIN
@@ -50,6 +40,7 @@ limdcli_lib_flags=$(LTLIBINTL) -ljson-c -lcurl -lsqlite3 -lm
 
 lmdcli_LDADD=$(top_builddir)/oclib/buffer/src/libocbuffer.la \
 	$(top_builddir)/oclib/cstr/src/liboccstr.la \
+	$(top_builddir)/src/core/liboccredcore.la \
 	$(limdcli_lib_flags)
 
 SH_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/tap-driver.sh
@@ -166,7 +157,8 @@ awk_cmd_3 = 'BEGIN { \
 	}'
 
 lmdcli_CPPFLAGS=-I$(top_srcdir)/oclib/buffer/include \
-	-I$(top_srcdir)/oclib/cstr/include
+	-I$(top_srcdir)/oclib/cstr/include \
+	-I$(top_srcdir)/src/core
 
 $(builddir)/client-secret-dbg.txt:
 	: > $@
@@ -225,9 +217,6 @@ lmd_const.h : lmd_const.h.in
 
 lmd_res.rc : lmd_res.rc.in lmd_const.h
 	awk $(awk_cmd_2) $(top_srcdir)/win/lang_map.txt > $@
-
-app_config_i.c: app_config_i.c.in $(top_srcdir)/rc/rc.json 
-	$(HEXDUMP) -e "\"    \" 12/1 \"0x%02x \" \"\n\"" $(top_srcdir)/rc/rc.json | awk -v in_file=$< -e $(awk_cmd_3) >$@ 
 
 pkg-install-local:
 	depdir=$(deploy_dir) ; \
