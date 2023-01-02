@@ -74,9 +74,26 @@ function erase_test_data()
   return $res
 }
 
+function print_result()
+{
+  awk -v num=$1 -e 'BEGIN {
+    no_leaks=0;
+  }
+  /^No memory leaks/ { no_leaks=1; }
+  END {
+    if (no_leaks) {
+      msg1 = "ok"; 
+    } else {
+      msg1 = "not ok";
+      msg2 = " - leak detected"
+    }
+    print msg1 " " num msg2
+  }' 
+}
+
 test_data='https,example.com, ,user-1,password-1'
 
-echo '1..1'
+echo 1..2
 
 mem_t_w_path=mem_trace_writing
 mem_t_e_path=mem_trace_erasing
@@ -88,10 +105,10 @@ export LD_PRELOAD=libc_malloc_debug.so
 echo $test_data | write_test_data 1
 export MALLOC_TRACE=$mem_t_e_path
 echo $test_data | erase_test_data 1
-
-mtrace ./lmdcli $mem_t_w_path
-mtrace ./lmdcil $mem_t_e_path
 unset IFS
-echo 'ok 1'
+
+
+mtrace ./lmdcli $mem_t_w_path | print_result 1
+mtrace ./lmdcli $mem_t_e_path | print_result 2
 
 #! vi: se ts=2 sw=2 et:

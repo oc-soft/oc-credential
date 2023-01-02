@@ -52,7 +52,7 @@ lmdcli_LDADD=$(top_builddir)/oclib/buffer/src/libocbuffer.la \
 	$(top_builddir)/oclib/cstr/src/liboccstr.la \
 	$(limdcli_lib_flags)
 
-TEST_LOG_DRIVER = $(SHELL) $(top_srcdir)/tap-driver.sh
+SH_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/tap-driver.sh
 TEST_EXTENSIONS = .sh
 SH_LOG_COMPILER = $(SHELL)
 TESTS = t_store_01.sh t_site_01.sh t_erase_01.sh t_erase_02.sh

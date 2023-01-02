@@ -131,17 +131,17 @@ test_desc $client_id_path $client_secret_path
 
 res=$?
 if (( $res == 0 )) ; then
-  printf "ok %d # succeded", 1
+  printf "ok %d # succeded\n" 1
 else
-  printf "not ok %d # failed", 1
+  printf "not ok %d # failed\n" 1
 fi
 
 test_desc $client_id_dbg_path $client_secret_dbg_path
 res=$?
 if (( $res == 0 )) ; then
-  printf "ok %d # succeded", 2
+  printf "ok %d # succeded\n" 2
 else
-  printf "not ok %d # failed", 2
+  printf "not ok %d # failed\n" 2
 fi
 
 # vi: se ts=2 sw=2 et:
