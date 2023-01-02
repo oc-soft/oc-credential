@@ -101,7 +101,6 @@ function test_desc()
   while read -r line;
   do
     IFS=
-    desc=`` 
     client_line_to_desc $line | ./lmdcli -u get \
       | verify_username_with_client $line
     res=$?

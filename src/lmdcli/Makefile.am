@@ -203,6 +203,12 @@ t_site_01.sh : t_site_01.sh.in
 	sed -e 's!%CLIENT_SECRET_DBG_PATH%!$(builddir)/client-secret-dbg.txt!' | \
 	sed -e 's!%AWK%!$(AWK)!' \
 	> $@
+rt_get_01.sh : rt_get_01.sh.in
+	sed -e 's!%CLIENT_ID_PATH%!$(abs_top_srcdir)/src/config/client-id.txt!' \
+		$< | \
+	sed -e 's!%LMDCLI%!$(abs_builddir)/lmdcli$(EXEEXT)!' | \
+	sed -e 's!%AWK%!$(AWK)!' >$@
+	chmod u+x $@
 
 client_secret.gpf : client_secret.gpf.in $(srcdir)/../config/client-secret.txt $(builddir)/client-secret-dbg.txt 
 	awk -v in_file=$< -e $(awk_cmd_0) \
