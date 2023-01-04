@@ -1410,6 +1410,10 @@ credential_storage_init_tables()
     return result;
 }
 
+#ifndef UUID_STR_LEN
+#define UUID_STR_LEN 37
+#endif
+
 /**
  * generate uuid
  */

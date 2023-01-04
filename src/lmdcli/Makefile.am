@@ -13,8 +13,11 @@ lmdcli_src = main.c \
 	lmd_i.c \
 	mem_dbg.c
 
-
-lmdcli_SOURCES = $(lmdcli_src) 
+if !TARGET_WASM
+lmdcli_SOURCES = $(lmdcli_src)
+else
+lmdcli_SOURCES = main_wasm.c
+endif
 
 deploy_dir = @DEPLOY_DIR@
 pkg_bindir = @pkg_bindir@
@@ -36,12 +39,20 @@ endif
 lmdcli_CFLAGS= -g -O0
 lmdcli_LDFLAGS= -g -static
 
+if !TARGET_WASM
 limdcli_lib_flags=$(LTLIBINTL) -ljson-c -lcurl -lsqlite3 -lm
+else
+limdcli_lib_flags=$(LTLIBINTL) -ljson-c -lsqlite3 -lm
+endif
 
 lmdcli_LDADD=$(top_builddir)/oclib/buffer/src/libocbuffer.la \
 	$(top_builddir)/oclib/cstr/src/liboccstr.la \
 	$(top_builddir)/src/core/liboccredcore.la \
 	$(limdcli_lib_flags)
+
+if TARGET_WASM
+lmdcli_LDFLAGS += -static
+endif
 
 SH_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/tap-driver.sh
 TEST_EXTENSIONS = .sh

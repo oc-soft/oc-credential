@@ -26,6 +26,8 @@ if test "x$oc_run_win" = xyes; then
 LT_PROG_RC
 fi
 
+OC_CHECK_TARGET_WASM
+
 if test "x$oc_run_win" = xyes; then
     oc_data_dir_name='oc-credential'
 else

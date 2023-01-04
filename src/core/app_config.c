@@ -1,4 +1,5 @@
 #include "app_config.h"
+#include "app_config_i.h"
 #include <json-c/json_tokener.h>
 
 /**
