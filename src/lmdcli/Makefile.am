@@ -1,6 +1,23 @@
 
 bin_PROGRAMS = lmdcli
 
+noinst_HEADERS= client_id.h \
+	client_secret.h \
+	credential_op.h \
+	credential_storage_key_id_table.h \
+	exe_info.h \
+	http.h \
+	l10n.h \
+	lmd_connections.h \
+	lmd_credential_op.h \
+	lmd.h \
+	lmd_i.h \
+	lmd_parser.h \
+	lmd_requests.h \
+	lmd_types.h \
+	mem_dbg.h \
+	option.h \
+	url.h
 
 lmdcli_src = main.c \
 	lmd.c \
@@ -223,7 +240,7 @@ client_id.gpf : client_id.gpf.in $(srcdir)/../config/client-id.txt $(builddir)/c
 		$(srcdir)/../config/client-id.txt \
 		$(builddir)/client-id-dbg.txt >$@
 
-lmd_const.h : lmd_const.h.in
+lmd_const.h : lmd_const.h.in $(srcdir)/Makefile.am
 	awk $(awk_cmd_1) $< >$@
 
 lmd_res.rc : lmd_res.rc.in lmd_const.h

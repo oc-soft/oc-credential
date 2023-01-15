@@ -11,6 +11,7 @@ AC_PROG_CC
 AC_CHECK_PROG([GPERF], [gperf --version], [gperf])
 AC_CHECK_PROG([HEXDUMP], [hexdump --version], [hexdump])
 AC_CHECK_PROG([SQLITE3], [sqlite3 --version], [sqlite])
+AC_CHECK_PROG([NODE], [node --version], [node])
 
 AC_CHECK_LIB([json-c], [json_object_new_object])
 AC_CHECK_LIB([curl], [curl_url])
@@ -19,7 +20,8 @@ AC_CHECK_LIB([sqlite3], [sqlite3_initialize])
 AC_CHECK_HEADER([json-c/json.h])
 AC_CHECK_HEADER([curl/curl.h])
 
-AC_CHECK_HEADERS([mcheck.h])
+AC_CHECK_HEADERS([mcheck.h
+    emscripten.h])
 
 OC_CHECK_RUN_ON_WIN
 if test "x$oc_run_win" = xyes; then
@@ -94,6 +96,7 @@ AC_CONFIG_HEADERS([
     include/config.h])
 
 AC_CONFIG_FILES([Makefile
+    em-setting/Makefile
     src/Makefile
     src/scripts/Makefile
     src/core/Makefile

@@ -1,0 +1,6 @@
+const typeSizeMap = @TYPE_SIZE_MAP@ 
+let result
+if (typeName in typeSizeMap) {
+  result = typeSizeMap[typeName]
+}
+return result

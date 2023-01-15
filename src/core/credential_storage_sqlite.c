@@ -1,3 +1,4 @@
+#include "config.h"
 #include "credential_storage.h"
 #include <stdarg.h>
 #include <string.h>
@@ -6,11 +7,14 @@
 #include <json-c/json_object.h>
 #include <json-c/json_object_iterator.h>
 #include <uuid/uuid.h>
+#ifdef HAVE_EMSCRIPTEN_H
+#include <emscripten.h>
+#endif
 #include "cstr.h"
 #include "credential_i.h"
 #include "app_config.h"
 #include "user_resource.h"
-#include <stdio.h>
+#include "wasm_i.h"
 
 /**
  * find password by id
@@ -169,6 +173,7 @@ credential_storage_create_cstr();
 /**
  * find password 
  */
+WASM_EXPORT
 int
 credential_storage_find_password(
     const char* protocol,
@@ -452,6 +457,7 @@ credential_storage_insert_or_update_password(
 /**
  * store password 
  */
+WASM_EXPORT
 int
 credential_storage_store_password(
     const char* protocol,
@@ -725,6 +731,7 @@ credential_storage_insert_id(
 /**
  * remove password 
  */
+WASM_EXPORT
 int
 credential_storage_remove_password(
     const char* protocol,
@@ -1083,6 +1090,7 @@ credentail_storage_update_remove_log()
 /**
  * free heap object from this module
  */
+WASM_EXPORT
 void
 credential_storage_free_object(
     void* obj)
@@ -1452,6 +1460,7 @@ credential_get_connection()
 /**
  * initialize this module 
  */
+WASM_EXPORT
 int
 credential_storage_start()
 {
@@ -1493,6 +1502,7 @@ credential_storage_start()
 /**
  * tear down this module 
  */
+WASM_EXPORT
 int
 credential_storage_stop()
 {

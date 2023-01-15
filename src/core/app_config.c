@@ -1,6 +1,11 @@
+#include "config.h"
 #include "app_config.h"
 #include "app_config_i.h"
 #include <json-c/json_tokener.h>
+#ifdef HAVE_EMSCRIPTEN_H
+#include <emscripten.h>
+#endif
+#include "wasm_i.h"
 
 /**
  * load runtime configuration object.
@@ -18,6 +23,7 @@ app_config;
 /**
  * get rc config
  */
+WASM_EXPORT
 json_object*
 app_config_get()
 {
@@ -58,6 +64,7 @@ app_config_load()
 /**
  * initialize runtime configuration.
  */
+WASM_EXPORT
 int
 app_config_start()
 {
@@ -76,6 +83,7 @@ app_config_start()
 /**
  * stop runtime configuration.
  */
+WASM_EXPORT
 int
 app_config_stop()
 {

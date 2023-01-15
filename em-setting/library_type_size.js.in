@@ -1,0 +1,10 @@
+mergeInto(LibraryManager.library, {
+  $getTypeSize__doc: `
+@TYPE_SIZE_DOC@
+  `,
+  $getTypeSize: function(typeSize) {
+@TYPE_SIZE_BODY@
+  }    
+})
+
+// vi: se ts=2 sw=2 et:

@@ -1,12 +1,19 @@
+#include "config.h"
 #include "credential.h"
 #include <json-c/json.h>
+#ifdef HAVE_EMSCRIPTEN_H
+#include <emscripten.h>
+#endif
 #include "credential_desc.h"
 #include "credential_i.h"
 #include "credential_storage.h"
+#include "wasm_i.h"
+
 
 /**
  * get credential
  */
+WASM_EXPORT
 int
 credential_get(
     const char* descriptor,
@@ -44,6 +51,7 @@ credential_get(
 /**
  * erase credential
  */
+WASM_EXPORT
 int
 credential_erase(
     const char* descriptor,
@@ -67,6 +75,7 @@ credential_erase(
 /**
  * store credential
  */
+WASM_EXPORT
 int
 credential_store(
     const char* descriptor,
@@ -91,6 +100,7 @@ credential_store(
 /**
  * free heap object which you get from this interface.
  */
+WASM_EXPORT
 void
 credential_free(
     void* obj)

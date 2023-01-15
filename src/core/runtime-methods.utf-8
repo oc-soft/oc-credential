@@ -1,0 +1,8 @@
+app_config_start
+app_config_stop
+user_resource_get_credential_data_directory
+user_resource_free
+user_resource_get_credential_data_path
+credential_get
+credential_store
+credential_erase

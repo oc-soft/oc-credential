@@ -1,3 +1,4 @@
+#include "config.h"
 #include "user_resource.h"
 
 #include <sys/types.h>
@@ -7,11 +8,18 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#ifdef HAVE_EMSCRIPTEN_H
+#include <emscripten.h>
+#endif
+
 #include "user_resource_i.h"
 #include "user_resource_const.h"
+#include "wasm_i.h"
+
 /**
  * get credential data directory 
  */
+WASM_EXPORT
 char*
 user_resource_get_credential_data_directory()
 {
@@ -47,6 +55,7 @@ user_resource_get_credential_data_directory()
 /**
  * get credential data directory 
  */
+WASM_EXPORT
 char*
 user_resource_get_credential_data_path()
 {
@@ -76,6 +85,7 @@ user_resource_get_credential_data_path()
 /**
  * free object
  */
+WASM_EXPORT
 void
 user_resource_free(
     void* obj)

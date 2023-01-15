@@ -1,5 +1,20 @@
 lib_LTLIBRARIES = liboccredcore.la
 
+if TARGET_WASM
+bin_PROGRAMS = occredcore
+endif
+
+noinst_HEADERS = user_resource.h \
+	app_config.h \
+	app_config_i.h \
+	credential_desc.h \
+	credential.h \
+	credential_i.h \
+	credential_storage.h \
+	user_resource.h \
+	user_resource_i.h \
+	wasm_i.h
+
 liboccredcore_la_SOURCES = credential.c \
 	credential_i.c \
 	app_config_i.c \
@@ -9,10 +24,14 @@ liboccredcore_la_SOURCES = credential.c \
 	credential_desc.gpf \
 	credential_storage_sqlite.c 
 
+
+occredcore_SOURCES = credcore_main_wasm.c
+
+occredcore_DEPENDENCIES = liboccredcore.la
 deploy_dir = @DEPLOY_DIR@
 pkg_bindir = @pkg_bindir@
 deploy_dir_def = $(abs_top_builddir)/pkg-img
-
+JS_MODEXT=.mjs
 if RUN_WIN
 liboccredcore_la_SOURCES += user_resource_win.c
 endif
@@ -32,6 +51,23 @@ liboccredcore_la_LIBADD= \
 liboccredcore_la_LDFLAGS= -g \
 	$(liboccredcore_lib_flags)
 
+
+
+if TARGET_WASM
+occredcore_LDADD = liboccredcore.la
+occredcore_LDFLAGS = -sMODULARIZE=1 \
+	-sEXPORT_NAME=createCredCore \
+	--js-library=$(srcdir)/library_core.js \
+	--js-library=$(top_builddir)/em-setting/library_type_size.js \
+	-sEXPORTED_FUNCTIONS=@$(srcdir)/exported-functions.utf-8 \
+	-sEXPORTED_RUNTIME_METHODS=@$(srcdir)/runtime-methods.utf-8 
+
+occredcore_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(occredcore_LDFLAGS) $(LDFLAGS) -o occredcore$(JS_MODEXT)
+
+endif
+
 SH_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/tap-driver.sh
 TEST_EXTENSIONS = .sh
 SH_LOG_COMPILER = $(SHELL)
@@ -40,38 +76,7 @@ AM_TESTS_ENVIRONMENT = HOME=$(builddir);
 
 pkgdatadir=$(datadir)/$(PACKAGE_NAME)
 
-awk_cmd_0='BEGIN { \
-		FS=","; \
-		entries[0,0] = ""; \
-	} \
-	{ \
-		protocol = $$1; \
-		host = $$2; \
-		path = $$3; \
-		client_data = $$4; \
-		key = protocol "://" host; \
-		if (length(path)) { \
-			key = key "/" path; \
-		} \
-		entries[NR, 1] = key; \
-		entries[NR, 2] = client_data; \
-		rows = NR; \
-	} \
-	END { \
-		replacement = ""; \
-		for (ridx = 1; ridx <= rows; ridx++) { \
-			key = entries[ridx, 1]; \
-			value = "\"" entries[ridx, 2] "\""; \
-			replacement = replacement key ", " value; \
-			if (ridx <= rows - 1) { \
-				replacement = replacement "\n"; \
-			} \
-		} \
-		while (getline <in_file) { \
-			sub(/@URI_CLIENT_ENTRIES@/, replacement); \
-			print $$0; \
-		} \
-	}' 
+liboccredcore_la_CPPFLAGS= -I$(top_srcdir)/oclib/cstr/include
 
 
 awk_cmd_3 = 'BEGIN { \
@@ -106,8 +111,13 @@ awk_cmd_3 = 'BEGIN { \
 		} \
 	}'
 
-liboccredcore_la_CPPFLAGS= -I$(top_srcdir)/oclib/cstr/include
-
+awk_cmd_4 = ' \
+	{ \
+		gsub(/!VERSION!/, version); \
+		gsub(/!MODULE!/, module); \
+		print $$0; \
+	} \
+'
 
 app_config_i.c: app_config_i.c.in $(top_srcdir)/rc/rc.json 
 	$(HEXDUMP) -e "\"    \" 12/1 \"0x%02x \" \"\n\"" $(top_srcdir)/rc/rc.json | awk -v in_file=$< -e $(awk_cmd_3) >$@ 
@@ -126,9 +136,19 @@ pkg-uninstall-local:
 	fi; \
 	$(MAKE) $(AM_MAKEFLAGS) DESTDIR=$$depdir bindir=$(pkg_bindir) uninstall-am
 
+package.json: package.json.in $(srcdir)/Makefile.am 
+	$(AWK) -v version=$(PACKAGE_VERSION) -v module=occredcore$(JS_MODEXT) -e $(awk_cmd_4) $< >$@
 
 clean-generic:
 	rm -f *.rc	
+
+clean-local:
+	rm -f *.wasm
+	rm -f *$(JS_MODEXT)
+	rm -f *.js
+	rm -f *.json
+
+all-local: package.json
 
 .rc.o:
 	$(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --tag=RC --mode=compile \

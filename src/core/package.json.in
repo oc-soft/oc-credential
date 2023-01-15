@@ -1,0 +1,6 @@
+{
+  "name": "occredcore",
+  "version": "!VERSION!",
+  "description": "credential basic module for oc soft.",
+  "main": "!MODULE!"
+}
