@@ -5,7 +5,7 @@ import { contextBridge, ipcRenderer } from 'electron'
  */
 function bind() {
   contextBridge.exposeInMainWorld('ocApi', {
-    saveOauthToken: async (token)=> {
+    saveOauthToken: async (token: string)=> {
       return await ipcRenderer.invoke('save-oauth-token', token)
     }
   })

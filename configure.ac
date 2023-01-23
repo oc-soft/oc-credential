@@ -12,6 +12,7 @@ AC_CHECK_PROG([GPERF], [gperf --version], [gperf])
 AC_CHECK_PROG([HEXDUMP], [hexdump --version], [hexdump])
 AC_CHECK_PROG([SQLITE3], [sqlite3 --version], [sqlite])
 AC_CHECK_PROG([NODE], [node --version], [node])
+AC_CHECK_PROG([NPM], [npm --version], [npm])
 
 AC_CHECK_LIB([json-c], [json_object_new_object])
 AC_CHECK_LIB([curl], [curl_url])
@@ -29,6 +30,7 @@ LT_PROG_RC
 fi
 
 OC_CHECK_TARGET_WASM
+
 
 if test "x$oc_run_win" = xyes; then
     oc_data_dir_name='oc-credential'
@@ -67,7 +69,7 @@ AC_DEFINE_UNQUOTED([COMPANY_NAME_W], [L"$oc_company_name"], [Wide char company n
 AC_DEFINE_UNQUOTED([VERSION_W], [L"$VERSION"], [wide char package version])
 AC_DEFINE_UNQUOTED([GETTEXT_DOMAIN], ["$PACKAGE_NAME"], [gettext domain name])
 
-if [[ $host_os = "cygwin" ]]; then
+if test $host_os = "cygwin" ; then
     case $build_cpu in
         x86_64*)
             oc_dll_root=/usr/x86_64-w64-mingw32/sys-root/mingw/bin
@@ -89,6 +91,22 @@ case $host_os in
 esac
 AM_CONDITIONAL(RUN_LINUX, test "x$oc_run_linux" = xyes)
 
+
+if test "x$oc_target_wasm" = xno ; then
+    if test "x$WASM_BUILD_ROOT" == "x" ; then
+        WASM_BUILD_ROOT='$(abs_top_srcdir)/build-wasm'
+    fi
+
+else
+    WASM_BUILD_ROOT='$(abs_top_builddir)'
+fi
+
+if test "x$CORE_MODULE_DIR" == "x" ; then
+    CORE_MODULE_DIR="$WASM_BUILD_ROOT/src/core"
+fi
+
+AC_SUBST([CORE_MODULE_DIR])
+
 AM_EXTRA_RECURSIVE_TARGETS([pkg-install pkg-uninstall])
 
 
@@ -102,6 +120,7 @@ AC_CONFIG_FILES([Makefile
     src/core/Makefile
     src/core/user_resource_const.h
     src/lmdcli/Makefile
+    ui/Makefile
     pkg/Makefile
     pkg/win/Makefile
     pkg/win/ja/Makefile

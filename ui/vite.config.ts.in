@@ -10,7 +10,7 @@ export default defineConfig(({command, mode, ssrBuild})=> {
         'oc-soft': resolve(__dirname, 'client/src')
       }
     },
-    plugins: [vue() ]
+    plugins: [vue()]
   }
   
   config.root = './client'

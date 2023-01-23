@@ -31,7 +31,9 @@ occredcore_DEPENDENCIES = liboccredcore.la
 deploy_dir = @DEPLOY_DIR@
 pkg_bindir = @pkg_bindir@
 deploy_dir_def = $(abs_top_builddir)/pkg-img
+JS_OC_CREDCORE_MOD_NAME = createCredCore
 JS_MODEXT=.mjs
+
 if RUN_WIN
 liboccredcore_la_SOURCES += user_resource_win.c
 endif
@@ -56,7 +58,7 @@ liboccredcore_la_LDFLAGS= -g \
 if TARGET_WASM
 occredcore_LDADD = liboccredcore.la
 occredcore_LDFLAGS = -sMODULARIZE=1 \
-	-sEXPORT_NAME=createCredCore \
+	-sEXPORT_NAME=$(JS_OC_CREDCORE_MOD_NAME) \
 	--js-library=$(srcdir)/library_core.js \
 	--js-library=$(top_builddir)/em-setting/library_type_size.js \
 	-sEXPORTED_FUNCTIONS=@$(srcdir)/exported-functions.utf-8 \
@@ -65,6 +67,7 @@ occredcore_LDFLAGS = -sMODULARIZE=1 \
 occredcore_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(occredcore_LDFLAGS) $(LDFLAGS) -o occredcore$(JS_MODEXT)
+
 
 endif
 
@@ -147,8 +150,20 @@ clean-local:
 	rm -f *$(JS_MODEXT)
 	rm -f *.js
 	rm -f *.json
+	rm -f *.ts
 
-all-local: package.json
+occredcore.d.ts: decl.d.ts.in
+	$(AWK) \
+		-v create_mod=$(JS_OC_CREDCORE_MOD_NAME) \
+		-v mod_name=occredcore \
+		-e ' { \
+			gsub(/!MODULE_NAME!/, mod_name); \
+			gsub(/!CREATE_MODULE!/, create_mod); \
+			print $$0; \
+		} \
+		' $< >$@
+
+all-local: package.json occredcore.d.ts
 
 .rc.o:
 	$(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --tag=RC --mode=compile \
