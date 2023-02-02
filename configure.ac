@@ -13,6 +13,8 @@ AC_CHECK_PROG([HEXDUMP], [hexdump --version], [hexdump])
 AC_CHECK_PROG([SQLITE3], [sqlite3 --version], [sqlite])
 AC_CHECK_PROG([NODE], [node --version], [node])
 AC_CHECK_PROG([NPM], [npm --version], [npm])
+AC_CHECK_PROG([CURL], [curl --version], [curl])
+AC_CHECK_PROG([UNZIP], [unzip --version], [unzip])
 
 AC_CHECK_LIB([json-c], [json_object_new_object])
 AC_CHECK_LIB([curl], [curl_url])
@@ -24,13 +26,16 @@ AC_CHECK_HEADER([curl/curl.h])
 AC_CHECK_HEADERS([mcheck.h
     emscripten.h])
 
+AC_CANONICAL_TARGET
+
 OC_CHECK_RUN_ON_WIN
 if test "x$oc_run_win" = xyes; then
 LT_PROG_RC
 fi
 
 OC_CHECK_TARGET_WASM
-
+OC_CHECK_ELECTRON_TARGET
+OC_CHECK_MAC_TARGET
 
 if test "x$oc_run_win" = xyes; then
     oc_data_dir_name='oc-credential'
@@ -68,6 +73,7 @@ AC_DEFINE_UNQUOTED([COMPANY_NAME], ["$oc_company_name"], [Company name])
 AC_DEFINE_UNQUOTED([COMPANY_NAME_W], [L"$oc_company_name"], [Wide char company name])
 AC_DEFINE_UNQUOTED([VERSION_W], [L"$VERSION"], [wide char package version])
 AC_DEFINE_UNQUOTED([GETTEXT_DOMAIN], ["$PACKAGE_NAME"], [gettext domain name])
+
 
 if test $host_os = "cygwin" ; then
     case $build_cpu in
@@ -119,8 +125,8 @@ AC_CONFIG_FILES([Makefile
     src/scripts/Makefile
     src/core/Makefile
     src/core/user_resource_const.h
-    src/lmdcli/Makefile
-    ui/Makefile
+    src/credential-helper/Makefile
+    src/ui/Makefile
     pkg/Makefile
     pkg/win/Makefile
     pkg/win/ja/Makefile

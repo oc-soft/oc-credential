@@ -93,5 +93,34 @@ AC_COMPILE_IFELSE(
 AM_CONDITIONAL(TARGET_WASM, [test "x$oc_target_wasm" == xyes])
 ])
 
+AC_DEFUN([OC_CHECK_ELECTRON_TARGET],[
+AC_REQUIRE([AC_CANONICAL_TARGET])
+electron_target_cpu=
+	case $target_cpu in 
+	x86_64) electron_target_cpu=x64;;
+	esac
+electron_target_os=
+	case $target_os in
+	*linux*) electron_target_os=linux;;
+	*darwin*) 
+		electron_target_os=darwin
+		;;
+	esac
+
+AC_SUBST([ELECTRON_TARGET_CPU], [$electron_target_cpu])
+AC_SUBST([ELECTRON_TARGET_OS], [$electron_target_os])
+])
+
+AC_DEFUN([OC_CHECK_MAC_TARGET],[
+AC_REQUIRE([AC_CANONICAL_TARGET])
+	case $target_os in
+	*darwin*) 
+		oc_target_os=darwin
+		;;
+	esac
+
+AM_CONDITIONAL([TARGET_MACOS], [test x$oc_target_os = xdarwin])
+])
+
 
 # vi: se ts=4 sw=4:

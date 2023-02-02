@@ -2,13 +2,20 @@ import { app } from 'electron'
 import { Credential } from './credential'
 import { Option } from './option'
 
+
 (async ()=> {
+
   await app.whenReady()
-  const cred = new Credential()
+
   const opt = new Option()
+  const cred = new Credential()
+
+  const argv = process.argv.slice(1)
+  console.log(argv)
   
-  console.log("parse start")
-  opt.parse(process.argv.slice(1))
+  opt.parse(argv)
+  
+   
   process.exitCode = await opt.run(cred)
   
 })() 

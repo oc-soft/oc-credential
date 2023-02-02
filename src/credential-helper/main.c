@@ -7,9 +7,9 @@
 #include <stdlib.h>
 
 #include "app_config.h"
-#include "lmd_parser.h"
-#include "lmd.h"
-#include "lmd_credential_op.h"
+#include "cred_helper_parser.h"
+#include "cred_helper.h"
+#include "cred_helper_op.h"
 #include "credential_storage.h"
 #include "l10n.h"
 #include "mem_dbg.h"
@@ -29,9 +29,9 @@ main(
     char** argv)
 {
     int result;
-    lmd* limited_acc;
+    cred_helper* cred_helper;
 
-    limited_acc = NULL;
+    cred_helper = NULL;
     mem_dbg_start_trace();
     setlocale(LC_ALL, "");
     result = setup_l10n();    
@@ -43,14 +43,14 @@ main(
         result = credential_storage_start();
     }
     if (result == 0) {
-        limited_acc = lmd_parser_parse_from_commands(argc, argv);
-        result = limited_acc ? 0 : -1;
+        cred_helper = cred_helper_parser_parse_from_commands(argc, argv);
+        result = cred_helper ? 0 : -1;
     }
     if (result == 0) {
-        result = lmd_credential_op_run(limited_acc);
+        result = cred_helper_op_run(cred_helper);
     }
-    if (limited_acc) {
-        lmd_release(limited_acc);
+    if (cred_helper) {
+        cred_helper_release(cred_helper);
     }
     credential_storage_stop();
     app_config_stop();

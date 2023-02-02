@@ -1,7 +1,12 @@
 
-bin_PROGRAMS = lmdcli
+bin_PROGRAMS = credhelper
 
-noinst_HEADERS= client_id.h \
+noinst_HEADERS= cred_helper_types.h \
+	cred_helper.h \
+	cred_helper_i.h \
+	cred_helper_op.h \
+	cred_helper_parser.h \
+	client_id.h \
 	client_secret.h \
 	credential_op.h \
 	credential_storage_key_id_table.h \
@@ -9,7 +14,7 @@ noinst_HEADERS= client_id.h \
 	http.h \
 	l10n.h \
 	lmd_connections.h \
-	lmd_credential_op.h \
+	lmd_op.h \
 	lmd.h \
 	lmd_i.h \
 	lmd_parser.h \
@@ -19,21 +24,25 @@ noinst_HEADERS= client_id.h \
 	option.h \
 	url.h
 
-lmdcli_src = main.c \
+credhelper_src = main.c \
+	cred_helper.c \
+	cred_helper_i.c \
+	cred_helper_op.c \
+	cred_helper_parser.c \
 	lmd.c \
 	lmd_parser.c \
 	client_secret.c \
 	client_id.c \
 	lmd_connections.c \
 	lmd_requests.c \
-	lmd_credential_op.c \
+	lmd_op.c \
 	lmd_i.c \
 	mem_dbg.c
 
 if !TARGET_WASM
-lmdcli_SOURCES = $(lmdcli_src)
+credhelper_SOURCES = $(credhelper_src)
 else
-lmdcli_SOURCES = main_wasm.c
+credhelper_SOURCES = main_wasm.c
 endif
 
 deploy_dir = @DEPLOY_DIR@
@@ -41,34 +50,36 @@ pkg_bindir = @pkg_bindir@
 deploy_dir_def = $(abs_top_builddir)/pkg-img
 
 if RUN_WIN
-lmdcli_SOURCES += exe_info_win.c
-lmdcli_SOURCES += l10n_user_win.c
+credhelper_SOURCES += exe_info_win.c
+credhelper_SOURCES += l10n_user_win.c
 endif
 if RUN_LINUX
-lmdcli_SOURCES += exe_info_linux.c
-lmdcli_SOURCES += l10n_user_linux.c
+credhelper_SOURCES += exe_info_linux.c
+credhelper_SOURCES += l10n_user_linux.c
 endif
 
 if RUN_WIN
-lmdcli_SOURCES += lmd_res.rc
+credhelper_SOURCES += credhelper_res.rc
 endif
 
-lmdcli_CFLAGS= -g -O0
-lmdcli_LDFLAGS= -g -static
+credhelper_CFLAGS= -g -O0
+credhelper_LDFLAGS= -g -static
 
 if !TARGET_WASM
-limdcli_lib_flags=$(LTLIBINTL) -ljson-c -lcurl -lsqlite3 -lm
+credhelper_lib_flags=$(LTLIBINTL) -ljson-c -lcurl -lsqlite3 -lm
 else
-limdcli_lib_flags=$(LTLIBINTL) -ljson-c -lsqlite3 -lm
+credhelper_lib_flags=$(LTLIBINTL) -ljson-c -lsqlite3 -lm
 endif
 
-lmdcli_LDADD=$(top_builddir)/oclib/buffer/src/libocbuffer.la \
+
+
+credhelper_LDADD=$(top_builddir)/oclib/buffer/src/libocbuffer.la \
 	$(top_builddir)/oclib/cstr/src/liboccstr.la \
 	$(top_builddir)/src/core/liboccredcore.la \
-	$(limdcli_lib_flags)
+	$(credhelper_lib_flags)
 
 if TARGET_WASM
-lmdcli_LDFLAGS += -static
+credhelper_LDFLAGS += -static
 endif
 
 SH_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/tap-driver.sh
@@ -78,11 +89,18 @@ TESTS = t_store_01.sh t_site_01.sh t_erase_01.sh t_erase_02.sh
 AM_TESTS_ENVIRONMENT = HOME=$(builddir);
 CLIENT_ID_TXT=$(top_srcdir)/src/config/client-id.txt
 CLIENT_SECRET_TXT=$(top_srcdir)/src/config/client-secret.txt
+UI_TOKEN_EXEC = electron
 
 pkgdatadir=$(datadir)/$(PACKAGE_NAME)
 
 textdomain_dir=$(pkgdatadir)/locale
 
+ui_exe_name=electron$(EXEEXT)
+
+ui_builddir=$(builddir)/../ui
+ui_exe_dir=$(ui_builddir)/pkg
+ui_exe_subdir=ui
+ui_exe_relative_path=$(ui_exe_subdir)/$(ui_exe_name)
 
 awk_cmd_0='BEGIN { \
 		FS=","; \
@@ -119,7 +137,7 @@ awk_cmd_0='BEGIN { \
 
 awk_cmd_1 = '{ \
 			gsub(/@LMTD_APP_FILE_NAME@/, \
-				"\"lmdcli\""); \
+				"\"credhelper\""); \
 			gsub(/@LMTD_APP_PRODUCT_NAME@/, \
 				"\"CLI for limited device access\""); \
 			print \
@@ -184,7 +202,7 @@ awk_cmd_3 = 'BEGIN { \
 		} \
 	}'
 
-lmdcli_CPPFLAGS=-I$(top_srcdir)/oclib/buffer/include \
+credhelper_CPPFLAGS=-I$(top_srcdir)/oclib/buffer/include \
 	-I$(top_srcdir)/oclib/cstr/include \
 	-I$(top_srcdir)/src/core
 
@@ -215,6 +233,7 @@ clean-client-dbg:
 
 .PHONY: client-dbg clean-client-dbg
 
+all-local: rt_get_01.sh rt_ui_01.sh
 
 t_site_01.sh : t_site_01.sh.in
 	sed -e 's!%CLIENT_ID_PATH%!$(top_srcdir)/src/config/client-id.txt!' $< | \
@@ -226,8 +245,12 @@ t_site_01.sh : t_site_01.sh.in
 rt_get_01.sh : rt_get_01.sh.in
 	sed -e 's!%CLIENT_ID_PATH%!$(abs_top_srcdir)/src/config/client-id.txt!' \
 		$< | \
-	sed -e 's!%LMDCLI%!$(abs_builddir)/lmdcli$(EXEEXT)!' | \
+	sed -e 's!%CLI%!$(abs_builddir)/credhelper$(EXEEXT)!' | \
 	sed -e 's!%AWK%!$(AWK)!' >$@
+	chmod u+x $@
+
+rt_ui_01.sh : rt_ui_01.sh.in | link-ui
+	sed -e 's!%UI_EXE_RELPATH%!$(ui_exe_relative_path)!' $< >$@
 	chmod u+x $@
 
 client_secret.gpf : client_secret.gpf.in $(srcdir)/../config/client-secret.txt $(builddir)/client-secret-dbg.txt 
@@ -240,6 +263,14 @@ client_id.gpf : client_id.gpf.in $(srcdir)/../config/client-id.txt $(builddir)/c
 		$(srcdir)/../config/client-id.txt \
 		$(builddir)/client-id-dbg.txt >$@
 
+exec_names.c: exec_names.c.in
+	$(AWK) -v token_exec=$(UI_TOKEN_EXEC) -e ' \
+		{ \
+			gsub(/!UI_TOKEN_GEN_EXEC!/, token_exec); \
+		} \
+	'
+
+
 lmd_const.h : lmd_const.h.in $(srcdir)/Makefile.am
 	awk $(awk_cmd_1) $< >$@
 
@@ -251,7 +282,8 @@ pkg-install-local:
 	if test -z $$depdir ;  then \
 		depdir=$(deploy_dir_def); \
 	fi; \
-	$(MAKE) $(AM_MAKEFLAGS) DESTDIR=$$depdir bindir=$(pkg_bindir) install-exec-am install-data-am
+	$(MAKE) $(AM_MAKEFLAGS) DESTDIR=$$depdir \
+		bindir=$(pkg_bindir) install-exec-am install-data-am
 
 pkg-uninstall-local:
 	depdir=$(deploy_dir); \
@@ -260,6 +292,10 @@ pkg-uninstall-local:
 	fi; \
 	$(MAKE) $(AM_MAKEFLAGS) DESTDIR=$$depdir bindir=$(pkg_bindir) uninstall-am
 
+link-ui:
+	if  [ ! -h $(ui_exe_subdir) ]; then \
+		$(LN_S) $(ui_exe_dir) $(ui_exe_subdir) ; \
+	fi
 
 clean-generic:
 	rm -f *.rc	

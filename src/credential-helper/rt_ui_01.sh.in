@@ -1,0 +1,8 @@
+#! /usr/bin/env sh
+
+ui_exe_relpath=%UI_EXE_RELPATH%
+
+exe_path=`dirname $0`/$ui_exe_relpath
+$exe_path
+
+# vi: se ts=2 sw=2 et:

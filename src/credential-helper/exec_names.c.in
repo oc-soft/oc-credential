@@ -1,0 +1,13 @@
+#include "exec_names.h"
+
+
+/**
+ * create token generator user interface
+ */
+const char*
+exec_names_get_ui_token_gen()
+{
+    
+    return "!UI_TOKEN_GEN_EXEC!"
+}
+/* vi: se ts=4 sw=4 et: */

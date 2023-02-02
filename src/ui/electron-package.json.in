@@ -1,0 +1,5 @@
+{
+  "name": "!PACKAGE_NAME!",
+  "version": "!PACKAGE_VERSION!",
+  "main": "dist/main.js"
+}

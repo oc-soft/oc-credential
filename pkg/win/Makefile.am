@@ -4,8 +4,8 @@ SUBDIRS = ja
 MSIDB = msidb.exe
 MSIINFO = msiinfo.exe
 
-lmdprog_exe = lmdcli.exe
-lmdprog = $(top_builddir)/src/lmdcli/.libs/lmdcli.exe
+credhelper_prog_exe = credhelper.exe
+credhelper_prog = $(top_builddir)/src/credential-helper/.libs/credhelper.exe
 lang_map = $(top_srcdir)/win/lang_map.txt
 upgrade_code_txt = $(top_srcdir)/win/upgrade-code.txt
 link_csv = $(top_srcdir)/url/url.csv
@@ -27,7 +27,7 @@ pkg_src= \
 	$(src_app_dir)/$(libcurl_dll) \
 	$(src_app_dir)/$(libintl_dll) \
 	$(src_app_dir)/$(libjson_c_dll) \
-	$(src_app_dir)/$(lmdprog_exe)
+	$(src_app_dir)/$(credhelper_prog_exe)
 
 MSI_TABLES_0 = \
 	ActionText.idt \
@@ -201,7 +201,7 @@ clean-generic:
 
 Component.idt : Component.idt.in
 	sed -e " \
-		s/%LMDCLI_EXE%/$(notdir $(lmdprog))/; \
+		s/%LMDCLI_EXE%/$(notdir $(credhelper_prog))/; \
 		s/%LIBCURL_DLL%/$(libcurl_dll)/; \
 		s/%LIBINTL_DLL%/$(libintl_dll)/; \
 		s/%LIBJSON_C_DLL%/$(libjson_c_dll)/" $< > $@ 
@@ -218,7 +218,7 @@ Property.idt : Property.idt.in $(upgrade_code_txt) $(link_csv)
 
 
 File.idt : File.idt.in $(lang_map)
-	lmd_size=`du -b $(lmdprog) | awk -e '{ print $$1 }'` ; \
+	lmd_size=`du -b $(credhelper_prog) | awk -e '{ print $$1 }'` ; \
 	libcurl_dll_size=`du -b $(src_libcurl_dll) | awk -e '{print $$1 }'`; \
 	libintl_dll_size=`du -b $(src_libintl_dll) | awk -e '{print $$1 }'`; \
  	libjson_c_dll_size=`du -b $(src_libjson_c_dll) | awk -e '{print $$1 }'`; \
@@ -227,7 +227,7 @@ File.idt : File.idt.in $(lang_map)
 		s/%LMDCLI_SIZE%/$$lmd_size/; \
 	   	s/%LMDCLI_VERSION%/$(PACKAGE_VERSION)/; \
 		s/%LMDCLI_LANGS%/$$langs/; \
-		s/%LMDCLI_EXE%/$(notdir $(lmdprog))/; \
+		s/%LMDCLI_EXE%/$(notdir $(credhelper_prog))/; \
 		s/%LIBCURL_DLL%/$(libcurl_dll)/; \
 		s/%LIBINTL_DLL%/$(libintl_dll)/; \
 		s/%LIBJSON_C_DLL%/$(libjson_c_dll)/; \
@@ -287,7 +287,7 @@ $(src_app_dir)/$(libjson_c_dll) : $(src_libjson_c_dll)
 	$(MKDIR_P) $(src_app_dir)
 	cp $< $@
 
-$(src_app_dir)/$(lmdprog_exe) : $(lmdprog)
+$(src_app_dir)/$(credhelper_prog_exe) : $(credhelper_prog)
 	$(MKDIR_P) $(src_app_dir)
 	cp $< $@
 

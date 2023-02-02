@@ -1,6 +1,6 @@
 import { BrowserWindow } from 'electron'
 import { bind as bindIpc } from './ipc'
-import path from 'path'
+import * as path from 'path'
 
 export function createWindow(
   tokenHdlr: (token: string)=>void): BrowserWindow {

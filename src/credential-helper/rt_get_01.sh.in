@@ -1,6 +1,6 @@
 #! /usr/bin/env sh
 client_id_path=%CLIENT_ID_PATH%
-lmdcli_cmd=%LMDCLI%
+credhelper_cmd=%CLI%
 awk_cmd=%AWK%
 
 function client_line_to_desc()
@@ -34,7 +34,7 @@ function run_test()
   while read -r line;
   do
     if (( idx == $2 )); then
-      client_line_to_desc $line | $lmdcli_cmd get 
+      client_line_to_desc $line | $credhelper_cmd get 
       res=$?
       break;
     fi

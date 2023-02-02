@@ -23,12 +23,12 @@ echo ""
 
 function store_data()
 {
-  print_desc $1 $2 $3 $4 $5 | ./lmdcli store
+  print_desc $1 $2 $3 $4 $5 | ./credhelper store
 }
 
 function erase_data()
 {
-  print_desc $1 $2 $3 $4 $5 | ./lmdcli erase
+  print_desc $1 $2 $3 $4 $5 | ./credhelper erase
 }
 
 
@@ -108,7 +108,7 @@ echo $test_data | erase_test_data 1
 unset IFS
 
 
-mtrace ./lmdcli $mem_t_w_path | print_result 1
-mtrace ./lmdcli $mem_t_e_path | print_result 2
+mtrace ./credhelper $mem_t_w_path | print_result 1
+mtrace ./credhelper $mem_t_e_path | print_result 2
 
 #! vi: se ts=2 sw=2 et:

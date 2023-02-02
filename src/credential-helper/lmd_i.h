@@ -5,14 +5,14 @@
 #include "lmd.h"
 
 #ifdef __cplusplus
-#define _LDM_I_ITFC_BEGIN extern "C" {
+#define _LMD_I_ITFC_BEGIN extern "C" {
 #define _LMD_I_ITFC_END }
 #else
-#define _LDM_I_ITFC_BEGIN 
+#define _LMD_I_ITFC_BEGIN 
 #define _LMD_I_ITFC_END 
 #endif
 
-_LDM_I_ITFC_BEGIN 
+_LMD_I_ITFC_BEGIN 
 
 /**
  * allocate heap object
