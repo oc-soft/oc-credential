@@ -13,10 +13,16 @@
 _EXEC_NAMES_ITFC_BEGIN 
 
 /**
- * create token generator user interface
+ * ui token generator executable name
  */
 const char*
 exec_names_get_ui_token_gen();
+
+/**
+ * ui token generator executable relative from app directory
+ */
+const char*
+exec_names_get_ui_token_gen_relpath();
 
 _EXEC_NAMES_ITFC_END
 /* vi: se ts=4 sw=4 et: */

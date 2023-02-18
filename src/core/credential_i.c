@@ -44,7 +44,7 @@ credential_i_alloc_1(
  * realocate heap object
  */
 void*
-crendential_i_realloc(
+credential_i_realloc(
     void* obj,
     size_t size)
 {

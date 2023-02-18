@@ -5,6 +5,7 @@
 #include <string.h>
 #include "cred_helper.h"
 #include "cred_helper_i.h"
+#include "ui_token_gen.h"
 #include "lmd.h"
 #include "lmd_op.h"
 #include "client_secret.h"
@@ -30,10 +31,26 @@ find_client_id_secret(
  */
 static int
 get_oauth_token(
-    cred_helper* limited_acc,
-    const char* protocol,
-    const char* host,
-    const char* path);
+    cred_helper* obj,
+    credential_desc* desc);
+
+/**
+ * get oauth token with user interface
+ */
+static int
+get_oauth_token_with_ui(
+    cred_helper* obj,
+    credential_desc* desc);
+
+
+/**
+ * get oauth token with limited device
+ */
+static int
+get_oauth_token_with_lmd(
+    cred_helper* obj,
+    credential_desc* desc);
+
 /**
  * get oauth token
  */
@@ -230,18 +247,96 @@ find_client_id_secret(
 static int
 get_oauth_token(
     cred_helper* obj,
-    const char* protocol,
-    const char* host,
-    const char* path)
+    credential_desc* desc)
+{
+    int result;
+    int state;
+    state = 0;
+    result = 0;
+    state = get_oauth_token_with_ui(
+        obj, desc);
+    if (state) {
+        state = get_oauth_token_with_lmd(
+            obj, desc);
+    }
+    result = state;
+    return result;
+}
+
+/**
+ * get oauth token with user interface
+ */
+static int
+get_oauth_token_with_ui(
+    cred_helper* obj,
+    credential_desc* desc)
+{
+    int result;
+    ui_token_gen* token_gen;
+    char* descriptor;
+    size_t descriptor_length;
+    token_gen = NULL;
+    descriptor = NULL;
+    descriptor_length = 0;
+    result = 0;
+
+    token_gen = cred_helper_get_ui_token_gen(obj);
+    result = token_gen ? 0 : -1;
+
+    if (result == 0) {
+        result = credential_desc_encode(desc, &descriptor, &descriptor_length);
+    }
+    if (result == 0) {
+        char* desc_encoded_res;
+        size_t desc_encoded_res_size;
+        desc_encoded_res = NULL;
+        desc_encoded_res_size = 0;
+        result = ui_token_gen_create_token(
+            token_gen, descriptor, descriptor_length,
+            &desc_encoded_res, &desc_encoded_res_size);
+        if (result == 0) {
+            credential_desc* desc_res;
+            desc_res = credential_desc_decode(
+                desc_encoded_res, desc_encoded_res_size); 
+            result = desc_res ? 0 : -1;
+            if (result == 0) {
+                result = cred_helper_set_access_token(obj, desc_res->password);
+            }
+            if (desc_res) {
+                credential_desc_free(desc_res);
+            } 
+        }
+        if (desc_encoded_res) {
+            ui_token_gen_free(desc_encoded_res);
+        }
+    }
+    if (descriptor) {
+        credential_desc_free_object(descriptor);
+    }
+
+    if (token_gen) {
+        ui_token_gen_release(token_gen);
+    }
+    result = 1;
+    return result;
+}
+
+
+/**
+ * get oauth token with limited device
+ */
+static int
+get_oauth_token_with_lmd(
+    cred_helper* obj,
+    credential_desc* desc)
 {
     const char* client_id;
     const char* client_secret;
     int result; 
     client_id = NULL;
     client_secret = NULL;
-
     result = find_client_id_secret(
-        protocol, host, path, &client_id, &client_secret);
+        desc->protocol, desc->host, desc->path, &client_id, &client_secret);
     if (result == 0) {
         lmd* limited_acc;
         limited_acc = cred_helper_get_lmd(obj);
@@ -431,7 +526,7 @@ cred_helper_op_get_0(
             desc->path, desc->username, &password);
     }
     if (!password) {
-        result = get_oauth_token(obj, desc->protocol, desc->host, desc->path);
+        result = get_oauth_token(obj, desc);
         if (result == 0) {
             const char* acc_token;
             acc_token = cred_helper_get_access_token_ref(obj);
@@ -443,7 +538,10 @@ cred_helper_op_get_0(
             }
         }
     } else {
-        result = credential_desc_set_password(desc, NULL);
+        result = credential_desc_set_password(desc, password);
+    }
+    if (password) {
+        credential_storage_free_object(password);
     }
     return result;
 }

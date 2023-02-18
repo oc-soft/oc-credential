@@ -107,6 +107,7 @@ export function encode(desc: Descriptor): string | undefined {
   })
   if (lines.length) {
     result = lines.join("\n")
+    result += "\n\n"
   }
   return result
 }

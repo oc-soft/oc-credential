@@ -1,0 +1,13 @@
+#! /usr/bin/env sh
+credhelper_cmd=%CLI%
+
+
+LD_PRELOAD=libc_malloc_debug.so MALLOC_TRACE=mem_trace_get_02 :; echo 'username=john
+protocol=https
+host=example.com
+
+' | $credhelper_cmd get
+
+mtrace $credhelper_cmd mem_trace_get_02
+
+# vi: se ts=2 sw=2 et:

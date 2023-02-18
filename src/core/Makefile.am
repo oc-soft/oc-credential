@@ -1,5 +1,7 @@
 lib_LTLIBRARIES = liboccredcore.la
 
+noinst_PROGRAMS = t0_credential_desc
+
 if TARGET_WASM
 bin_PROGRAMS = occredcore
 endif
@@ -27,12 +29,17 @@ liboccredcore_la_SOURCES = credential.c \
 
 occredcore_SOURCES = credcore_main_wasm.c
 
+t0_credential_desc_SOURCES = t0_credential_desc.c
+
 occredcore_DEPENDENCIES = liboccredcore.la
+t0_credential_desc_DEPENDENCIES = liboccredcore.la
+
 deploy_dir = @DEPLOY_DIR@
 pkg_bindir = @pkg_bindir@
 deploy_dir_def = $(abs_top_builddir)/pkg-img
 JS_OC_CREDCORE_MOD_NAME = createCredCore
 JS_MODEXT=.mjs
+TESTS=t0_credential_desc.sh
 
 if RUN_WIN
 liboccredcore_la_SOURCES += user_resource_win.c
@@ -48,12 +55,13 @@ liboccredcore_la_CFLAGS= -g -O0
 liboccredcore_lib_flags=$(LTLIBINTL) -ljson-c -lsqlite3 -lm
 
 liboccredcore_la_LIBADD= \
-	$(top_builddir)/oclib/cstr/src/liboccstr.la 
+	$(top_builddir)/oclib/cstr/src/liboccstr.la \
+	$(top_builddir)/oclib/buffer/src/libocbuffer.la
 
 liboccredcore_la_LDFLAGS= -g \
 	$(liboccredcore_lib_flags)
 
-
+t0_credential_desc_LDADD = liboccredcore.la 
 
 if TARGET_WASM
 occredcore_LDADD = liboccredcore.la
@@ -79,8 +87,8 @@ AM_TESTS_ENVIRONMENT = HOME=$(builddir);
 
 pkgdatadir=$(datadir)/$(PACKAGE_NAME)
 
-liboccredcore_la_CPPFLAGS= -I$(top_srcdir)/oclib/cstr/include
-
+liboccredcore_la_CPPFLAGS = -I$(top_srcdir)/oclib/cstr/include \
+	-I$(top_srcdir)/oclib/buffer/include
 
 awk_cmd_3 = 'BEGIN { \
 		line_num = 0; \
@@ -141,6 +149,16 @@ pkg-uninstall-local:
 
 package.json: package.json.in $(srcdir)/Makefile.am 
 	$(AWK) -v version=$(PACKAGE_VERSION) -v module=occredcore$(JS_MODEXT) -e $(awk_cmd_4) $< >$@
+
+
+t0_credential_desc.sh : t0_credential_desc.sh.in t0_credential_desc$(EXEEXT)
+	$(AWK) -v prog_name='$(builddir)/t0_credential_desc$(EXEEXT)' \
+		-e '{ \
+			gsub(/!TEST_PROG!/, prog_name); \
+			print $$0; \
+		}' $< >$@
+
+check-local: t0_credential_desc.sh 
 
 clean-generic:
 	rm -f *.rc	

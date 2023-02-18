@@ -34,6 +34,31 @@ void
 credential_i_free(
     void* obj);
 
+/**
+ * realocate heap object
+ */
+void*
+credential_i_realloc(
+    void* obj,
+    size_t size);
+
+/**
+ * memory copy
+ */
+void*
+credential_i_mem_copy(
+    void* dst,
+    const void* src,
+    size_t size);
+
+/**
+ * memory copy
+ */
+void*
+credential_i_mem_move(
+    void* dst,
+    const void* src,
+    size_t size);
 
 /**
  * duplicate string

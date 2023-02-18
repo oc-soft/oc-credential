@@ -107,19 +107,17 @@
       }
     },
     "get": {
-      "statements": [
-        [
-          "SELECT password ",
-          "FROM password as pw ",
-          " left join protocol as prt ON pw.protocol = prt.id ",
-          " left join host h ON pw.host = h.id ",
-          " left join path pt ON pw.path = pt.id ",
-          " left join user u ON pw.name = u.id ",
-          "WHERE prt.protocol=? ",
-          "AND h.host=? ",
-          "AND pt.path=? ",
-          "AND u.name=?"
-        ]
+      "statement": [
+        "SELECT password ",
+        "FROM password as pw ",
+        " left join protocol as prt ON pw.protocol = prt.id ",
+        " left join host h ON pw.host = h.id ",
+        " left join path pt ON pw.path = pt.id ",
+        " left join user u ON pw.name = u.id ",
+        "WHERE prt.protocol=? ",
+        "AND h.host=? ",
+        "AND pt.path=? ",
+        "AND u.name=?"
       ]
     },
     "store": {

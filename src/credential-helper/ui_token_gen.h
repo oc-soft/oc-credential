@@ -1,6 +1,7 @@
 #ifndef __UI_TOKEN_GEN_H__
 #define __UI_TOKEN_GEN_H__
 
+#include <stddef.h>
 #include "ui_token_gen_types.h"
 
 #ifdef __cplusplus

@@ -3,6 +3,7 @@
 
 #include "cred_helper_types.h"
 #include "lmd_types.h"
+#include "ui_token_gen_types.h"
 #include "credential_op.h"
 #ifdef __cplusplus
 #define _CRED_HELPER_ITFC_BEGIN extern "C" {
@@ -148,6 +149,13 @@ cred_helper_get_verbose_level(
  */
 lmd*
 cred_helper_get_lmd(
+    cred_helper* obj);
+
+/**
+ * get token generator user interface
+ */
+ui_token_gen*
+cred_helper_get_ui_token_gen(
     cred_helper* obj);
 
 /**

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include "cred_helper_i.h"
+#include "ui_token_gen.h"
 #include "lmd.h"
 
 /**
@@ -17,6 +18,11 @@ struct _cred_helper {
      * credential helper for limited device 
      */
     lmd* limited_device;
+
+    /**
+     * token generator user interface
+     */
+    ui_token_gen* ui_token_generator;
 
     /**
      * client id
@@ -67,12 +73,14 @@ cred_helper_create()
 {
     cred_helper* result;
     lmd* limited_device;
-
+    ui_token_gen* ui_token_generator;
     result = (cred_helper*)cred_helper_i_alloc(sizeof(cred_helper));
     limited_device = lmd_create();
-    if (result && limited_device) {
+    ui_token_generator = ui_token_gen_create();
+    if (result && limited_device && ui_token_generator) {
         result->ref_count = 1;
         result->limited_device = limited_device;
+        result->ui_token_generator = ui_token_generator;
         result->client_id = NULL;
         result->access_token = NULL;
         result->credential_operation = CDT_OP_UNKNOWN;
@@ -80,6 +88,9 @@ cred_helper_create()
         result->generator_mode = 0;
         result->test_mode_get = 0;
     } else {
+        if (ui_token_generator) {
+            ui_token_gen_release(ui_token_generator);
+        }
         if (limited_device) {
             lmd_release(limited_device);
         }
@@ -123,6 +134,7 @@ cred_helper_release(
         if (result == 0) {
             cred_helper_set_client_id(obj, NULL);
             cred_helper_set_client_secret(obj, NULL);
+            ui_token_gen_release(obj->ui_token_generator);
             lmd_release(obj->limited_device);
             cred_helper_i_free(obj);
         }
@@ -414,6 +426,24 @@ cred_helper_get_lmd(
     if (obj) {
         lmd_retain(obj->limited_device);
         result = obj->limited_device;
+    } else {
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * get token generator user interface
+ */
+ui_token_gen*
+cred_helper_get_ui_token_gen(
+    cred_helper* obj)
+{
+    ui_token_gen* result;
+    result = NULL;
+    if (obj) {
+        ui_token_gen_retain(obj->ui_token_generator); 
+        result = obj->ui_token_generator;
     } else {
         errno = EINVAL;
     }

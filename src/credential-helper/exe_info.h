@@ -2,7 +2,7 @@
 #define __EXE_INFO_H__
 
 #ifdef __cplusplus
-#define _EXE_INFO_BEGIN extern "C" {
+#define _EXE_INFO_BEGIN extern "c" {
 #define _EXE_INFO_END }
 #else
 #define _EXE_INFO_BEGIN 
@@ -10,6 +10,12 @@
 #endif
 
 _EXE_INFO_BEGIN 
+
+/**
+ * get executable name
+ */
+char*
+exe_info_get_exe_name();
 
 /**
  * get executable directory

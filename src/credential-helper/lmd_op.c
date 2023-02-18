@@ -54,14 +54,12 @@ lmd_get_oauth_token_with_client(
     if (result == 0 && !lmd_get_client_id_ref(limited_acc)) {
         result = lmd_set_client_id(limited_acc, client_id);
     }
-
     if (result == 0) {
         result = lmd_connections_load_discovery_document(limited_acc);
     }
     if (result == 0) {
         result = lmd_requests_load_device_and_user_code(limited_acc);
     }
-
     if (result == 0) {
         result = lmd_requests_poll_oauth_token(limited_acc,
             (int (*)(void*, int, lmd*))print_progress_for_oauth_token,
@@ -125,5 +123,4 @@ print_progress_for_oauth_token(
     }
     return result;
 }
-
-
+/* vi: se ts=4 sw=4 et: */

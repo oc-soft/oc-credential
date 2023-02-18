@@ -2,6 +2,7 @@
 #define __CREDENTIAL_DESC_H__
 
 #include <stddef.h>
+#include <stdio.h>
 
 #ifdef __cplusplus
 #define _CREDENTIAL_DESC_ITFC_BEGIN extern "C" {
@@ -68,6 +69,23 @@ credential_desc_encode(
     char** descriptor,
     size_t* descriptor_length);
 
+
+/**
+ * decode from file stream
+ */
+credential_desc*
+credential_desc_decode_from_file(
+    FILE* file_stream);
+
+/**
+ * encode into file stream
+ */
+int
+credential_desc_encode_into_file(
+    credential_desc* obj,
+    FILE* file_stream);
+
+
 /**
  * set username
  */
@@ -105,6 +123,7 @@ credential_desc_free(
 void
 credential_desc_free_object(
     void* obj);
+
 
 _CREDENTIAL_DESC_ITFC_END
 /* vi: se ts=4 sw=4 et: */

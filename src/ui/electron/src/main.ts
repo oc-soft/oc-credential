@@ -11,11 +11,7 @@ import { Option } from './option'
   const cred = new Credential()
 
   const argv = process.argv.slice(1)
-  console.log(argv)
-  
   opt.parse(argv)
-  
-   
   process.exitCode = await opt.run(cred)
   
 })() 

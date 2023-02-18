@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <sqlite3.h>
 #include <json-c/json_object.h>
 #include <json-c/json_object_iterator.h>
@@ -169,7 +170,6 @@ credential_get_connection();
 static cstr*
 credential_storage_create_cstr();
 
-
 /**
  * find password 
  */
@@ -198,14 +198,13 @@ credential_storage_find_password(
     result = app_config ? 0 : -1;
     if (result == 0) {
         statement_arry_jobj = credential_storage_get_json(app_config,
-            "db", "get", "statements", NULL);
+            "db", "get", "statement", NULL);
         result = statement_arry_jobj ? 0 : -1;
     } 
     if (result == 0) {
         result = credential_storage_get_statement_str_from_json(
             statement_arry_jobj, &prepared_str, &prepared_str_len);
     }
-    
     if (result == 0) {
         sql_state = sqlite3_prepare_v2(
             credential_get_connection(),

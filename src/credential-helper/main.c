@@ -13,6 +13,7 @@
 #include "credential_storage.h"
 #include "l10n.h"
 #include "mem_dbg.h"
+#include "logging.h"
 /**
  * initialize internationalization
  */
@@ -33,9 +34,10 @@ main(
 
     cred_helper = NULL;
     mem_dbg_start_trace();
+    logging_start();
     setlocale(LC_ALL, "");
     result = setup_l10n();    
-    curl_global_init(CURL_GLOBAL_WIN32);
+    curl_global_init(CURL_GLOBAL_ALL);
     if (result == 0) {
         result = app_config_start();
     }
@@ -55,6 +57,7 @@ main(
     credential_storage_stop();
     app_config_stop();
     curl_global_cleanup();
+    logging_stop();
     return result; 
 }
 

@@ -77,6 +77,7 @@ lmd_connections_load_discovery_document(
                     CURLOPT_WRITEDATA, buffer);
                 result = curl_res == CURLE_OK ? 0 : -1;
             }
+
             if (result == 0) {
                 curl_res = curl_easy_setopt(curl,
                     CURLOPT_SSL_OPTIONS,

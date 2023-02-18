@@ -41,7 +41,6 @@ export class Credential {
           resolve(undefined)
         }
         const win = createWindow(tokenHdlr) 
-        console.log('created window')  
         win.on('close', closeHdlr)
     })
   }
