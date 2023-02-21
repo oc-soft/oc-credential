@@ -122,7 +122,6 @@ AC_CONFIG_HEADERS([
 AC_CONFIG_FILES([Makefile
     em-setting/Makefile
     src/Makefile
-    src/scripts/Makefile
     src/core/Makefile
     src/core/user_resource_const.h
     src/credential-helper/Makefile

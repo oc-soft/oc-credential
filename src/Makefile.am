@@ -1,3 +1,3 @@
-SUBDIRS = scripts core ui credential-helper
+SUBDIRS = core ui credential-helper
 
 # vi: se ts=4 sw=4 noet:
