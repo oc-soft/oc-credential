@@ -12,6 +12,14 @@ void
 cred_helper_parser_display_usage();
 
 /**
+ * parse on or off str
+ */
+int
+cred_helper_parser_parse_on_off(
+    const char* on_off,
+    int default_on_off);
+
+/**
  * parse option string and load cred_helper
  */
 cred_helper*
@@ -51,6 +59,18 @@ cred_helper_parser_parse_from_commands(
                     .val = 'g'
                 },
                 {
+                    .name = "gui",
+                    .has_arg = required_argument,
+                    .flag = NULL,
+                    .val = 'j',
+                },
+                {
+                    .name = "limited",
+                    .has_arg = required_argument,
+                    .flag = NULL,
+                    .val = 'l',
+                },
+                {
                     .name = "help",
                     .has_arg = no_argument,
                     .flag = NULL,
@@ -65,7 +85,7 @@ cred_helper_parser_parse_from_commands(
             };
             int do_parse;
             do_parse = 1;
-            switch (getopt_long(argc, argv, "hugi:v::", long_opts, NULL)) {
+            switch (getopt_long(argc, argv, "hugi:j:l:v::", long_opts, NULL)) {
             case 'i':
                 cred_helper_set_client_id(result, optarg); 
                 break;
@@ -74,6 +94,14 @@ cred_helper_parser_parse_from_commands(
                 break;
             case 'g':
                 cred_helper_set_generator_mode(result, 1);
+                break;
+            case 'j':
+                cred_helper_run_gui_generator(result,
+                    cred_helper_parser_parse_on_off(optarg, 1));
+                break;
+            case 'l':
+                cred_helper_run_limited_device(result, 
+                    cred_helper_parser_parse_on_off(optarg, 1));
                 break;
             case 'v':
                 if (optarg) {
@@ -111,10 +139,65 @@ cred_helper_parser_parse_from_commands(
             optind++;
         }
         if (print_help) {
+            cred_helper_set_requested_usage(result, 1);
             cred_helper_parser_display_usage();
         }
     }
     return result;
+}
+
+/**
+ * parse on or off str
+ */
+int
+cred_helper_parser_parse_on_off(
+    const char* on_off,
+    int default_on_off)
+{
+    char tmp_on_off[6];
+    size_t len;
+    size_t on_off_len; 
+    size_t idx;
+    int result;
+    const static char on_str[] = "on";
+    const static char yes_str[] = "yes";
+    const static char true_str[] = "true";
+    const static char off_str[] = "off";
+    const static char no_str[] = "no";
+    const static char false_str[] = "false";
+    const static struct {
+        const char* word;
+        size_t word_length;
+        int on_off;
+    } word_on_off[] = {
+        { on_str, sizeof(on_str) - 1, 1 },
+        { yes_str, sizeof(yes_str) - 1, 1 },
+        { true_str, sizeof(true_str) - 1, 1 },
+        { off_str, sizeof(off_str) - 1, 0 },
+        { no_str, sizeof(no_str) - 1, 0 },
+        { false_str, sizeof(false_str) - 1, 0 },
+    };
+    
+    len = strlen(on_off);
+    on_off_len = sizeof(tmp_on_off) - 1; 
+    if (on_off_len > len) {
+        on_off_len = len;
+    }
+    memcpy(tmp_on_off, on_off, on_off_len + 1); 
+    for (idx = 0; idx < on_off_len; idx++) {
+        tmp_on_off[idx] = (char)tolower(tmp_on_off[idx]);
+    }
+     
+    result = default_on_off;
+    for (idx = 0; sizeof(word_on_off) / sizeof(word_on_off[0]); idx++) {
+        if (on_off_len == word_on_off[idx].word_length) {
+            if (memcmp(tmp_on_off, word_on_off[idx].word, on_off_len) == 0) {
+                result = word_on_off[idx].on_off;
+                break;
+            }
+        }
+    }
+    return result; 
 }
 
 /**
@@ -128,6 +211,9 @@ cred_helper_parser_display_usage()
         "-i, --cid=[CID]           set client id\n"
         "-u, --auth-url=[URL]      set authentication url\n"
         "-v, --verbose=[LEVEL?]    set verbose level\n"
+        "-g, --generator           run generator only\n"
+        "-j, --gui=[on|off]        run gui generator\n"
+        "-l, --limited=[on|off]    run generator for limited device\n" 
         "-h, --help                display this message\n"
         "[GIT_OPERATION]           get, store, erase");
 }

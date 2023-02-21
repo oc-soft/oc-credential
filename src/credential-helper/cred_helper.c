@@ -55,6 +55,20 @@ struct _cred_helper {
      */
     int generator_mode:1;
 
+    /**
+     * run gui generator
+     */
+    int run_gui_gen:1;
+
+    /**
+     * run limited device generator
+     */
+    int run_lmd_gen:1;
+
+    /**
+     * if no zero then user request usage program
+     */
+    int usage_request:1;
 };
 
 /**
@@ -87,6 +101,9 @@ cred_helper_create()
         result->verbose_level = 0;
         result->generator_mode = 0;
         result->test_mode_get = 0;
+        result->run_gui_gen = 1;
+        result->run_lmd_gen = 1;
+        result->usage_request = 0;
     } else {
         if (ui_token_generator) {
             ui_token_gen_release(ui_token_generator);
@@ -374,7 +391,118 @@ cred_helper_is_generator_mode(
     }
     return result;
 }
-    
+
+/**
+ * set the flag for running for gui generator.
+ */
+int
+cred_helper_run_gui_generator(
+    cred_helper* obj, 
+    int running)
+{
+    int result;
+    result = 0;
+    if (obj) {
+        obj->run_gui_gen = running;
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+
+
+/**
+ * get the flag for running for gui generator.
+ */
+int
+cred_helper_dose_run_gui_generator(
+    cred_helper* obj)
+{
+    int result;
+    result = 0;
+    if (obj) {
+        result = obj->run_gui_gen;
+    } else {
+        errno = EINVAL;
+    }
+
+    return result;
+}
+
+
+/**
+ * set the flag for running limited deivce generator.
+ */
+int
+cred_helper_run_limited_device(
+    cred_helper* obj, 
+    int running)
+{
+    int result;
+    result = 0;
+    if (obj) {
+        obj->run_lmd_gen = running;
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * get the flag for running limited deivce generator.
+ */
+int
+cred_helper_dose_run_limited_device(
+    cred_helper* obj)
+{
+    int result;
+    result = 0;
+    if (obj) {
+        result = obj->run_lmd_gen;
+    } else {
+        errno = EINVAL;
+    }
+
+    return result;
+}
+
+/**
+ * you get no zero if user request to get usage
+ */
+int
+cred_helper_is_requested_usage(
+    cred_helper* obj)
+{
+    int result;
+    result = 0;
+    if (obj) {
+        result = obj->usage_request;
+    } else {
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * set no zero if user request to get usage
+ */
+int
+cred_helper_set_requested_usage(
+    cred_helper* obj,
+    int usage_request)
+{
+    int result;
+    result = 0;
+    if (obj) {
+        obj->usage_request = usage_request;
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
 
 /**
  * set verbose level

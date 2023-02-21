@@ -127,6 +127,38 @@ int
 cred_helper_is_generator_mode(
     cred_helper* obj);
 
+/**
+ * set the flag for running for gui generator.
+ */
+int
+cred_helper_run_gui_generator(
+    cred_helper* obj, 
+    int running);
+
+
+/**
+ * get the flag for running for gui generator.
+ */
+int
+cred_helper_dose_run_gui_generator(
+    cred_helper* obj);
+
+
+/**
+ * set the flag for running limited deivce generator.
+ */
+int
+cred_helper_run_limited_device(
+    cred_helper* obj, 
+    int running);
+
+/**
+ * get the flag for running limited deivce generator.
+ */
+int
+cred_helper_dose_run_limited_device(
+    cred_helper* obj);
+
 
 /**
  * set verbose level
@@ -164,6 +196,21 @@ cred_helper_get_ui_token_gen(
 int
 cred_helper_update_access_token_with_lmd(
     cred_helper* obj);
+
+/**
+ * you get no zero if user request to get usage
+ */
+int
+cred_helper_is_requested_usage(
+    cred_helper* obj);
+
+/**
+ * set no zero if user request to get usage
+ */
+int
+cred_helper_set_requested_usage(
+    cred_helper* obj,
+    int usage_request);
 
 
 _CRED_HELPER_ITFC_END

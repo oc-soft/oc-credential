@@ -277,7 +277,9 @@ rt_get_01.sh : rt_get_01.sh.in
 	chmod u+x $@
 
 rt_get_02.sh : rt_get_02.sh.in
-	sed -e 's!%CLI%!$(abs_builddir)/credhelper$(EXEEXT)!' $< >$@
+	sed -e 's!%CLI%!$(abs_builddir)/credhelper$(EXEEXT)!' $< | \
+	sed -e 's!%CLIENT_ID_PATH%!$(abs_top_srcdir)/src/config/client-id.txt!' | \
+	sed -e 's!%AWK%!$(AWK)!' >$@
 	chmod u+x $@
 
 

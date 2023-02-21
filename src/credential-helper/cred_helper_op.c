@@ -140,28 +140,32 @@ cred_helper_op_run(
         result = -1;
         errno = EINVAL;
     }
-    if (!result) { 
-        desc = cred_helper_op_read_from_stdin();
-        result = desc ? 0 : -1; 
-    }
     if (!result) {
-
-        switch (cred_helper_get_credential_op(obj)) {
-        case CDT_OP_GET:
-            result = cred_helper_op_get(obj, desc);
-            if (result == 0) {
-                result = cred_helper_op_write_into_stdout(desc);
+        if (!cred_helper_is_requested_usage(obj)) {
+            if (!result) { 
+                desc = cred_helper_op_read_from_stdin();
+                result = desc ? 0 : -1; 
             }
-            break;
-        case CDT_OP_STORE:
-            result = cred_helper_op_store(obj, desc);
-            break;
-        case CDT_OP_ERASE:
-            result = cred_helper_op_erase(obj, desc);
-            break;
-        default:
-            result = 0;
-            break;
+            if (!result) {
+
+                switch (cred_helper_get_credential_op(obj)) {
+                case CDT_OP_GET:
+                    result = cred_helper_op_get(obj, desc);
+                    if (result == 0) {
+                        result = cred_helper_op_write_into_stdout(desc);
+                    }
+                    break;
+                case CDT_OP_STORE:
+                    result = cred_helper_op_store(obj, desc);
+                    break;
+                case CDT_OP_ERASE:
+                    result = cred_helper_op_erase(obj, desc);
+                    break;
+                default:
+                    result = 0;
+                    break;
+                }
+            }
         }
     }
     if (desc) {
@@ -250,16 +254,22 @@ get_oauth_token(
     credential_desc* desc)
 {
     int result;
-    int state;
-    state = 0;
     result = 0;
-    state = get_oauth_token_with_ui(
-        obj, desc);
-    if (state) {
-        state = get_oauth_token_with_lmd(
-            obj, desc);
+    if (cred_helper_dose_run_gui_generator(obj) 
+        && cred_helper_dose_run_limited_device(obj)) {
+        int state;
+        state = get_oauth_token_with_ui(obj, desc);
+        if (state) {
+            state = get_oauth_token_with_lmd(obj, desc);
+        }
+        result = state;
+    } else if (cred_helper_dose_run_gui_generator(obj)) {
+        result = get_oauth_token_with_ui(obj, desc);
+    } else if (cred_helper_dose_run_limited_device(obj)) {
+        result = get_oauth_token_with_lmd(obj, desc);
+    } else {
+        result = 0;
     }
-    result = state;
     return result;
 }
 

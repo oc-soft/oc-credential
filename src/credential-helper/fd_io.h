@@ -78,6 +78,13 @@ fd_io_fileno(
     FILE* stream);
 
 /**
+ * you get no zero if the file descriptor is a tty
+ */
+int
+fd_io_isatty(
+    int fd);
+
+/**
  * close file descriptor
  */
 int

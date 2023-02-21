@@ -7,6 +7,7 @@
 #include "lmd_i.h"
 #include "lmd_requests.h"
 #include "lmd_connections.h"
+#include "fd_io.h"
 
 /**
  * progress
@@ -28,7 +29,17 @@ struct _lmd_progress {
  * print progress for oauth token
  */
 static int
-print_progress_for_oauth_token(
+print_progress_to_notty_for_oauth_token(
+    lmd_progress* progress, 
+    int elapse,
+    lmd* obj);
+
+
+/**
+ * print progress for oauth token
+ */
+static int
+print_progress_to_tty_for_oauth_token(
     lmd_progress* progress, 
     int elapse,
     lmd* obj);
@@ -61,29 +72,58 @@ lmd_get_oauth_token_with_client(
         result = lmd_requests_load_device_and_user_code(limited_acc);
     }
     if (result == 0) {
+        int (*progress_call_back)(void*, int, lmd*);
+        if (fd_io_isatty(fd_io_fileno(stderr))) {
+            progress_call_back =
+                (int (*)(void*, int, lmd*))
+                    print_progress_to_tty_for_oauth_token;
+        } else {
+            progress_call_back =
+                (int (*)(void*, int, lmd*))
+                    print_progress_to_notty_for_oauth_token;
+        }
         result = lmd_requests_poll_oauth_token(limited_acc,
-            (int (*)(void*, int, lmd*))print_progress_for_oauth_token,
+            (int (*)(void*, int, lmd*))progress_call_back,
             &progress);
     }  
-    if (result ==  0) {
-        if (lmd_get_verbose_level(limited_acc) >= 5) {
-            char* str_lmd;
-            str_lmd = lmd_get_str_representation(limited_acc);
-            if (str_lmd) {
-                puts(str_lmd);
-            } 
-            lmd_free_object(limited_acc, str_lmd); 
-        }
-    }
-
     return result;
 }
-
 /**
  * print progress for oauth token
  */
 static int
-print_progress_for_oauth_token(
+print_progress_to_notty_for_oauth_token(
+    lmd_progress* progress,
+    int elapse,
+    lmd* lmd_obj)
+{
+    int result;
+    result = 0;
+    if (!progress->last_sec_updating) {
+        const char* verification_url;
+        const char* user_code;
+        int expires_in;
+        verification_url = lmd_get_verification_url_ref(lmd_obj);
+        user_code = lmd_get_user_code_ref(lmd_obj);
+        expires_in = lmd_get_polling_expires_in(lmd_obj);
+        fprintf(stderr,
+            gettext(
+                "Open browser, visit the url and input the code "
+                "in %d seconds\n"
+                "URL:\n"
+                "%s\n"
+                "Code:\n"
+                "%s\n"),
+            expires_in, verification_url, user_code); 
+        progress->last_sec_updating = elapse + 1; 
+    }
+    return result;
+}
+/**
+ * print progress for oauth token
+ */
+static int
+print_progress_to_tty_for_oauth_token(
     lmd_progress* progress,
     int elapse,
     lmd* lmd_obj)
@@ -107,8 +147,6 @@ print_progress_for_oauth_token(
                         "Code:\n"
                         "\x1b[1m%s\x1b[0m\n"), 
                     verification_url, user_code); 
-
-            } else {
             }
             fputs("\r", stderr);
             fprintf(stderr,
@@ -120,7 +158,9 @@ print_progress_for_oauth_token(
             
             progress->last_sec_updating = elapse; 
         }
+
     }
     return result;
 }
+
 /* vi: se ts=4 sw=4 et: */

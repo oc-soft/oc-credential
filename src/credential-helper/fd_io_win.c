@@ -44,6 +44,17 @@ fd_io_fileno(
 }
 
 /**
+ * you get no zero if the file descriptor is a tty
+ */
+int
+fd_io_isatty(
+    int fd)
+{
+    return _isatty(fd);
+}
+
+
+/**
  * reade data from fd
  */
 ssize_t
