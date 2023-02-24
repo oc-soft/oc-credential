@@ -1,5 +1,5 @@
 
-bin_PROGRAMS = emsize
+noinst_PROGRAMS = emsize
 dist_pkgdata_DATA = library_type_size.js 
 emsize_SOURCES = emsize_main.c
 

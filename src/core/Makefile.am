@@ -1,4 +1,4 @@
-lib_LTLIBRARIES = liboccredcore.la
+noinst_LTLIBRARIES = liboccredcore.la
 
 noinst_PROGRAMS = t0_credential_desc
 

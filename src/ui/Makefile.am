@@ -21,7 +21,9 @@ src_dirs = client electron
 
 ELECTRON_TARGET_CPU=@ELECTRON_TARGET_CPU@
 ELECTRON_TARGET_OS=@ELECTRON_TARGET_OS@
-
+GUI_EXE_SUBDIR=@GUI_EXE_SUBDIR@
+OC_EXE_ROOT_NAME=@OC_EXE_ROOT_NAME@
+PKG_DEST_REL_DIR=$(OC_EXE_ROOT_NAME)/$(GUI_EXE_SUBDIR)
 
 if TARGET_MACOS
 electron_resource_dir=Electron.app/Conentents/Resources
@@ -193,5 +195,25 @@ clean-local:
 			rm $$item; \
 		fi \
 	done
+
+install-exec-local: 
+	@$(NORMAL_INSTALL)
+	insdir='$(DESTDIR)$(libexecdir)/$(PKG_DEST_REL_DIR)'; \
+	for f in `find pkg -type f`; do \
+		relpath=`echo $$f | sed -e 's/^pkg\///'` \
+		child=`basename $$relpath` \
+		dstreld=`echo $$relpath | sed -e "s/$${child}$$//"`; \
+		if [ ! -d $$insdir/$$dstreld ]; then \
+			$(MKDIR_P) $$insdir/$$dstreld; \
+		fi; \
+		cp $$f $$insdir/$$relpath; \
+	done
+
+
+uninstall-local:
+	@$(NORMAL_UNINSTALL)
+	insdir='$(DESTDIR)$(libexecdir)/$(PKG_DEST_REL_DIR)'; \
+	rm -rf $$insdir
+
 
 # vi: se ts=4 sw=4 noet:

@@ -1,6 +1,6 @@
 
-bin_PROGRAMS = credhelper
-noinst_PROGRAMS = t0_token_gen_ui_exec
+libexec_PROGRAMS = credential-oc/credhelper
+check_PROGRAMS = credential-oc/t0_token_gen_ui_exec
 noinst_HEADERS= cred_helper_types.h \
 	cred_helper.h \
 	cred_helper_i.h \
@@ -47,46 +47,49 @@ credhelper_src = main.c \
 	mem_dbg.c
 
 if !TARGET_WASM
-credhelper_SOURCES = $(credhelper_src)
+credential_oc_credhelper_SOURCES = $(credhelper_src)
 else
-credhelper_SOURCES = main_wasm.c
+credential_oc_credhelper_SOURCES = main_wasm.c
 endif
 
 deploy_dir = @DEPLOY_DIR@
 pkg_bindir = @pkg_bindir@
+GUI_EXE_SUBDIR=@GUI_EXE_SUBDIR@
+OC_EXE_ROOT_NAME=@OC_EXE_ROOT_NAME@
+
 deploy_dir_def = $(abs_top_builddir)/pkg-img
 
 if RUN_WIN
-credhelper_SOURCES += exe_info_win.c
-credhelper_SOURCES += l10n_user_win.c
-credhelper_SOURCES += fd_io_win.c
-credhelper_SOURCES += token_gen_ui_i_win.c
-credhelper_SOURCES += path_win.c
+credential_oc_credhelper_SOURCES += exe_info_win.c
+credential_oc_credhelper_SOURCES += l10n_user_win.c
+credential_oc_credhelper_SOURCES += fd_io_win.c
+credential_oc_credhelper_SOURCES += token_gen_ui_i_win.c
+credential_oc_credhelper_SOURCES += path_win.c
 endif
 if RUN_LINUX
-credhelper_SOURCES += exe_info_linux.c
-credhelper_SOURCES += l10n_user_linux.c
-credhelper_SOURCES += fd_io.c
-credhelper_SOURCES += token_gen_ui_i_posix.c
-credhelper_SOURCES += path.c
-credhelper_SOURCES += logging.c
+credential_oc_credhelper_SOURCES += exe_info_linux.c
+credential_oc_credhelper_SOURCES += l10n_user_linux.c
+credential_oc_credhelper_SOURCES += fd_io.c
+credential_oc_credhelper_SOURCES += token_gen_ui_i_posix.c
+credential_oc_credhelper_SOURCES += path.c
+credential_oc_credhelper_SOURCES += logging.c
 endif
 
 if RUN_WIN
-credhelper_SOURCES += credhelper_res.rc
+credential_oc_credhelper_SOURCES += credhelper_res.rc
 endif
 
-credhelper_CFLAGS= -g -O0
-credhelper_LDFLAGS= -g -static
+credential_oc_credhelper_CFLAGS= -g -O0
+credential_oc_credhelper_LDFLAGS= -g -static
 
-t0_token_gen_ui_exec_SOURCES = t0_token_gen_ui_exec.c \
+credential_oc_t0_token_gen_ui_exec_SOURCES = t0_token_gen_ui_exec.c \
 	token_gen_ui_exec.c \
 	exec_names.c
 
 if RUN_WIN
-t0_token_gen_ui_exec_SOURCES += path_win.c exe_info_win.c
+credential_oc_t0_token_gen_ui_exec_SOURCES += path_win.c exe_info_win.c
 else
-t0_token_gen_ui_exec_SOURCES += path.c exe_info_linux.c
+credential_oc_t0_token_gen_ui_exec_SOURCES += path.c exe_info_linux.c
 endif
 
 
@@ -99,7 +102,7 @@ endif
 
 
 
-credhelper_LDADD=$(top_builddir)/oclib/buffer/src/libocbuffer.la \
+credential_oc_credhelper_LDADD=$(top_builddir)/oclib/buffer/src/libocbuffer.la \
 	$(top_builddir)/oclib/cstr/src/liboccstr.la \
 	$(top_builddir)/src/core/liboccredcore.la \
 	$(credhelper_lib_flags)
@@ -107,7 +110,7 @@ credhelper_LDADD=$(top_builddir)/oclib/buffer/src/libocbuffer.la \
 
 
 if TARGET_WASM
-credhelper_LDFLAGS += -static
+credential_oc_credhelper_LDFLAGS += -static
 endif
 
 SH_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/tap-driver.sh
@@ -126,7 +129,7 @@ ui_exe_name=electron$(EXEEXT)
 
 ui_builddir=$(builddir)/../ui
 ui_exe_dir=$(ui_builddir)/pkg
-ui_exe_subdir=ui
+ui_exe_subdir=$(GUI_EXE_SUBDIR)
 ui_exe_relative_path=$(ui_exe_subdir)/$(ui_exe_name)
 
 awk_cmd_0='BEGIN { \
@@ -229,7 +232,7 @@ awk_cmd_3 = 'BEGIN { \
 		} \
 	}'
 
-credhelper_CPPFLAGS=-I$(top_srcdir)/oclib/buffer/include \
+credential_oc_credhelper_CPPFLAGS=-I$(top_srcdir)/oclib/buffer/include \
 	-I$(top_srcdir)/oclib/cstr/include \
 	-I$(top_srcdir)/src/core
 
@@ -263,28 +266,28 @@ clean-client-dbg:
 all-local: rt_get_01.sh rt_get_02.sh rt_ui_01.sh
 
 t_site_01.sh : t_site_01.sh.in
-	sed -e 's!%CLIENT_ID_PATH%!$(top_srcdir)/src/config/client-id.txt!' $< | \
-	sed -e 's!%CLIENT_ID_DBG_PATH%!$(builddir)/client-id-dbg.txt!' | \
-	sed -e 's!%CLIENT_SECRET_PATH%!$(top_srcdir)/src/config/client-secret.txt!' | \
-	sed -e 's!%CLIENT_SECRET_DBG_PATH%!$(builddir)/client-secret-dbg.txt!' | \
-	sed -e 's!%AWK%!$(AWK)!' \
+	sed -e 's!%CLIENT_ID_PATH%!$(top_srcdir)/src/config/client-id.txt!' \
+		-e 's!%CLIENT_ID_DBG_PATH%!$(builddir)/client-id-dbg.txt!' \
+		-e 's!%CLIENT_SECRET_PATH%!$(top_srcdir)/src/config/client-secret.txt!' \
+		-e 's!%CLIENT_SECRET_DBG_PATH%!$(builddir)/client-secret-dbg.txt!' \
+		-e 's!%CLI%!$(abs_builddir)/credential-oc/credhelper$(EXEEXT)!' \
+		-e 's!%AWK%!$(AWK)!' $< \
 	> $@
 rt_get_01.sh : rt_get_01.sh.in
 	sed -e 's!%CLIENT_ID_PATH%!$(abs_top_srcdir)/src/config/client-id.txt!' \
-		$< | \
-	sed -e 's!%CLI%!$(abs_builddir)/credhelper$(EXEEXT)!' | \
-	sed -e 's!%AWK%!$(AWK)!' >$@
+		-e 's!%CLI%!$(abs_builddir)/credential-oc/credhelper$(EXEEXT)!' \
+		-e 's!%AWK%!$(AWK)!' $< >$@
 	chmod u+x $@
 
 rt_get_02.sh : rt_get_02.sh.in
-	sed -e 's!%CLI%!$(abs_builddir)/credhelper$(EXEEXT)!' $< | \
-	sed -e 's!%CLIENT_ID_PATH%!$(abs_top_srcdir)/src/config/client-id.txt!' | \
-	sed -e 's!%AWK%!$(AWK)!' >$@
+	sed -e 's!%CLI%!$(abs_builddir)/credential-oc/credhelper$(EXEEXT)!' \
+		-e 's!%CLIENT_ID_PATH%!$(abs_top_srcdir)/src/config/client-id.txt!' \
+		-e 's!%AWK%!$(AWK)!' $< >$@
 	chmod u+x $@
 
 
 rt_ui_01.sh : rt_ui_01.sh.in | link-ui
-	sed -e 's!%UI_EXE_RELPATH%!$(ui_exe_relative_path)!' $< >$@
+	sed -e 's!%UI_EXE_RELPATH%!credential-oc/$(ui_exe_relative_path)!' $< >$@
 	chmod u+x $@
 
 client_secret.gpf : client_secret.gpf.in $(srcdir)/../config/client-secret.txt $(builddir)/client-secret-dbg.txt 
@@ -367,10 +370,53 @@ pkg-uninstall-local:
 	fi; \
 	$(MAKE) $(AM_MAKEFLAGS) DESTDIR=$$depdir bindir=$(pkg_bindir) uninstall-am
 
-link-ui:
-	if  [ ! -h $(ui_exe_subdir) ]; then \
-		$(LN_S) $(ui_exe_dir) $(ui_exe_subdir) ; \
+link-ui: credential-oc/$(am__dirstamp)
+	if  [ ! -h credential-oc/$(ui_exe_subdir) ]; then \
+		cd credential-oc; \
+		$(LN_S) ../$(ui_exe_dir) $(ui_exe_subdir) ; \
 	fi
+
+install-libexecPROGRAMS: $(libexec_PROGRAMS)
+	@$(NORMAL_INSTALL)
+	@for p in $(libexec_PROGRAMS); do \
+		src=$$p \
+		dir=`direname $$p` \
+		dst_item=`basename $$p | sed -e '$(transform)'`; \
+		if [ "$$dir" = "." ]; then \
+			dir=; \
+		else \
+			dir=/$$dir; \
+		fi; \
+		dst_dir=$(DESTDIR)$(libexecdir)$$dir \
+		dst=$$dst_dir/$$dst_item; \
+		echo " $(MKDIR_P) \"$$dst_dir\""; \
+		$(MKDIR_P) "$$dst_dir"; \
+	    echo " $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$src $$dst; \
+		$(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$src $$dst_dir; \
+		ins_res=$$?; \
+		if [ $$ins_res -ne 0 ]; then \
+			exit $$ins_res; \
+		fi \
+	done
+
+uninstall-libexecPROGRAMS:
+	@$(NORMAL_UNINSTALL)
+	@for p in $(libexec_PROGRAMS); do \
+		dir=`direname $$p` \
+		dst_item=`basename $$p | sed -e '$(transform)'`; \
+		if [ "$$dir" = "." ]; then \
+			dir=; \
+		else \
+			dir=/$$dir; \
+		fi; \
+		dst_dir=$(DESTDIR)$(libexecdir)$$dir \
+		dst=$$dst_dir/$$dst_item; \
+		echo " rm -f $$dst"; \
+		rm -f $$dst;
+		echo " rm -d $$dst_dir"; \
+		rm -d $$dst_dir; \
+	done
+
 
 clean-generic:
 	rm -f *.rc	

@@ -111,7 +111,16 @@ if test "x$CORE_MODULE_DIR" == "x" ; then
     CORE_MODULE_DIR="$WASM_BUILD_ROOT/src/core"
 fi
 
+
 AC_SUBST([CORE_MODULE_DIR])
+
+GUI_EXE_SUBDIR=ui
+AC_SUBST([GUI_EXE_SUBDIR])
+
+OC_EXE_ROOT_NAME=credential-oc
+AC_SUBST([OC_EXE_ROOT_NAME])
+
+
 
 AM_EXTRA_RECURSIVE_TARGETS([pkg-install pkg-uninstall])
 

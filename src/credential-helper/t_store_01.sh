@@ -4,7 +4,7 @@ echo 'username=baerer
 protocol=https
 host=example.org
 password=pass
-' | ./credhelper store
+' | ./credential-oc/credhelper store
 
 state=$?
 if [[ $state == 0 ]] then

@@ -23,12 +23,12 @@ echo ""
 
 function store_data()
 {
-  print_desc $1 $2 $3 $4 $5 | ./credhelper store
+  print_desc $1 $2 $3 $4 $5 | ./credential-oc/credhelper store
 }
 
 function erase_data()
 {
-  print_desc $1 $2 $3 $4 $5 | ./credhelper erase
+  print_desc $1 $2 $3 $4 $5 | ./credential-oc/credhelper erase
 }
 
 
@@ -108,7 +108,7 @@ echo $test_data | erase_test_data 1
 unset IFS
 
 
-mtrace ./credhelper $mem_t_w_path | print_result 1
-mtrace ./credhelper $mem_t_e_path | print_result 2
+mtrace ./credential-oc/credhelper $mem_t_w_path | print_result 1
+mtrace ./credential-oc/credhelper $mem_t_e_path | print_result 2
 
 #! vi: se ts=2 sw=2 et:

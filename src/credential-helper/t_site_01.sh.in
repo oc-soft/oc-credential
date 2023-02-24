@@ -1,4 +1,5 @@
 client_id_path=%CLIENT_ID_PATH%
+credhelper_cmd=%CLI%
 client_secret_path=%CLIENT_SECRET_PATH%
 client_id_dbg_path=%CLIENT_ID_DBG_PATH%
 client_secret_dbg_path=%CLIENT_SECRET_DBG_PATH%
@@ -101,7 +102,7 @@ function test_desc()
   while read -r line;
   do
     IFS=
-    client_line_to_desc $line | ./credhelper -u get \
+    client_line_to_desc $line | $credhelper_cmd -u get \
       | verify_username_with_client $line
     res=$?
     if (( $res != 0 )); then
@@ -113,7 +114,7 @@ function test_desc()
     while read -r line;
     do
       IFS=
-      client_line_to_desc $line | ./credhelper -u get \
+      client_line_to_desc $line | $credhelper_cmd -u get \
         | verify_password_with_client $line
       res=$?
       if (( $res != 0 )); then
