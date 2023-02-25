@@ -1,0 +1,145 @@
+#include "l10n_i.h"
+#include <string.h>
+#include <ctype.h>
+#include <stdlib.h>
+#include <limits.h>
+#include "path.h"
+#include "exe_info.h"
+
+/**
+ * get locale path file name
+ */
+static const char*
+l10n_get_locpath_name()
+{
+    return "!LOCPATH_NAME!";
+}
+
+/**
+ * get file path for locale path
+ */
+char* 
+l10n_i_get_locpath_file_path()
+{
+    char* exe_dir;
+    char* result;
+    result = NULL;
+    exe_dir = exe_info_get_exe_dir();
+    if (exe_dir) {
+        result = path_join(exe_dir, 
+            l10n_get_locpath_name(), l10n_i_alloc, l10n_i_free);
+    }
+    if (exe_dir) {
+        exe_info_free(exe_dir);
+    }
+    return result;
+}
+
+
+/**
+ * read locale path from file
+ */
+char*
+l10n_i_read_locpath_from_file(
+    const char* file)
+{
+    FILE* fs;    
+    char* result;
+    result = NULL;
+    fs = l10n_i_open_fs(file, "r");
+    if (fs) {
+        char* tmp_buffer;
+        tmp_buffer = (char*)l10n_i_alloc(PATH_MAX);
+        result = (char*)l10n_i_alloc(PATH_MAX);
+        if (tmp_buffer && result) {
+            int found;
+            size_t range[] = { 0, 0 };
+            found = 0;
+            while (l10n_i_gets(tmp_buffer, PATH_MAX, fs)) {
+                if (l10n_i_find_path_range(
+                    tmp_buffer, &range[0], &range[1]) == 0) {
+                    found = 1;
+                    break;
+                }
+            }
+            if (found) {
+                memcpy(result, &tmp_buffer[range[0]], range[1] - range[0]);
+                result[range[1] - range[0]] = '\0';
+            }
+        } else {
+            if (result) {
+                l10n_i_free(result);
+                result = NULL;
+            }
+        }
+        if (tmp_buffer) {
+            l10n_i_free(tmp_buffer);
+        }
+        
+    } 
+
+    if (fs) {
+        l10n_i_close_fs(fs);
+    }
+    return result;
+}
+
+
+/**
+ * you get locale path string if the path string is not empty according to 
+ * l10n locpath specification.
+ */
+int
+l10n_i_find_path_range(
+    const char* path_str,
+    size_t* start,
+    size_t* end)
+{
+    size_t path_len;
+    size_t idx[2];
+    int result;
+    path_len = strlen(path_str);
+    result = path_len ? 0 : -1;
+    if (result == 0) {
+        if (path_str[0] != '#') { 
+            for (idx[0] = 0; idx[0] < path_len; idx[0]++) {
+                if (!isspace(path_str[idx[0]])) {
+                    break;
+                }  
+            }
+            for (idx[1] = path_len - 1; idx[1] > idx[0]; idx[1]--) {
+                if (!isspace(path_str[idx[1]])) {
+                    break;
+                }
+            }
+            if (idx[0] != idx[1]) {
+                *start = idx[0]; 
+                *end = idx[1];
+            }
+        } else {
+            result = 1;
+        }
+    }
+    return result; 
+}
+
+/**
+ * allocate memory
+ */
+void*
+l10n_i_alloc(
+    size_t size)
+{
+    return malloc(size);
+}
+
+/**
+ * free heap memory allocated by this api.
+ */
+void
+l10n_i_free(
+    void* obj)
+{
+    free(obj);
+}
+/* vi: se ts=4 sw=4 et: */

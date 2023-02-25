@@ -1,6 +1,7 @@
 
 libexec_PROGRAMS = credential-oc/credhelper
-check_PROGRAMS = credential-oc/t0_token_gen_ui_exec
+check_PROGRAMS = credential-oc/t01_token_gen_ui_exec \
+	t01_l10n
 noinst_HEADERS= cred_helper_types.h \
 	cred_helper.h \
 	cred_helper_i.h \
@@ -13,6 +14,7 @@ noinst_HEADERS= cred_helper_types.h \
 	exe_info.h \
 	http.h \
 	l10n.h \
+	l10n_i.h \
 	lmd_connections.h \
 	lmd_op.h \
 	lmd.h \
@@ -38,6 +40,7 @@ credhelper_src = main.c \
 	lmd_requests.c \
 	lmd_op.c \
 	lmd_i.c \
+	l10n_i.c \
 	token_gen_ui.c \
 	token_gen_ui_exec.c \
 	token_gen_ui_i.c \
@@ -56,12 +59,13 @@ deploy_dir = @DEPLOY_DIR@
 pkg_bindir = @pkg_bindir@
 GUI_EXE_SUBDIR=@GUI_EXE_SUBDIR@
 OC_EXE_ROOT_NAME=@OC_EXE_ROOT_NAME@
-
+LOCPATH_NAME=@LOCPATH_NAME@
 deploy_dir_def = $(abs_top_builddir)/pkg-img
 
 if RUN_WIN
 credential_oc_credhelper_SOURCES += exe_info_win.c
 credential_oc_credhelper_SOURCES += l10n_user_win.c
+credential_oc_credhelper_SOURCES += l10n_i_win.c
 credential_oc_credhelper_SOURCES += fd_io_win.c
 credential_oc_credhelper_SOURCES += token_gen_ui_i_win.c
 credential_oc_credhelper_SOURCES += path_win.c
@@ -69,6 +73,7 @@ endif
 if RUN_LINUX
 credential_oc_credhelper_SOURCES += exe_info_linux.c
 credential_oc_credhelper_SOURCES += l10n_user_linux.c
+credential_oc_credhelper_SOURCES += l10n_i_posix.c
 credential_oc_credhelper_SOURCES += fd_io.c
 credential_oc_credhelper_SOURCES += token_gen_ui_i_posix.c
 credential_oc_credhelper_SOURCES += path.c
@@ -82,17 +87,25 @@ endif
 credential_oc_credhelper_CFLAGS= -g -O0
 credential_oc_credhelper_LDFLAGS= -g -static
 
-credential_oc_t0_token_gen_ui_exec_SOURCES = t0_token_gen_ui_exec.c \
+credential_oc_t01_token_gen_ui_exec_SOURCES = t01_token_gen_ui_exec.c \
 	token_gen_ui_exec.c \
 	exec_names.c
 
 if RUN_WIN
-credential_oc_t0_token_gen_ui_exec_SOURCES += path_win.c exe_info_win.c
+credential_oc_t01_token_gen_ui_exec_SOURCES += path_win.c exe_info_win.c
 else
-credential_oc_t0_token_gen_ui_exec_SOURCES += path.c exe_info_linux.c
+credential_oc_t01_token_gen_ui_exec_SOURCES += path.c exe_info_linux.c
 endif
 
 
+t01_l10n_SOURCES = t01_l10n.c \
+	l10n_i.c
+
+if RUN_WIN
+t01_l10n_SOURCES += path_win.c l10n_i_win.c exe_info_win.c
+else
+t01_l10n_SOURCES += path.c l10n_i_posix.c exe_info_linux.c
+endif
 
 if !TARGET_WASM
 credhelper_lib_flags=$(LTLIBINTL) -ljson-c -lcurl -lsqlite3 -lm
@@ -116,12 +129,14 @@ endif
 SH_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/tap-driver.sh
 TEST_EXTENSIONS = .sh
 SH_LOG_COMPILER = $(SHELL)
-TESTS = t_store_01.sh t_site_01.sh t_erase_01.sh t_erase_02.sh
+TESTS = t_store_01.sh t_site_01.sh t_erase_01.sh t_erase_02.sh t_l10n_01.sh
 AM_TESTS_ENVIRONMENT = HOME=$(builddir);
 CLIENT_ID_TXT=$(top_srcdir)/src/config/client-id.txt
 CLIENT_SECRET_TXT=$(top_srcdir)/src/config/client-secret.txt
 
 pkgdatadir=$(datadir)/$(PACKAGE_NAME)
+
+localedir = @localedir@
 
 textdomain_dir=$(pkgdatadir)/locale
 
@@ -349,6 +364,9 @@ exec_names.c: exec_names.c.in
 		' \
 		$< >$@
 
+l10n_i.c : l10n_i.c.in
+	sed -e 's/!LOCPATH_NAME!/$(LOCPATH_NAME)/' $< >$@
+
 lmd_const.h : lmd_const.h.in $(srcdir)/Makefile.am
 	awk $(awk_cmd_1) $< >$@
 
@@ -380,7 +398,7 @@ install-libexecPROGRAMS: $(libexec_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	@for p in $(libexec_PROGRAMS); do \
 		src=$$p \
-		dir=`direname $$p` \
+		dir=`dirname $$p` \
 		dst_item=`basename $$p | sed -e '$(transform)'`; \
 		if [ "$$dir" = "." ]; then \
 			dir=; \
@@ -391,7 +409,7 @@ install-libexecPROGRAMS: $(libexec_PROGRAMS)
 		dst=$$dst_dir/$$dst_item; \
 		echo " $(MKDIR_P) \"$$dst_dir\""; \
 		$(MKDIR_P) "$$dst_dir"; \
-	    echo " $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$src $$dst; \
+	    echo " $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$src $$dst"; \
 		$(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$src $$dst_dir; \
 		ins_res=$$?; \
 		if [ $$ins_res -ne 0 ]; then \
@@ -399,10 +417,25 @@ install-libexecPROGRAMS: $(libexec_PROGRAMS)
 		fi \
 	done
 
+install-exec-hook:
+	@$(POST_INSTALL)
+	$(MKDIR_P) $(DESTDIR)$(bindir)
+	rm -f $(DESTDIR)$(bindir)/credential-oc$(EXEEXT)
+	$(LN_S)	$(DESTDIR)$(libexecdir)/credential-oc/credhelper$(EXEEXT) \
+		$(DESTDIR)$(bindir)/credential-oc$(EXEEXT)
+	echo $(DESTDIR)$(localedir) \
+		>$(DESTDIR)$(libexecdir)/credential-oc/$(LOCPATH_NAME)
+
+
+preuninstall:
+	@$(PRE_UNINSTALL)
+	rm $(DESTDIR)$(libexecdir)/credential-oc/$(LOCPATH_NAME)
+	rm -f $(DESTDIR)$(bindir)/credential-oc$(EXEEXT)
+
 uninstall-libexecPROGRAMS:
 	@$(NORMAL_UNINSTALL)
-	@for p in $(libexec_PROGRAMS); do \
-		dir=`direname $$p` \
+	for p in $(libexec_PROGRAMS); do \
+		dir=`dirname $$p` \
 		dst_item=`basename $$p | sed -e '$(transform)'`; \
 		if [ "$$dir" = "." ]; then \
 			dir=; \
@@ -411,12 +444,11 @@ uninstall-libexecPROGRAMS:
 		fi; \
 		dst_dir=$(DESTDIR)$(libexecdir)$$dir \
 		dst=$$dst_dir/$$dst_item; \
-		echo " rm -f $$dst"; \
-		rm -f $$dst;
-		echo " rm -d $$dst_dir"; \
-		rm -d $$dst_dir; \
+		rm -f $$dst; \
+		rm -d $$dst_dir >/dev/null | :; \
 	done
 
+uninstall-am: preuninstall uninstall-libexecPROGRAMS
 
 clean-generic:
 	rm -f *.rc	
