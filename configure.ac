@@ -89,6 +89,7 @@ OC_COMPANY_NAME=$oc_company_name
 
 AC_SUBST([OC_DLL_SYS_ROOT])
 AC_SUBST([OC_COMPANY_NAME])
+AC_SUBST([LOCPATH_NAME], [locpath.txt])
 
 case $host_os in
     linux*)
