@@ -100,9 +100,9 @@ t01_l10n_SOURCES = t01_l10n.c \
 	l10n_i.c
 
 if RUN_WIN
-t01_l10n_SOURCES += path_win.c l10n_i_win.c exe_info_win.c
+t01_l10n_SOURCES += path_win.c exe_info_win.c
 else
-t01_l10n_SOURCES += path.c l10n_i_posix.c exe_info_linux.c
+t01_l10n_SOURCES += path.c exe_info_linux.c
 endif
 
 if !TARGET_WASM
@@ -179,16 +179,16 @@ awk_cmd_0='BEGIN { \
 	}' 
 
 awk_cmd_1 = '{ \
-			gsub(/@LMTD_APP_FILE_NAME@/, \
+			gsub(/@CREDHELPER_APP_FILE_NAME@/, \
 				"\"credhelper\""); \
-			gsub(/@LMTD_APP_PRODUCT_NAME@/, \
-				"\"CLI for limited device access\""); \
+			gsub(/@CREDHELPER_APP_PRODUCT_NAME@/, \
+				"\"OC credential helper\""); \
 			print \
 		} \
 	'
 awk_cmd_2 = 'BEGIN { \
 		map_size = 0; \
-		src_file = "$(srcdir)/lmd_res.rc.in"; \
+		src_file = "$(srcdir)/credhelper_res.rc.in"; \
 	} \
 	{ \
 		langs[map_size] = $$1; \
@@ -365,10 +365,10 @@ exec_names.c: exec_names.c.in
 l10n_i.c : l10n_i.c.in
 	sed -e 's/!LOCPATH_NAME!/$(LOCPATH_NAME)/' $< >$@
 
-lmd_const.h : lmd_const.h.in $(srcdir)/Makefile.am
+credhelper_const.h : credhelper_const.h.in $(srcdir)/Makefile.am
 	awk $(awk_cmd_1) $< >$@
 
-lmd_res.rc : lmd_res.rc.in lmd_const.h
+credhelper_res.rc : credhelper_res.rc.in credhelper_const.h
 	awk $(awk_cmd_2) $(top_srcdir)/win/lang_map.txt > $@
 
 pkg-install-local:

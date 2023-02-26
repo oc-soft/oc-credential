@@ -1,7 +1,7 @@
 #include <windows.h>
 #include <winver.h>
 #include "config.h"
-#include "lmd_const.h"
+#include "credhelper_const.h"
 
 #define FILE_VER_0 VERSION_MAJOR,VERSION_MINOR,VERSION_REVISION,0
 #define PRODUCT_VER_0 VERSION_MAJOR,VERSION_MINOR,VERSION_REVISION,0
