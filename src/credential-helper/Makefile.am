@@ -65,7 +65,6 @@ deploy_dir_def = $(abs_top_builddir)/pkg-img
 if RUN_WIN
 credential_oc_credhelper_SOURCES += exe_info_win.c
 credential_oc_credhelper_SOURCES += l10n_user_win.c
-credential_oc_credhelper_SOURCES += l10n_i_win.c
 credential_oc_credhelper_SOURCES += fd_io_win.c
 credential_oc_credhelper_SOURCES += token_gen_ui_i_win.c
 credential_oc_credhelper_SOURCES += path_win.c
@@ -73,7 +72,6 @@ endif
 if RUN_LINUX
 credential_oc_credhelper_SOURCES += exe_info_linux.c
 credential_oc_credhelper_SOURCES += l10n_user_linux.c
-credential_oc_credhelper_SOURCES += l10n_i_posix.c
 credential_oc_credhelper_SOURCES += fd_io.c
 credential_oc_credhelper_SOURCES += token_gen_ui_i_posix.c
 credential_oc_credhelper_SOURCES += path.c
