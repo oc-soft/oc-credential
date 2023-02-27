@@ -1,11 +1,14 @@
-AC_INIT([credential-helper-oc],[0.1.0],[toshi@oc-soft.net])
-
+AC_INIT([credential-ocs],[0.1.0],[toshi@oc-soft.net])
+AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE
-AM_GNU_GETTEXT_VERSION([0.21.1])
+
 LT_INIT([win32-dll])
+
+AM_GNU_GETTEXT_VERSION([0.21.1])
 
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_SUBDIRS([oclib])
+
 
 AC_PROG_CC
 AC_CHECK_PROG([GPERF], [gperf --version], [gperf])
@@ -26,7 +29,6 @@ AC_CHECK_HEADER([curl/curl.h])
 AC_CHECK_HEADERS([mcheck.h
     emscripten.h])
 
-AC_CANONICAL_TARGET
 
 OC_CHECK_RUN_ON_WIN
 if test "x$oc_run_win" = xyes; then
@@ -38,9 +40,9 @@ OC_CHECK_ELECTRON_TARGET
 OC_CHECK_MAC_TARGET
 
 if test "x$oc_run_win" = xyes; then
-    oc_data_dir_name='oc-credential'
+    oc_data_dir_name='credential-ocs'
 else
-    oc_data_dir_name='.oc-credential'
+    oc_data_dir_name='.credential-ocs'
 fi
 AC_SUBST([OC_DATA_DIR_NAME], [$oc_data_dir_name])
 AC_SUBST([OC_DB_FILE_NAME], [user-token])
@@ -118,7 +120,7 @@ AC_SUBST([CORE_MODULE_DIR])
 GUI_EXE_SUBDIR=ui
 AC_SUBST([GUI_EXE_SUBDIR])
 
-OC_EXE_ROOT_NAME=credential-oc
+OC_EXE_ROOT_NAME=credential-ocs
 AC_SUBST([OC_EXE_ROOT_NAME])
 
 
