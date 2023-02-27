@@ -1,6 +1,6 @@
 
-libexec_PROGRAMS = credential-oc/credhelper
-check_PROGRAMS = credential-oc/t01_token_gen_ui_exec \
+libexec_PROGRAMS = credential-ocs/credhelper
+check_PROGRAMS = credential-ocs/t01_token_gen_ui_exec \
 	t01_l10n
 noinst_HEADERS= cred_helper_types.h \
 	cred_helper.h \
@@ -50,9 +50,9 @@ credhelper_src = main.c \
 	mem_dbg.c
 
 if !TARGET_WASM
-credential_oc_credhelper_SOURCES = $(credhelper_src)
+credential_ocs_credhelper_SOURCES = $(credhelper_src)
 else
-credential_oc_credhelper_SOURCES = main_wasm.c
+credential_ocs_credhelper_SOURCES = main_wasm.c
 endif
 
 deploy_dir = @DEPLOY_DIR@
@@ -63,36 +63,36 @@ LOCPATH_NAME=@LOCPATH_NAME@
 deploy_dir_def = $(abs_top_builddir)/pkg-img
 
 if RUN_WIN
-credential_oc_credhelper_SOURCES += exe_info_win.c
-credential_oc_credhelper_SOURCES += l10n_user_win.c
-credential_oc_credhelper_SOURCES += fd_io_win.c
-credential_oc_credhelper_SOURCES += token_gen_ui_i_win.c
-credential_oc_credhelper_SOURCES += path_win.c
+credential_ocs_credhelper_SOURCES += exe_info_win.c
+credential_ocs_credhelper_SOURCES += l10n_user_win.c
+credential_ocs_credhelper_SOURCES += fd_io_win.c
+credential_ocs_credhelper_SOURCES += token_gen_ui_i_win.c
+credential_ocs_credhelper_SOURCES += path_win.c
 endif
 if RUN_LINUX
-credential_oc_credhelper_SOURCES += exe_info_linux.c
-credential_oc_credhelper_SOURCES += l10n_user_linux.c
-credential_oc_credhelper_SOURCES += fd_io.c
-credential_oc_credhelper_SOURCES += token_gen_ui_i_posix.c
-credential_oc_credhelper_SOURCES += path.c
-credential_oc_credhelper_SOURCES += logging.c
+credential_ocs_credhelper_SOURCES += exe_info_linux.c
+credential_ocs_credhelper_SOURCES += l10n_user_linux.c
+credential_ocs_credhelper_SOURCES += fd_io.c
+credential_ocs_credhelper_SOURCES += token_gen_ui_i_posix.c
+credential_ocs_credhelper_SOURCES += path.c
+credential_ocs_credhelper_SOURCES += logging.c
 endif
 
 if RUN_WIN
-credential_oc_credhelper_SOURCES += credhelper_res.rc
+credential_ocs_credhelper_SOURCES += credhelper_res.rc
 endif
 
-credential_oc_credhelper_CFLAGS= -g -O0
-credential_oc_credhelper_LDFLAGS= -g -static
+credential_ocs_credhelper_CFLAGS= -g -O0
+credential_ocs_credhelper_LDFLAGS= -g -static
 
-credential_oc_t01_token_gen_ui_exec_SOURCES = t01_token_gen_ui_exec.c \
+credential_ocs_t01_token_gen_ui_exec_SOURCES = t01_token_gen_ui_exec.c \
 	token_gen_ui_exec.c \
 	exec_names.c
 
 if RUN_WIN
-credential_oc_t01_token_gen_ui_exec_SOURCES += path_win.c exe_info_win.c
+credential_ocs_t01_token_gen_ui_exec_SOURCES += path_win.c exe_info_win.c
 else
-credential_oc_t01_token_gen_ui_exec_SOURCES += path.c exe_info_linux.c
+credential_ocs_t01_token_gen_ui_exec_SOURCES += path.c exe_info_linux.c
 endif
 
 
@@ -113,7 +113,7 @@ endif
 
 
 
-credential_oc_credhelper_LDADD=$(top_builddir)/oclib/buffer/src/libocbuffer.la \
+credential_ocs_credhelper_LDADD=$(top_builddir)/oclib/buffer/src/libocbuffer.la \
 	$(top_builddir)/oclib/cstr/src/liboccstr.la \
 	$(top_builddir)/src/core/liboccredcore.la \
 	$(credhelper_lib_flags)
@@ -121,7 +121,7 @@ credential_oc_credhelper_LDADD=$(top_builddir)/oclib/buffer/src/libocbuffer.la \
 
 
 if TARGET_WASM
-credential_oc_credhelper_LDFLAGS += -static
+credential_ocs_credhelper_LDFLAGS += -static
 endif
 
 SH_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/tap-driver.sh
@@ -245,7 +245,7 @@ awk_cmd_3 = 'BEGIN { \
 		} \
 	}'
 
-credential_oc_credhelper_CPPFLAGS=-I$(top_srcdir)/oclib/buffer/include \
+credential_ocs_credhelper_CPPFLAGS=-I$(top_srcdir)/oclib/buffer/include \
 	-I$(top_srcdir)/oclib/cstr/include \
 	-I$(top_srcdir)/src/core
 
@@ -283,24 +283,24 @@ t_site_01.sh : t_site_01.sh.in
 		-e 's!%CLIENT_ID_DBG_PATH%!$(builddir)/client-id-dbg.txt!' \
 		-e 's!%CLIENT_SECRET_PATH%!$(top_srcdir)/src/config/client-secret.txt!' \
 		-e 's!%CLIENT_SECRET_DBG_PATH%!$(builddir)/client-secret-dbg.txt!' \
-		-e 's!%CLI%!$(abs_builddir)/credential-oc/credhelper$(EXEEXT)!' \
+		-e 's!%CLI%!$(abs_builddir)/credential-ocs/credhelper$(EXEEXT)!' \
 		-e 's!%AWK%!$(AWK)!' $< \
 	> $@
 rt_get_01.sh : rt_get_01.sh.in
 	sed -e 's!%CLIENT_ID_PATH%!$(abs_top_srcdir)/src/config/client-id.txt!' \
-		-e 's!%CLI%!$(abs_builddir)/credential-oc/credhelper$(EXEEXT)!' \
+		-e 's!%CLI%!$(abs_builddir)/credential-ocs/credhelper$(EXEEXT)!' \
 		-e 's!%AWK%!$(AWK)!' $< >$@
 	chmod u+x $@
 
 rt_get_02.sh : rt_get_02.sh.in
-	sed -e 's!%CLI%!$(abs_builddir)/credential-oc/credhelper$(EXEEXT)!' \
+	sed -e 's!%CLI%!$(abs_builddir)/credential-ocs/credhelper$(EXEEXT)!' \
 		-e 's!%CLIENT_ID_PATH%!$(abs_top_srcdir)/src/config/client-id.txt!' \
 		-e 's!%AWK%!$(AWK)!' $< >$@
 	chmod u+x $@
 
 
 rt_ui_01.sh : rt_ui_01.sh.in | link-ui
-	sed -e 's!%UI_EXE_RELPATH%!credential-oc/$(ui_exe_relative_path)!' $< >$@
+	sed -e 's!%UI_EXE_RELPATH%!credential-ocs/$(ui_exe_relative_path)!' $< >$@
 	chmod u+x $@
 
 client_secret.gpf : client_secret.gpf.in $(srcdir)/../config/client-secret.txt $(builddir)/client-secret-dbg.txt 
@@ -386,9 +386,9 @@ pkg-uninstall-local:
 	fi; \
 	$(MAKE) $(AM_MAKEFLAGS) DESTDIR=$$depdir bindir=$(pkg_bindir) uninstall-am
 
-link-ui: credential-oc/$(am__dirstamp)
-	if  [ ! -h credential-oc/$(ui_exe_subdir) ]; then \
-		cd credential-oc; \
+link-ui: credential-ocs/$(am__dirstamp)
+	if  [ ! -h credential-ocs/$(ui_exe_subdir) ]; then \
+		cd credential-ocs; \
 		$(LN_S) ../$(ui_exe_dir) $(ui_exe_subdir) ; \
 	fi
 
@@ -418,17 +418,17 @@ install-libexecPROGRAMS: $(libexec_PROGRAMS)
 install-exec-hook:
 	@$(POST_INSTALL)
 	$(MKDIR_P) $(DESTDIR)$(bindir)
-	rm -f $(DESTDIR)$(bindir)/credential-oc$(EXEEXT)
-	$(LN_S)	$(DESTDIR)$(libexecdir)/credential-oc/credhelper$(EXEEXT) \
-		$(DESTDIR)$(bindir)/credential-oc$(EXEEXT)
+	rm -f $(DESTDIR)$(bindir)/credential-ocs$(EXEEXT)
+	$(LN_S)	$(DESTDIR)$(libexecdir)/credential-ocs/credhelper$(EXEEXT) \
+		$(DESTDIR)$(bindir)/credential-ocs$(EXEEXT)
 	echo $(DESTDIR)$(localedir) \
-		>$(DESTDIR)$(libexecdir)/credential-oc/$(LOCPATH_NAME)
+		>$(DESTDIR)$(libexecdir)/credential-ocs/$(LOCPATH_NAME)
 
 
 preuninstall:
 	@$(PRE_UNINSTALL)
-	rm $(DESTDIR)$(libexecdir)/credential-oc/$(LOCPATH_NAME)
-	rm -f $(DESTDIR)$(bindir)/credential-oc$(EXEEXT)
+	rm $(DESTDIR)$(libexecdir)/credential-ocs/$(LOCPATH_NAME)
+	rm -f $(DESTDIR)$(bindir)/credential-ocs$(EXEEXT)
 
 uninstall-libexecPROGRAMS:
 	@$(NORMAL_UNINSTALL)

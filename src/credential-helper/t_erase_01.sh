@@ -23,12 +23,12 @@ echo ""
 
 function store_data()
 {
-  print_desc $1 $2 $3 $4 $5 | ./credential-oc/credhelper store
+  print_desc $1 $2 $3 $4 $5 | ./credential-ocs/credhelper store
 }
 
 function erase_data()
 {
-  print_desc $1 $2 $3 $4 $5 | ./credential-oc/credhelper erase
+  print_desc $1 $2 $3 $4 $5 | ./credential-ocs/credhelper erase
 }
 
 
