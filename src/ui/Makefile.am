@@ -11,13 +11,26 @@ client_src = \
 	client/src/main.ts
 
 electron_src = \
-	electron/src/ipc.ts
-	electron/src/io/oauth.ts
-	electron/src/preload.ts
-	electron/src/main.ts
+	electron/src/option.ts \
+	electron/src/desc.ts \
+	electron/src/credential.ts \
+	electron/src/ipc.ts \
+	electron/src/preload.ts \
+	electron/src/credential-ui.ts \
+	electron/src/main.ts 
 
 src_dirs = client electron
 
+EXTRA_DIST = $(client_src) $(electron_src) \
+	tsconfig.node.json.in \
+	electron-package.json.in \
+	tsconfig.electron.json.in \
+	tsconfig.json.in \
+	rollup.config.electron.js.in \
+	config/app.json.in \
+	config/config.json.in \
+	package.json.in \
+	vite.config.ts.in 
 
 ELECTRON_TARGET_CPU=@ELECTRON_TARGET_CPU@
 ELECTRON_TARGET_OS=@ELECTRON_TARGET_OS@
@@ -106,11 +119,13 @@ vite.config.ts: vite.config.ts.in
 		-e $(awk_cmd_0) $< >$@
 
 mksrc-tree:
-	for item in $(src_dirs) ; do \
-		if [ ! -h $$item ] ; then \
-			$(LN_S) $(srcdir)/$$item; \
-		fi \
-	done
+	if [ "$(srcdir)" != "." ] ; then \
+		for item in $(src_dirs) ; do \
+			if [ ! -h $$item ] ; then \
+				$(LN_S) $(srcdir)/$$item; \
+			fi \
+		done; \
+	fi
 
 mkdir-tree:
 	for item in config pkg ; do \
@@ -136,8 +151,8 @@ electron-app-dir:
 		$(MKDIR_P) $(electron_app_dir) ; \
 	fi
 
-electron-resources: electron-tmstamp electron-package-json\
-	| mkdir-tree electron-app-dir
+electron-resources: electron-tmstamp electron-package-json build-app \
+	| mkdir-tree electron-app-dir 
 	cp -R dist $(electron_app_dir)
 	
 .PHONY: electron-resources
@@ -161,8 +176,15 @@ download_electron: | $(electron_zip)
 
 .PHONY: download_electron
 
-build-app:
-	$(NPM) run build-app
+dist/index.html : mksrc-tree $(client_src) \
+	package-lock.json vite.config.ts 
+	$(NPM) run build-client
+
+dist/main.js: mksrc-tree $(electron_src) \
+	package-lock.json tsconfig.electron.json rollup.config.electron.js
+	$(NPM) run build-electron
+
+build-app: package-lock.json dist/index.html dist/main.js
 
 .PHONY: build-app
 

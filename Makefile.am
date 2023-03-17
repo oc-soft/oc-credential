@@ -1,6 +1,12 @@
 SUBDIRS = po oclib em-setting src pkg 
 ACLOCAL_AMFLAGS = -I m4
 
+EXTRA_DIST = rc/rc.json \
+	i18n/ja/base.txt \
+	win/lang_map.txt \
+	win/upgrade-code.txt \
+	url/url.csv
+
 PRIVATE_DISTFILES = src/config/client-id-dbg.txt \
 	src/config/client-secret.txt \
 	src/config/client-secret-dbg.txt \

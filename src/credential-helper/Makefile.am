@@ -12,6 +12,8 @@ noinst_HEADERS= cred_helper_types.h \
 	credential_op.h \
 	credential_storage_key_id_table.h \
 	exe_info.h \
+	exec_names.h \
+	fd_io.h \
 	http.h \
 	l10n.h \
 	l10n_i.h \
@@ -25,7 +27,16 @@ noinst_HEADERS= cred_helper_types.h \
 	mem_dbg.h \
 	option.h \
 	logging.h \
+	ui_token_gen.h \
+	ui_token_gen_i.h \
+	ui_token_gen_types.h \
+	token_gen_ui.h \
+	token_gen_ui_exec.h \
+	token_gen_ui_i.h \
+	str_conv.h \
+	path.h \
 	url.h
+
 
 credhelper_src = main.c \
 	cred_helper.c \
@@ -49,6 +60,19 @@ credhelper_src = main.c \
 	exec_names.c \
 	mem_dbg.c
 
+EXTRA_DIST = client_id.gpf.in \
+	credhelper_res.rc.in \
+	t_site_01.sh.in \
+	rt_ui_01.sh.in \
+	mem_dbg_on.c.in \
+	rt_get_01.sh.in \
+	l10n_i.c.in \
+	credhelper_const.h.in \
+	mem_dbg_off.c.in \
+	rt_get_02.sh.in \
+	exec_names.c.in \
+	client_secret.gpf.in 
+
 if !TARGET_WASM
 credential_ocs_credhelper_SOURCES = $(credhelper_src)
 else
@@ -60,6 +84,7 @@ pkg_bindir = @pkg_bindir@
 GUI_EXE_SUBDIR=@GUI_EXE_SUBDIR@
 OC_EXE_ROOT_NAME=@OC_EXE_ROOT_NAME@
 LOCPATH_NAME=@LOCPATH_NAME@
+SKIP_LOCPATH_INSTALL=
 deploy_dir_def = $(abs_top_builddir)/pkg-img
 
 if RUN_WIN
@@ -419,10 +444,14 @@ install-exec-hook:
 	@$(POST_INSTALL)
 	$(MKDIR_P) $(DESTDIR)$(bindir)
 	rm -f $(DESTDIR)$(bindir)/credential-ocs$(EXEEXT)
-	$(LN_S)	$(DESTDIR)$(libexecdir)/credential-ocs/credhelper$(EXEEXT) \
+	$(LN_S) -r $(DESTDIR)$(libexecdir)/credential-ocs/credhelper$(EXEEXT) \
 		$(DESTDIR)$(bindir)/credential-ocs$(EXEEXT)
-	echo $(DESTDIR)$(localedir) \
-		>$(DESTDIR)$(libexecdir)/credential-ocs/$(LOCPATH_NAME)
+	if [ -z "$(SKIP_LOCPATH_INSTALL)" ]; then \
+		echo $(DESTDIR)$(localedir) \
+			>$(DESTDIR)$(libexecdir)/credential-ocs/$(LOCPATH_NAME) ; \
+	else \
+		: > $(DESTDIR)$(libexecdir)/credential-ocs/$(LOCPATH_NAME) ; \
+	fi
 
 
 preuninstall:

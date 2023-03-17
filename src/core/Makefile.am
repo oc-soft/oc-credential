@@ -17,6 +17,12 @@ noinst_HEADERS = user_resource.h \
 	user_resource_i.h \
 	wasm_i.h
 
+EXTRA_DIST = t0_credential_desc.sh.in \
+	decl.d.ts.in \
+	user_resource_const.h.in \
+	package.json.in \
+	app_config_i.c.in
+
 liboccredcore_la_SOURCES = credential.c \
 	credential_i.c \
 	app_config_i.c \

@@ -5,9 +5,10 @@
   "main": "dist/main.js",
   "scripts": {
     "dev": "vite serve dist",
-    "build": "vue-tsc && vite build",
+    "build-client": "vue-tsc && vite build",
     "preview": "vite preview",
-    "build-app": "npm run build && rollup -c rollup.config.electron.js",
+    "build-electron": "rollup -c rollup.config.electron.js",
+    "build-app": "npm run build-client && npm run build-electron",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
     "start-dbg": "electron --inspect=5858 ."

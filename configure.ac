@@ -123,7 +123,12 @@ AC_SUBST([GUI_EXE_SUBDIR])
 OC_EXE_ROOT_NAME=credential-ocs
 AC_SUBST([OC_EXE_ROOT_NAME])
 
+AC_ARG_ENABLE([hardcode-libs],
+    [AS_HELP_STRING([--disable-hardcode-libs],
+        [suppress to write rath or runpath into library by libtool link])],
+        [hardcode_into_libs=no])
 
+## hardcode_into_libs
 
 AM_EXTRA_RECURSIVE_TARGETS([pkg-install pkg-uninstall])
 

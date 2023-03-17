@@ -1,6 +1,13 @@
 
 noinst_PROGRAMS = emsize
-dist_pkgdata_DATA = library_type_size.js 
+
+## dist_pkgdata_DATA = library_type_size.js 
+
+EXTRA_DIST = type-size.js.in \
+	type-size-func-body.js.in \
+	library_type_size.js.in \
+	type-size-func-body-doc.txt
+
 emsize_SOURCES = emsize_main.c
 
 if TARGET_WASM
