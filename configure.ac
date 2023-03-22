@@ -26,8 +26,7 @@ AC_CHECK_LIB([sqlite3], [sqlite3_initialize])
 AC_CHECK_HEADER([json-c/json.h])
 AC_CHECK_HEADER([curl/curl.h])
 
-AC_CHECK_HEADERS([mcheck.h
-    emscripten.h])
+AC_CHECK_HEADERS([mcheck.h emscripten.h])
 
 
 OC_CHECK_RUN_ON_WIN
@@ -133,8 +132,7 @@ AC_ARG_ENABLE([hardcode-libs],
 AM_EXTRA_RECURSIVE_TARGETS([pkg-install pkg-uninstall])
 
 
-AC_CONFIG_HEADERS([
-    include/config.h])
+AC_CONFIG_HEADERS([include/config.h])
 
 AC_CONFIG_FILES([Makefile
     em-setting/Makefile
