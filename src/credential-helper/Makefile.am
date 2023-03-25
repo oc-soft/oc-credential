@@ -131,9 +131,9 @@ t01_l10n_SOURCES += path.c exe_info_linux.c
 endif
 
 if !TARGET_WASM
-credhelper_lib_flags=$(LTLIBINTL) -ljson-c -lcurl -lsqlite3 -lm
+credhelper_lib_flags=$(LTLIBINTL) -ljson-c -lcurl -lsqlite3 -luuid -lm
 else
-credhelper_lib_flags=$(LTLIBINTL) -ljson-c -lsqlite3 -lm
+credhelper_lib_flags=$(LTLIBINTL) -ljson-c -lsqlite3 -luuid -lm
 endif
 
 

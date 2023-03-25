@@ -57,8 +57,7 @@ endif
 
 liboccredcore_la_CFLAGS= -g -O0
 
-
-liboccredcore_lib_flags=$(LTLIBINTL) -ljson-c -lsqlite3 -lm
+liboccredcore_lib_flags=$(LTLIBINTL) -ljson-c -lsqlite3 -luuid -lm
 
 liboccredcore_la_LIBADD= \
 	$(top_builddir)/oclib/cstr/src/liboccstr.la \
