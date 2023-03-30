@@ -44,6 +44,8 @@ else
 electron_resource_dir=resources
 endif
 
+CLEAN_FOR_DEBUG=
+
 electron_version = v22.1.0
 electron_dist_host = https://github.com
 electron_dist_path_0 = electron/electron/releases/download
@@ -85,7 +87,7 @@ rollup.config.electron.js: rollup.config.electron.js.in \
 		-v package_version=$(PACKAGE_VERSION) \
 		-e $(awk_cmd_0) $< >$@
 
-tsconfig.electron.json: tsconfig.electron.json.in | symlink-to-core
+tsconfig.electron.json: tsconfig.electron.json.in 
 	$(AWK) -v srcdir=$(srcdir) \
 		-v abs_builddir=$(abs_builddir) \
 		-v abs_srcdir=$(abs_srcdir) \
@@ -131,11 +133,6 @@ mkdir-tree:
 	for item in config pkg ; do \
 		$(MKDIR_P) $$item; \
 	done
-
-symlink-to-core:
-	if [ ! -h core ] ; then \
-		$(LN_S) $(CORE_MODULE_DIR) core ; \
-	fi
 
 $(electron_zip): 
 	if [ ! -f '$@' ] ; then \
@@ -210,8 +207,16 @@ all-local: package-lock.json \
 clean-local:
 	rm -f *.json
 	rm -f *.ts
+	rm -f *.js
 	rm -r -f pkg
 	rm -f electron-tmstamp
+	rm -f config/app.json
+	if [ -z "$(CLEAN_FOR_DEBUG)" ]; then \
+		rm $(electron_zip); \
+		rm -r -f $(electron_app_dir); \
+		rm -r -f node_modules; \
+		rm -r -f dist; \
+	fi
 	for item in $(src_dirs) ; do \
 		if [ -h $$item ] ; then \
 			rm $$item; \

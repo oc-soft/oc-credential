@@ -7,7 +7,7 @@ password=pass
 ' | ./credential-ocs/credhelper store
 
 state=$?
-if [[ $state == 0 ]] then
+if [[ $state == 0 ]]; then
   echo 'ok 1 # succeeded credential store'
 else
   exit $state

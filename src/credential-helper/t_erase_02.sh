@@ -98,17 +98,27 @@ echo 1..2
 mem_t_w_path=mem_trace_writing
 mem_t_e_path=mem_trace_erasing
 
+mtrace_line=`nm ./credential-ocs/credhelper | grep mtrace`
+has_mtrace=no
 
-IFS=''
-export MALLOC_TRACE=$mem_t_w_path
-export LD_PRELOAD=libc_malloc_debug.so
-echo $test_data | write_test_data 1
-export MALLOC_TRACE=$mem_t_e_path
-echo $test_data | erase_test_data 1
-unset IFS
+if [ -n "$mtrace_line" ]; then
+  has_mtrace=yes;
+fi
 
+if [ x$has_mtrace = 'xyes' ]; then
+  IFS=''
+  export MALLOC_TRACE=$mem_t_w_path
+  export LD_PRELOAD=libc_malloc_debug.so
+  echo $test_data | write_test_data 1
+  export MALLOC_TRACE=$mem_t_e_path
+  echo $test_data | erase_test_data 1
 
-mtrace ./credential-oc/credhelper $mem_t_w_path | print_result 1
-mtrace ./credential-oc/credhelper $mem_t_e_path | print_result 2
+  unset IFS
+  mtrace ./credential-ocs/credhelper $mem_t_w_path | print_result 1
+  mtrace ./credential-ocs/credhelper $mem_t_e_path | print_result 2;
+else
+  echo ok 1
+  echo ok 2
+fi
 
 #! vi: se ts=2 sw=2 et:

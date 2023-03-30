@@ -1,5 +1,6 @@
 
 #include "l10n_i.h"
+#include <string.h>
 #include <stdio.h>
 
 
@@ -57,7 +58,7 @@ main(
         if (result == 0) {
             puts("succeeded\n");
             printf("test data: %.*s\n"
-                "read data: %s\n", path_range[1] - path_range[0], 
+                "read data: %s\n", (int)(path_range[1] - path_range[0]), 
                 &test_data[path_range[0]],
                 path);
         }

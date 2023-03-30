@@ -127,6 +127,15 @@ AC_ARG_ENABLE([hardcode-libs],
         [suppress to write rath or runpath into library by libtool link])],
         [hardcode_into_libs=no])
 
+AC_ARG_ENABLE([dist-private],
+    [AS_HELP_STRING([--enable-dist-private],
+        [include private data into dist package])],
+    [oc_enable_dist_private=yes])
+
+AM_CONDITIONAL(OC_ENABLE_DIST_PRIVATE,
+    [test "x${oc_enable_dist_private}" = "xyes"])
+
+
 ## hardcode_into_libs
 
 AM_EXTRA_RECURSIVE_TARGETS([pkg-install pkg-uninstall])
@@ -137,6 +146,7 @@ AC_CONFIG_HEADERS([include/config.h])
 AC_CONFIG_FILES([Makefile
     em-setting/Makefile
     src/Makefile
+    src/config/Makefile
     src/core/Makefile
     src/core/user_resource_const.h
     src/credential-helper/Makefile

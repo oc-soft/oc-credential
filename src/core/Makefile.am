@@ -165,15 +165,17 @@ t0_credential_desc.sh : t0_credential_desc.sh.in t0_credential_desc$(EXEEXT)
 
 check-local: t0_credential_desc.sh 
 
-clean-generic:
-	rm -f *.rc	
 
 clean-local:
+	rm -f *.rc	
 	rm -f *.wasm
 	rm -f *$(JS_MODEXT)
 	rm -f *.js
 	rm -f *.json
 	rm -f *.ts
+	rm -f app_config_i.c
+	rm -f credential_desc.c
+	rm -f t0_credential_desc.sh
 
 occredcore.d.ts: decl.d.ts.in
 	$(AWK) \

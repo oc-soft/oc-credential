@@ -2,6 +2,8 @@
 libexec_PROGRAMS = credential-ocs/credhelper
 check_PROGRAMS = credential-ocs/t01_token_gen_ui_exec \
 	t01_l10n
+noinst_PROGRAMS = credential-ocs/creddef
+
 noinst_HEADERS= cred_helper_types.h \
 	cred_helper.h \
 	cred_helper_i.h \
@@ -71,7 +73,11 @@ EXTRA_DIST = client_id.gpf.in \
 	mem_dbg_off.c.in \
 	rt_get_02.sh.in \
 	exec_names.c.in \
-	client_secret.gpf.in 
+	client_secret.gpf.in  \
+	t_store_01.sh \
+	t_erase_01.sh \
+	t_erase_02.sh \
+	t_l10n_01.sh
 
 if !TARGET_WASM
 credential_ocs_credhelper_SOURCES = $(credhelper_src)
@@ -120,6 +126,7 @@ else
 credential_ocs_t01_token_gen_ui_exec_SOURCES += path.c exe_info_linux.c
 endif
 
+credential_ocs_creddef_SOURCES = cred_default.c
 
 t01_l10n_SOURCES = t01_l10n.c \
 	l10n_i.c
@@ -143,6 +150,7 @@ credential_ocs_credhelper_LDADD=$(top_builddir)/oclib/buffer/src/libocbuffer.la 
 	$(top_builddir)/src/core/liboccredcore.la \
 	$(credhelper_lib_flags)
 
+credential_ocs_creddef_LDADD=$(top_builddir)/src/core/liboccredcore.la
 
 
 if TARGET_WASM
@@ -156,7 +164,7 @@ TESTS = t_store_01.sh t_site_01.sh t_erase_01.sh t_erase_02.sh t_l10n_01.sh
 AM_TESTS_ENVIRONMENT = HOME=$(builddir);
 CLIENT_ID_TXT=$(top_srcdir)/src/config/client-id.txt
 CLIENT_SECRET_TXT=$(top_srcdir)/src/config/client-secret.txt
-
+CLEAN_FOR_DEBUG =
 pkgdatadir=$(datadir)/$(PACKAGE_NAME)
 
 localedir = @localedir@
@@ -274,6 +282,9 @@ credential_ocs_credhelper_CPPFLAGS=-I$(top_srcdir)/oclib/buffer/include \
 	-I$(top_srcdir)/oclib/cstr/include \
 	-I$(top_srcdir)/src/core
 
+credential_ocs_creddef_CPPFLAGS= -I$(top_srcdir)/src/core
+
+
 $(builddir)/client-secret-dbg.txt:
 	: > $@
 
@@ -327,6 +338,13 @@ rt_get_02.sh : rt_get_02.sh.in
 rt_ui_01.sh : rt_ui_01.sh.in | link-ui
 	sed -e 's!%UI_EXE_RELPATH%!credential-ocs/$(ui_exe_relative_path)!' $< >$@
 	chmod u+x $@
+
+
+t_site_01.log: t_store_01.log
+
+t_erase_01.log: t_site_01.log
+
+t_erase_02.log: t_erase_01.log
 
 client_secret.gpf : client_secret.gpf.in $(srcdir)/../config/client-secret.txt $(builddir)/client-secret-dbg.txt 
 	awk -v in_file=$< -e $(awk_cmd_0) \
@@ -417,6 +435,7 @@ link-ui: credential-ocs/$(am__dirstamp)
 		$(LN_S) ../$(ui_exe_dir) $(ui_exe_subdir) ; \
 	fi
 
+
 install-libexecPROGRAMS: $(libexec_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	@for p in $(libexec_PROGRAMS); do \
@@ -477,8 +496,34 @@ uninstall-libexecPROGRAMS:
 
 uninstall-am: preuninstall uninstall-libexecPROGRAMS
 
-clean-generic:
+clean-local:
 	rm -f *.rc	
+	rm -f t_site_01.sh rt_ui_01.sh 
+	rm -f rt_get_01.sh rt_get_02.sh
+	rm -f mem_dbg_on.c mem_dbg_off.c
+	rm -f exec_names.c
+	rm -f l10n_i.c
+	rm -f credhelper_const.h
+	rm -f credhelper_res.rc
+	rm -f client_secret.gpf
+	rm -f client_secret.c
+	rm -f client_id.gpf
+	rm -f client_id.c
+	if [ -z "$(CLEAN_FOR_DEBUG)" ]; then \
+		rm -f mem_dbg.c; \
+	fi
+	rm -f client-id-dbg.txt
+	rm -f client-secret-dbg.txt
+	rm -f mem_trace_erasing
+	rm -f mem_trace_writing
+	if [ -x $(builddir)/credential-ocs/creddef ]; then \
+		rm -f `$(AM_TESTS_ENVIRONMENT) $(builddir)/credential-ocs/creddef -d`; \
+		rm -f -r \
+			`$(AM_TESTS_ENVIRONMENT) $(builddir)/credential-ocs/creddef -r`; \
+	fi
+	if [ -h credential-ocs/$(ui_exe_subdir) ]; then \
+		rm -f credential-ocs/$(ui_exe_subdir); \
+	fi
 
 .rc.o:
 	$(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --tag=RC --mode=compile \
