@@ -1,0 +1,18 @@
+#include "mem_dbg.h"
+/**
+ * start memory trace
+ */
+void
+mem_dbg_start_trace()
+{
+}
+
+/**
+ * stop memory trace
+ */
+void
+mem_dbg_stop_trace()
+{
+}
+
+/* vi: se ts=4 sw=4 et: */

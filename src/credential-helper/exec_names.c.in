@@ -1,0 +1,28 @@
+#include "exec_names.h"
+
+
+/**
+ * create token generator user interface
+ */
+const char*
+exec_names_get_ui_token_gen()
+{
+    const static char result[] = {
+        !UI_TOKEN_GEN_EXEC!
+    };
+    return result;
+}
+
+/**
+ * ui token generator executable relative from app directory
+ */
+const char*
+exec_names_get_ui_token_gen_relpath()
+{
+    const static char result[] = {
+        !UI_TOKEN_GEN_EXEC_REL_PATH!
+    };
+    return result;
+}
+
+/* vi: se ts=4 sw=4 et: */

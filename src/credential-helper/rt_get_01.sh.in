@@ -1,0 +1,49 @@
+#! /usr/bin/env sh
+client_id_path=%CLIENT_ID_PATH%
+credhelper_cmd=%CLI%
+awk_cmd=%AWK%
+
+function client_line_to_desc()
+{
+  echo $1 | $awk_cmd -e '
+    BEGIN {
+      FS=",";
+    }
+    {
+      if ($1) {
+        print "protocol=" $1;
+      }
+      if ($2) {
+        print "host=" $2;
+      }
+      if ($3) {
+        print "path=" $3;
+      }
+    }
+    END {
+      print "";
+    }'
+}
+
+function run_test()
+{
+  local res
+  local idx
+  res=0
+  idx=1
+  while read -r line;
+  do
+    if (( idx == $2 )); then
+      client_line_to_desc $line | $credhelper_cmd get 
+      res=$?
+      break;
+    fi
+    let idx++
+  done < $1
+
+  return $res 
+}
+
+run_test $client_id_path 1
+
+# vi: se ts=2 sw=2 et:

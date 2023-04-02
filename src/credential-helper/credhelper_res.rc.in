@@ -1,0 +1,28 @@
+#include <windows.h>
+#include <winver.h>
+#include "config.h"
+#include "credhelper_const.h"
+
+#define FILE_VER_0 VERSION_MAJOR,VERSION_MINOR,VERSION_REVISION,0
+#define PRODUCT_VER_0 VERSION_MAJOR,VERSION_MINOR,VERSION_REVISION,0
+
+
+
+#pragma code_page(65001)
+
+VS_VERSION_INFO  VERSIONINFO
+    FILEVERSION FILE_VER_0  
+    PRODUCTVERSION PRODUCT_VER_0  
+    FILEFLAGSMASK 0
+    FILEOS VOS_NT 
+    FILETYPE VFT_APP
+    FILESUBTYPE 0
+    BEGIN
+@INCLUDE@
+        BLOCK "VarFileInfo"
+        BEGIN
+            VALUE @TRANSLATION@
+        END
+    END
+
+/* vi: se ts=4 sw=4 et: */

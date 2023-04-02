@@ -1,3 +1,7 @@
+EXTRA_DIST = Property.idt.in \
+	Error.idt \
+	Control.idt \
+	UIText.idt
 
 lang = ja
 base_lang_txt = $(top_srcdir)/i18n/$(lang)/base.txt

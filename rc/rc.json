@@ -1,0 +1,207 @@
+{
+  "db": {
+    "init": {
+      "statements": [
+        [
+          "CREATE TABLE IF NOT EXISTS protocol ",
+          "(protocol CHAR(255), ",
+          "id CHAR(36), ",
+          "PRIMARY KEY(protocol), ",
+          "UNIQUE(id))"
+        ],
+        [
+          "CREATE TABLE IF NOT EXISTS host ",
+          "(host CHAR(255), ",
+          "id CHAR(36), ",
+          "PRIMARY KEY(host), ",
+          "UNIQUE(id))"
+        ],
+        [
+          "CREATE TABLE IF NOT EXISTS path ",
+          "(path VARCHAR(511), ",
+          "id CHAR(36), ",
+          "PRIMARY KEY(path), ",
+          "UNIQUE(id) )"
+        ],
+        [
+          "CREATE TABLE IF NOT EXISTS user ",
+          "(name VARCHAR(255) , ",
+          "id CHAR(36), ",
+          "PRIMARY KEY(name), ",
+          "UNIQUE(id))"
+        ],
+        [
+          "CREATE TABLE IF NOT EXISTS password ",
+          "(protocol CHAR(36), ",
+          "host CHAR(36), ",
+          "path CHAR(36), ",
+          "name CHAR(36), ",
+          "password VARCHAR(511), ",
+          "PRIMARY KEY (protocol, host, path, name))"
+        ],
+        [
+          "CREATE TABLE IF NOT EXISTS config_int ",
+          "(name CHAR(255), ",
+          "value INT, ",
+          "PRIMARY KEY (name))"
+        ],
+        [
+          "CREATE TABLE IF NOT EXISTS log_int ",
+          "(name CHAR(255),",
+          "value INT, ",
+          "PRIMARY KEY (name))"
+        ]
+      ] 
+    },
+    "init-tables": {
+      "statements": [
+        {
+          "name-value": [
+            [ "gc_threshold", 10 ]
+          ],
+          "condition": [
+            "SELECT COUNT(*) FROM config_int ",
+            "WHERE name = ?"
+          ],
+          "statement": [
+            "INSERT INTO config_int ",
+            "(name, value) VALUES (?, ?)"
+          ]
+        },
+        {
+          "name-value": [
+            [ "remove_count", 0 ]
+          ],
+          "condition": [
+            "SELECT COUNT(*) FROM log_int ",
+            "WHERE name = ?"
+          ],
+          "statement": [
+            "INSERT INTO log_int ",
+            "(name, value) VALUES (?, ?)"
+          ]
+        }
+      ] 
+    },
+    "select": {
+      "statements": {
+        "protocol": [
+          "SELECT id FROM protocol WHERE protocol=?"
+        ],
+        "host": [
+          "SELECT id FROM host WHERE host=?"
+        ],
+        "path": [
+          "SELECT id FROM path WHERE path=?"
+        ],
+        "user": [
+          "SELECT id FROM user WHERE name=?"
+        ],
+        "password": [
+          "SELECT password FROM password ",
+          "WHERE protocol=? ",
+          "AND host=? ",
+          "AND path=? ",
+          "AND name=? "
+        ]
+      }
+    },
+    "get": {
+      "statement": [
+        "SELECT password ",
+        "FROM password as pw ",
+        " left join protocol as prt ON pw.protocol = prt.id ",
+        " left join host h ON pw.host = h.id ",
+        " left join path pt ON pw.path = pt.id ",
+        " left join user u ON pw.name = u.id ",
+        "WHERE prt.protocol=? ",
+        "AND h.host=? ",
+        "AND pt.path=? ",
+        "AND u.name=?"
+      ]
+    },
+    "store": {
+      "statements": {
+        "protocol": {
+          "insert": [
+            "INSERT INTO protocol (protocol, id) VALUES(?,?)"
+          ]
+        },
+        "host": {
+          "insert": [
+            "INSERT INTO host (host, id) VALUES(?,?)"
+          ]
+        },
+        "path": {
+          "insert": [
+            "INSERT INTO path (path, id) VALUES(?,?)"
+          ]
+        },
+        "user": {
+          "insert": [
+            "INSERT INTO user (name, id) VALUES(?,?)"
+          ]
+        },
+        "password": {
+          "insert": [
+            "INSERT INTO password (password, protocol, host, path, name) ",
+            "VALUES(?,?,?,?,?)"
+          ],
+          "update": [
+            "UPDATE password SET ",
+            "password = ? ",
+            "WHERE protocol = ? ",
+            "AND host = ? ",
+            "AND path = ? ",
+            "AND name = ?"
+          ]
+        }
+      } 
+    },
+    "remove": {
+      "password": [
+        "DELETE FROM password ",
+        "WHERE protocol = ? ",
+        "AND host = ? ",
+        "AND path = ? ",
+        "AND name = ? "
+      ],
+      "log" : [
+        "UPDATE log_int SET value = value + 1 ",
+        "WHERE name = 'remove_count' "
+      ],
+      "gc-condition" : [
+        "SELECT COUNT(*) ",
+        "FROM log_int, config_int ",
+        "WHERE log_int.name = 'remove_count' ",
+        "AND config_int.name = 'gc_threshold' " ,
+        "AND log_int.value >= config_int.value"
+      ]
+    },
+    "gc" : {
+      "protocol" : [
+        "DELETE FROM protocol ",
+        "WHERE id NOT IN (SELECT DISTINCT protocol FROM password)"
+      ],
+      "host" : [
+        "DELETE FROM host ",
+        "WHERE id NOT IN (SELECT DISTINCT host FROM password)"
+      ],
+      "path" : [
+        "DELETE FROM path ",
+        "WHERE id NOT IN (SELECT DISTINCT path FROM password)"
+      ],
+      "name" : [
+        "DELETE FROM user ",
+        "WHERE id NOT IN (SELECT DISTINCT name FROM password)"
+      ],
+      "log" : [
+        "UPDATE log_int SET value = 0 ",
+        "WHERE name = 'remove_count' "
+      ]
+    }
+  },
+  "__comments" : [
+    "/* vi: se ts=2 sw=2 et: */"
+  ]
+}

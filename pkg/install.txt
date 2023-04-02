@@ -1,0 +1,43 @@
+
+* Un*x package installation 
+
+/usr/bin/credential-oc --> /usr/libexec/occredhelper/credhelper
+
+/usr/libexec/occredhelper/
+            +- credhelper
+            +- ui/
+               +- electron
+               +- resources/app/
+                           +- package.json
+                           +- dist/
+
+/usr/share/locale/
+          +- ja/LC_MESSAGES/
+               +- occredhelper.mo
+
+
+* Un*x per user package instllation
+~/bin/credential-oc --> ~/libexec/occredhelper/credhelper
+
+~/libexec/occredhelper/
+         +- credhelper
+         +- ui/
+            +- electron
+            +- resources/app/ 
+                        + package.json
+                        + dist/
+         + locale/ja/LC_MESSAGE/
+                    +- occredhelper.mo
+
+
+* Windows per user package installation
+%APPDATA%Local\Programs\occredhelper\
+                       +- credhelper.exe
+                       +- ui\
+                          +- electron.exe
+                          +- resources\app\
+                                      +- package.json
+                       +- locale\ja\LC_MESSAGES\
+                                    +- occredhelper.mo
+
+[comment]: # vi: se ts=2 sw=2 et:

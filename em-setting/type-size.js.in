@@ -1,0 +1,6 @@
+@TYPE_SIZE_DOC@
+function getTypeSize(typeName) {
+@TYPE_SIZE_BODY@
+}
+
+// vi: se ts=2 sw=2 et:

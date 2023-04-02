@@ -1,0 +1,37 @@
+import typescript from '@rollup/plugin-typescript'
+import json from '@rollup/plugin-json'
+const external = [
+  'electron',
+  'path'
+]
+const output = {
+  dir: 'dist',
+  format: 'cjs'
+}
+const plugins = [
+  typescript({
+    tsconfig: './tsconfig.electron.json',
+    compilerOptions: {
+      paths: {
+        occredcore: ["./core"]
+      }
+    }
+  }),
+  json()
+]
+export default [
+  {
+    input: 'electron/src/main.ts',
+    external,
+    output,
+    plugins
+  },
+  {
+    input: 'electron/src/preload.ts',
+    external,
+    output,
+    plugins
+  }
+]
+
+// vi: se ts=2 sw=2 et:

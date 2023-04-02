@@ -1,2 +1,2 @@
 # List of source files which contain translatable strings.
-src/lmdcli/main.c
+src/credential-helper/main.c

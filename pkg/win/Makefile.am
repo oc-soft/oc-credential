@@ -1,11 +1,112 @@
 SUBDIRS = ja
 
+EXTRA_DIST = ServiceControl.idt \
+	_Validation.idt \
+	MsiLockPermissionsEx.idt \
+	Condition.idt \
+	PublishComponent.idt \
+	Environment.idt \
+	CustomAction.idt \
+	ODBCTranslator.idt \
+	MsiFileHash.idt \
+	Property.idt.in \
+	MsiDigitalSignature.idt \
+	ComboBox.idt \
+	CCPSearch.idt \
+	File_org.idt \
+	AdvtUISequence.idt \
+	ODBCDataSource.idt \
+	Upgrade.idt \
+	Dialog.idt \
+	Shortcut.idt \
+	Class.idt \
+	ActionText.idt \
+	CompLocator.idt \
+	BindImage.idt \
+	Component.idt.in \
+	Billboard.idt \
+	InstallUISequence.idt \
+	RemoveRegistry.idt \
+	File.idt.in \
+	LockPermissions.idt \
+	MsiPatchMetadata.idt \
+	Verb.idt \
+	PatchPackage.idt \
+	TextStyle.idt \
+	MsiServiceConfig.idt \
+	Error.idt \
+	MsiAssemblyName.idt \
+	MsiPatchHeaders.idt \
+	MoveFile.idt \
+	MIME.idt \
+	ControlEvent.idt \
+	MsiShortcutProperty.idt \
+	IniFile.idt \
+	SFPCatalog.idt \
+	AdminUISequence.idt \
+	Binary.idt \
+	ServiceInstall.idt \
+	FileSFPCatalog.idt \
+	MsiAssembly.idt \
+	ReserveCost.idt \
+	Registry.idt \
+	ODBCDriver.idt \
+	Control.idt \
+	MsiPatchOldAssemblyName.idt \
+	Directory.idt \
+	DrLocator.idt \
+	MsiDigitalCertificate.idt \
+	Icon.idt \
+	Signature.idt \
+	ODBCSourceAttribute.idt \
+	ODBCAttribute.idt \
+	AppId.idt \
+	Feature.idt \
+	RemoveFile.idt \
+	CheckBox.idt \
+	MsiPatchOldAssemblyFile.idt \
+	AppSearch.idt \
+	MsiServiceConfigFailureActions.idt \
+	FeatureComponents.idt \
+	RadioButton.idt \
+	AdvtExecuteSequence.idt \
+	RegLocator.idt \
+	BBControl.idt \
+	MsiPatchCertificate.idt \
+	MsiEmbeddedUI.idt \
+	IsolatedComponent.idt \
+	EventMapping.idt \
+	ListView.idt \
+	UIText.idt \
+	ControlCondition.idt \
+	Media.idt \
+	TypeLib.idt \
+	MsiSFCBypass.idt \
+	AdminExecuteSequence.idt \
+	Font.idt \
+	DuplicateFile.idt \
+	IniLocator.idt \
+	Complus.idt \
+	Extension.idt \
+	InstallExecuteSequence.idt \
+	MsiPackageCertificate.idt \
+	LaunchCondition.idt \
+	RemoveIniFile.idt \
+	Binary/Up.ibd \
+	Binary/New.ibd \
+	ListBox.idt \
+	SelfReg.idt \
+	MsiEmbeddedChainer.idt \
+	CreateFolder.idt \
+	MsiPatchSequence.idt \
+	ProgId.idt \
+	Patch.idt 
 
 MSIDB = msidb.exe
 MSIINFO = msiinfo.exe
 
-lmdprog_exe = lmdcli.exe
-lmdprog = $(top_builddir)/src/lmdcli/.libs/lmdcli.exe
+credhelper_prog_exe = credhelper.exe
+credhelper_prog = $(top_builddir)/src/credential-helper/.libs/credhelper.exe
 lang_map = $(top_srcdir)/win/lang_map.txt
 upgrade_code_txt = $(top_srcdir)/win/upgrade-code.txt
 link_csv = $(top_srcdir)/url/url.csv
@@ -27,7 +128,7 @@ pkg_src= \
 	$(src_app_dir)/$(libcurl_dll) \
 	$(src_app_dir)/$(libintl_dll) \
 	$(src_app_dir)/$(libjson_c_dll) \
-	$(src_app_dir)/$(lmdprog_exe)
+	$(src_app_dir)/$(credhelper_prog_exe)
 
 MSI_TABLES_0 = \
 	ActionText.idt \
@@ -201,7 +302,7 @@ clean-generic:
 
 Component.idt : Component.idt.in
 	sed -e " \
-		s/%LMDCLI_EXE%/$(notdir $(lmdprog))/; \
+		s/%LMDCLI_EXE%/$(notdir $(credhelper_prog))/; \
 		s/%LIBCURL_DLL%/$(libcurl_dll)/; \
 		s/%LIBINTL_DLL%/$(libintl_dll)/; \
 		s/%LIBJSON_C_DLL%/$(libjson_c_dll)/" $< > $@ 
@@ -218,7 +319,7 @@ Property.idt : Property.idt.in $(upgrade_code_txt) $(link_csv)
 
 
 File.idt : File.idt.in $(lang_map)
-	lmd_size=`du -b $(lmdprog) | awk -e '{ print $$1 }'` ; \
+	lmd_size=`du -b $(credhelper_prog) | awk -e '{ print $$1 }'` ; \
 	libcurl_dll_size=`du -b $(src_libcurl_dll) | awk -e '{print $$1 }'`; \
 	libintl_dll_size=`du -b $(src_libintl_dll) | awk -e '{print $$1 }'`; \
  	libjson_c_dll_size=`du -b $(src_libjson_c_dll) | awk -e '{print $$1 }'`; \
@@ -227,7 +328,7 @@ File.idt : File.idt.in $(lang_map)
 		s/%LMDCLI_SIZE%/$$lmd_size/; \
 	   	s/%LMDCLI_VERSION%/$(PACKAGE_VERSION)/; \
 		s/%LMDCLI_LANGS%/$$langs/; \
-		s/%LMDCLI_EXE%/$(notdir $(lmdprog))/; \
+		s/%LMDCLI_EXE%/$(notdir $(credhelper_prog))/; \
 		s/%LIBCURL_DLL%/$(libcurl_dll)/; \
 		s/%LIBINTL_DLL%/$(libintl_dll)/; \
 		s/%LIBJSON_C_DLL%/$(libjson_c_dll)/; \
@@ -287,7 +388,7 @@ $(src_app_dir)/$(libjson_c_dll) : $(src_libjson_c_dll)
 	$(MKDIR_P) $(src_app_dir)
 	cp $< $@
 
-$(src_app_dir)/$(lmdprog_exe) : $(lmdprog)
+$(src_app_dir)/$(credhelper_prog_exe) : $(credhelper_prog)
 	$(MKDIR_P) $(src_app_dir)
 	cp $< $@
 

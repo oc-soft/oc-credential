@@ -79,4 +79,48 @@ int main(int argc, char** argv) {
 	AM_CONDITIONAL(USE_LIB_UUID, [test "x$oc_lib_uuid" == xyes])
 ])
 
+AC_DEFUN([OC_CHECK_TARGET_WASM],
+	[
+oc_target_wasm=no
+AC_COMPILE_IFELSE(
+	[AC_LANG_SOURCE([
+#ifndef __EMSCRIPTEN__
+#error The compiler is not emscripten 
+#endif
+	])],
+	[oc_target_wasm=yes],
+	[oc_target_wasm=no]) 
+AM_CONDITIONAL(TARGET_WASM, [test "x$oc_target_wasm" == xyes])
+])
 
+AC_DEFUN([OC_CHECK_ELECTRON_TARGET],[
+AC_REQUIRE([AC_CANONICAL_TARGET])
+electron_target_cpu=
+	case $target_cpu in 
+	x86_64) electron_target_cpu=x64;;
+	esac
+electron_target_os=
+	case $target_os in
+	*linux*) electron_target_os=linux;;
+	*darwin*) 
+		electron_target_os=darwin
+		;;
+	esac
+
+AC_SUBST([ELECTRON_TARGET_CPU], [$electron_target_cpu])
+AC_SUBST([ELECTRON_TARGET_OS], [$electron_target_os])
+])
+
+AC_DEFUN([OC_CHECK_MAC_TARGET],[
+AC_REQUIRE([AC_CANONICAL_TARGET])
+	case $target_os in
+	*darwin*) 
+		oc_target_os=darwin
+		;;
+	esac
+
+AM_CONDITIONAL([TARGET_MACOS], [test x$oc_target_os = xdarwin])
+])
+
+
+# vi: se ts=4 sw=4:

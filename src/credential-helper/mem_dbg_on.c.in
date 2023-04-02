@@ -1,0 +1,43 @@
+#include "config.h"
+#include "mem_dbg.h"
+#include <stdio.h>
+#if HAVE_MCHECK_H
+#include <mcheck.h>
+
+/**
+ * start memory trace
+ */
+void
+mem_dbg_start_trace()
+{
+    mtrace();
+}
+
+/**
+ * stop memory trace
+ */
+void
+mem_dbg_stop_trace()
+{
+    muntrace();
+}
+
+#else
+/**
+ * start memory trace
+ */
+void
+mem_dbg_start_trace()
+{
+}
+
+/**
+ * stop memory trace
+ */
+void
+mem_dbg_stop_trace()
+{
+}
+
+#endif
+/* vi: se ts=4 sw=4 et: */

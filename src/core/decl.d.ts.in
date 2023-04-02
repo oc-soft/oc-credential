@@ -1,0 +1,12 @@
+
+declare module "!MODULE_NAME!" {
+  export interface Module {
+    credential_erase(desc: string): boolean
+    credential_store(desc: string): boolean
+    credential_get(desc: string): string
+  }
+
+  export default function !CREATE_MODULE!(srcModule?: any): Module
+}
+
+// vi: se ts=2 sw=2 et:

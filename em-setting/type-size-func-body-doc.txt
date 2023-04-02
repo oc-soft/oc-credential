@@ -1,0 +1,4 @@
+/**
+ * @param {string} typeName c language type name 
+ * @return {number | undefined } type size
+ */
