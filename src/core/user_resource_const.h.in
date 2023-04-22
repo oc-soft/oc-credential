@@ -17,14 +17,33 @@ _USER_RESOURCE_CONST_ITFC_BEGIN
 #define OC_DATA_DIR_NAME "@OC_DATA_DIR_NAME@"
 
 /**
+ * data directory name
+ */
+#define OC_DATA_DIR_NAME_W L"@OC_DATA_DIR_NAME@"
+
+
+
+/**
  * data file name
  */
 #define OC_DB_FILE_NAME "@OC_DB_FILE_NAME@"
 
 /**
+ * data file name
+ */
+#define OC_DB_FILE_NAME_W L"@OC_DB_FILE_NAME@"
+
+
+/**
  * dat file extension
  */
 #define OC_DB_FILE_EXT "@OC_DB_FILE_EXT@"
+
+/**
+ * dat file extension
+ */
+#define OC_DB_FILE_EXT_W L"@OC_DB_FILE_EXT@"
+
 
 _USER_RESOURCE_CONST_ITFC_END
 /* vi: se ts=4 sw=4 et: */

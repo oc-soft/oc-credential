@@ -18,7 +18,10 @@ VS_VERSION_INFO  VERSIONINFO
     FILETYPE VFT_APP
     FILESUBTYPE 0
     BEGIN
+        BLOCK "StringFileInfo" 
+        BEGIN
 @INCLUDE@
+        END
         BLOCK "VarFileInfo"
         BEGIN
             VALUE @TRANSLATION@

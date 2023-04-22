@@ -106,13 +106,15 @@ MSIDB = msidb.exe
 MSIINFO = msiinfo.exe
 
 credhelper_prog_exe = credhelper.exe
-credhelper_prog = $(top_builddir)/src/credential-helper/.libs/credhelper.exe
+credhelper_prog = $(top_builddir)/src/credential-helper/credential-ocs/credhelper.exe
 lang_map = $(top_srcdir)/win/lang_map.txt
 upgrade_code_txt = $(top_srcdir)/win/upgrade-code.txt
 link_csv = $(top_srcdir)/url/url.csv
 
 dll_sys_root=@OC_DLL_SYS_ROOT@
 company_name=@OC_COMPANY_NAME@
+
+staging_dir=/tmp/staging 
 
 libcurl_dll=libcurl-4.dll
 libintl_dll=libintl-8.dll
@@ -292,8 +294,18 @@ awk_cmd_3 = ' \
 
 
 if RUN_WIN
-all-am: Makefile $(PROGRAMS) oc-credential.msi oc-credential-ja.msi
+all-local: Makefile $(PROGRAMS)
 endif
+
+
+staging-install:
+	$(MAKE) -C $(top_builddir) DESTDIR=$(staging_dir) install
+
+staging-uninstall:
+	$(MAKE) -C $(top_builddir) DESTDIR=$(staging_dir) uninstall
+
+
+.PHONY: staging-install
 
 
 clean-generic:
@@ -302,7 +314,7 @@ clean-generic:
 
 Component.idt : Component.idt.in
 	sed -e " \
-		s/%LMDCLI_EXE%/$(notdir $(credhelper_prog))/; \
+		s/%CREDHELPER_EXE%/$(notdir $(credhelper_prog))/; \
 		s/%LIBCURL_DLL%/$(libcurl_dll)/; \
 		s/%LIBINTL_DLL%/$(libintl_dll)/; \
 		s/%LIBJSON_C_DLL%/$(libjson_c_dll)/" $< > $@ 
@@ -325,10 +337,10 @@ File.idt : File.idt.in $(lang_map)
  	libjson_c_dll_size=`du -b $(src_libjson_c_dll) | awk -e '{print $$1 }'`; \
 	langs=`awk -e $(awk_cmd_0) $(lang_map)`; \
 	sed -e " \
-		s/%LMDCLI_SIZE%/$$lmd_size/; \
-	   	s/%LMDCLI_VERSION%/$(PACKAGE_VERSION)/; \
-		s/%LMDCLI_LANGS%/$$langs/; \
-		s/%LMDCLI_EXE%/$(notdir $(credhelper_prog))/; \
+		s/%CREDHELPER_SIZE%/$$lmd_size/; \
+	   	s/%CREDHELPER_VERSION%/$(PACKAGE_VERSION)/; \
+		s/%CREDHELPER_LANGS%/$$langs/; \
+		s/%CREDHELPER_EXE%/$(notdir $(credhelper_prog))/; \
 		s/%LIBCURL_DLL%/$(libcurl_dll)/; \
 		s/%LIBINTL_DLL%/$(libintl_dll)/; \
 		s/%LIBJSON_C_DLL%/$(libjson_c_dll)/; \
@@ -376,21 +388,21 @@ oc-credential-ja.msi: oc-credential.msi $(srcdir)/ja/Control.idt $(srcdir)/ja/Ui
 	$(MSIINFO) $@ -v "{$$pkg_code}"
 	
 
-$(src_app_dir)/$(libcurl_dll) : $(src_libcurl_dll)
-	$(MKDIR_P) $(src_app_dir)
-	cp $< $@
-
-$(src_app_dir)/$(libintl_dll) : $(src_libintl_dll)
-	$(MKDIR_P) $(src_app_dir)
-	cp $< $@
-
-$(src_app_dir)/$(libjson_c_dll) : $(src_libjson_c_dll)
-	$(MKDIR_P) $(src_app_dir)
-	cp $< $@
-
-$(src_app_dir)/$(credhelper_prog_exe) : $(credhelper_prog)
-	$(MKDIR_P) $(src_app_dir)
-	cp $< $@
+#$(src_app_dir)/$(libcurl_dll) : $(src_libcurl_dll)
+#	$(MKDIR_P) $(src_app_dir)
+#	cp $< $@
+#
+#$(src_app_dir)/$(libintl_dll) : $(src_libintl_dll)
+#	$(MKDIR_P) $(src_app_dir)
+#	cp $< $@
+#
+#$(src_app_dir)/$(libjson_c_dll) : $(src_libjson_c_dll)
+#	$(MKDIR_P) $(src_app_dir)
+#	cp $< $@
+#
+#$(src_app_dir)/$(credhelper_prog_exe) : $(credhelper_prog)
+#	$(MKDIR_P) $(src_app_dir)
+#	cp $< $@
 
 
 

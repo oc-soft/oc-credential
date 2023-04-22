@@ -2,6 +2,7 @@
 #include <string.h>
 #include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "exe_info.h"
 

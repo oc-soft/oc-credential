@@ -1,5 +1,6 @@
 #include "str_conv.h"
 #include <stdlib.h>
+#include <Windows.h>
 
 /**
  * allocate heap memory
@@ -39,7 +40,7 @@ str_conv_utf8_to_utf16(
         } else {
             free_mem_0 = str_conv_free;
         }
-        buffer = alloc_mem_0(size_utf16 * WCHAR);
+        buffer = alloc_mem_0(size_utf16 * sizeof(WCHAR));
         if (buffer) {
             int state;
             state = MultiByteToWideChar(
@@ -71,7 +72,7 @@ str_conv_utf16_to_utf8(
     char* result;
     result = NULL;
     size_utf8 = WideCharToMultiByte(
-        CP_UTF8, 0, (LPCWCH)utf16_str, size, NULL, 0, NULL);
+        CP_UTF8, 0, (LPCWCH)utf16_str, size, NULL, 0, NULL, NULL);
 
     if (size_utf8) {
         char* buffer;
@@ -91,7 +92,8 @@ str_conv_utf16_to_utf8(
         if (buffer) {
             int state;
             state = WideCharToMultiByte(
-                CP_UTF8, 0, utf16_str, size, (LPSTR)buffer, size_utf8, NULL);
+                CP_UTF8, 0, utf16_str, size, (LPSTR)buffer, size_utf8,
+                NULL, NULL);
             if (state) {
                 result = buffer;
                 buffer = NULL;
@@ -103,6 +105,16 @@ str_conv_utf16_to_utf8(
         } 
     }
     return result;
+}
+
+/**
+ * allocate heap memory
+ */
+void*
+str_conv_alloc(
+    size_t size)
+{
+    return malloc(size);
 }
 
 

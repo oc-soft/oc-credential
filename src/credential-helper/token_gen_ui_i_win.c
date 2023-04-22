@@ -2,8 +2,10 @@
 #include <process.h>
 #include <wchar.h>
 #include <windows.h>
-#include "str_conv.h"
+
 #include "buffer/char_buffer.h"
+#include "str_conv.h"
+#include "fd_io.h"
 
 /**
  * convert from utf8 string to utf16 string and fill argv
@@ -60,7 +62,7 @@ token_gen_ui_i_run(
         for (idx = 0; idx < sizeof(buff) / sizeof(buff[0]); idx++) {
             buff[idx] = buffer_char_buffer_create_00(
                 token_gen_ui_i_alloc,
-                token_gen_ui_i_relloc,
+                token_gen_ui_i_realloc,
                 token_gen_ui_i_free,
                 token_gen_ui_i_mem_copy,
                 token_gen_ui_i_mem_move,
@@ -78,7 +80,7 @@ token_gen_ui_i_run(
     if (result == 0) {
         program_w = (wchar_t*)str_conv_utf8_to_utf16(program,
             strlen(program),
-            token_gen_ui_alloc, token_gen_ui_free); 
+            token_gen_ui_i_alloc, token_gen_ui_i_free); 
         result = program_w ? 0 : -1;
     }
     if (result == 0) {
@@ -101,7 +103,8 @@ token_gen_ui_i_run(
         }
     }
     if (result == 0) {
-        child_pid = _wspawnv(_P_NOWAIT, program_w, argv_param);
+        child_pid = _wspawnv(_P_NOWAIT, program_w,
+            (const wchar_t* const*)argv_param);
     }
 
     if (result == 0) {
@@ -119,9 +122,9 @@ token_gen_ui_i_run(
                     result = -1;
                 }
             }
-            wstate = WaitForSingleObject(child_pid, 0); 
+            wstate = WaitForSingleObject((HANDLE)child_pid, 0); 
             if (wstate == WAIT_OBJECT_0) {
-                GetExitCodeProcess(child_pid, &proc_status);
+                GetExitCodeProcess((HANDLE)child_pid, &proc_status);
                 break;
             } else if (wstate == WAIT_FAILED) {
                 proc_status = GetLastError();
@@ -181,7 +184,7 @@ token_gen_ui_i_run(
     }
     
     if (child_pid != -1) {
-        CloseHandle(child_pid);
+        CloseHandle((HANDLE)child_pid);
     }
     if (argv_param) {
         for (idx = 0; idx < argc; idx++) {
@@ -230,7 +233,7 @@ token_gen_ui_i_fill_argv(
     if (result) {
         int idx0;
         for (idx0 = 0; idx0 < idx; idx0++) {
-            token_gen_ui_free(wargv[idx0]);
+            token_gen_ui_i_free(wargv[idx0]);
             wargv[idx0] = NULL;
         }
     }

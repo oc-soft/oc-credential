@@ -5,7 +5,7 @@
  * create pipe
  */
 int
-fd_pipe(
+fd_io_pipe(
     int* pipe_fd)
 {
     return _pipe(pipe_fd, 0, 0);
@@ -77,6 +77,19 @@ fd_io_write(
 {
     return _write(fd, buff, size);
 }
+
+/**
+ * set file descriptor non-blocking
+ */
+int
+fd_io_set_nonblock(
+    int fd)
+{
+    int result;
+    result = 0;
+    return result;
+}
+
 
 
 /**

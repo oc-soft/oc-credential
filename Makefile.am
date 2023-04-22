@@ -1,5 +1,4 @@
 SUBDIRS = po oclib em-setting src pkg 
-ACLOCAL_AMFLAGS = -I m4
 
 EXTRA_DIST = rc/rc.json \
 	i18n/ja/base.txt \

@@ -1,6 +1,7 @@
 build*/
 *.swp
 *~
+.exrc
 autom4te.cache/
 m4/
 configure

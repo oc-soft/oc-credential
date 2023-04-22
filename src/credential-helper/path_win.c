@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <windows.h>
 #include <Pathcch.h>
+#include <strsafe.h>
 #include "str_conv.h"
 
 
@@ -35,21 +36,21 @@ path_join(
     
     result = NULL;
     if (path_1 && path_2) {
-        WSTR path_1w;
-        WSTR path_2w;
+        LPWSTR path_1w;
+        LPWSTR path_2w;
 
         path_1w = str_conv_utf8_to_utf16(
             path_1, strlen(path_1) + 1, NULL, NULL);
         path_2w = str_conv_utf8_to_utf16(
             path_2, strlen(path_2) + 1, NULL, NULL);
         if (path_1w && path_2w) {
-            WSTR path_12w;
+            LPWSTR path_12w;
             HRESULT hr;
             size_t path_12w_size;
             path_12w_size = 0;
             path_12w = NULL;
             hr = PathAllocCombine(path_1w, path_2w, PATHCCH_ALLOW_LONG_PATHS,
-                &path_12w)
+                &path_12w);
 
             if (SUCCEEDED(hr)) {
                 hr = StringCchLengthW(
@@ -57,8 +58,8 @@ path_join(
             }
             if (SUCCEEDED(hr)) {
                 result = str_conv_utf16_to_utf8(path_12w, path_12w_size + 1,
-                    alloc_mem ? alloc_mem : path_alloc_i, 
-                    alloc_free ? free_mem : path_free_i);
+                    alloc_mem ? alloc_mem : path_join_i_alloc, 
+                    free_mem ? free_mem : path_join_i_free);
             }
             if (path_12w) {
                 LocalFree(path_12w);

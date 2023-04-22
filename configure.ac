@@ -8,7 +8,7 @@ AM_GNU_GETTEXT_VERSION([0.21.1])
 
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_SUBDIRS([oclib])
-
+LT_LANG([Windows Resource])
 
 AC_PROG_CC
 AC_CHECK_PROG([GPERF], [gperf --version], [gperf])
@@ -18,6 +18,8 @@ AC_CHECK_PROG([NODE], [node --version], [node])
 AC_CHECK_PROG([NPM], [npm --version], [npm])
 AC_CHECK_PROG([CURL], [curl --version], [curl])
 AC_CHECK_PROG([UNZIP], [unzip --version], [unzip])
+
+AC_CHECK_TOOL([WINDRES], [windres])
 
 AC_CHECK_LIB([json-c], [json_object_new_object])
 AC_CHECK_LIB([curl], [curl_url])
@@ -91,6 +93,8 @@ OC_COMPANY_NAME=$oc_company_name
 AC_SUBST([OC_DLL_SYS_ROOT])
 AC_SUBST([OC_COMPANY_NAME])
 AC_SUBST([LOCPATH_NAME], [locpath.txt])
+AC_SUBST([LOGGING_FILE_NAME], [log.txt])
+AC_SUBST([LOGGING_MAX_MESSAGE_SIZE], [1024])
 
 case $host_os in
     linux*)
@@ -99,6 +103,14 @@ case $host_os in
 esac
 AM_CONDITIONAL(RUN_LINUX, test "x$oc_run_linux" = xyes)
 
+
+case $build_os in
+    msdosdjgpp* | cyg* | mingw* | cegcc*)
+        oc_build_ms=yes
+    ;;
+esac
+
+AM_CONDITIONAL(BUILD_MS, test "x$oc_build_ms" = xyes)
 
 if test "x$oc_target_wasm" = xno ; then
     if test "x$WASM_BUILD_ROOT" == "x" ; then
@@ -150,6 +162,7 @@ AC_CONFIG_FILES([Makefile
     src/core/Makefile
     src/core/user_resource_const.h
     src/credential-helper/Makefile
+    src/credential-helper/logging_win.h
     src/ui/Makefile
     pkg/Makefile
     pkg/win/Makefile

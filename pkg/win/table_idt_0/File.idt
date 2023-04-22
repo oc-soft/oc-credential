@@ -1,0 +1,4 @@
+File	Component_	FileName	FileSize	Version	Language	Attributes	Sequence
+s72	s72	l255	i4	S72	S20	I2	i2
+File	File
+{9B69C491-F4ED-40BE-BD65-74E473B4B95A}	{C70C522F-930D-4810-A6BC-AB46C8AE0791}	lmdcli.exe	@LMDCLI_SIZE@	@LMDCLI_VERSION@

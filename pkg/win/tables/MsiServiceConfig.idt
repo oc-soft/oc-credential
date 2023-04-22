@@ -1,0 +1,3 @@
+MsiServiceConfig	Name	Event	ConfigType	Argument	Component_
+s72	l255	i2	i4	S0	s72
+MsiServiceConfig	MsiServiceConfig

@@ -1,0 +1,24 @@
+#ifndef __LOGGING_WIN_H__
+#define __LOGGING_WIN_H__
+
+
+#ifdef __cplusplus
+#define _LOGGING_WIN_ITFC_BEGIN extern "C" {
+#define _LOGGING_WIN_ITFC_END }
+#else
+#define _LOGGING_WIN_ITFC_BEGIN 
+#define _LOGGING_WIN_ITFC_END
+#endif
+
+_LOGGING_WIN_ITFC_BEGIN 
+
+#define LOGGING_FILE_NAME "@LOGGING_FILE_NAME@"
+
+#define LOGGING_FILE_NAME_W L"@LOGGING_FILE_NAME@"
+
+#define LOGGING_MAX_MESSAGE_SIZE @LOGGING_MAX_MESSAGE_SIZE@
+
+
+_LOGGING_WIN_ITFC_END
+/* vi: se ts=4 sw=4 et: */
+#endif

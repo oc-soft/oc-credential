@@ -1,7 +1,7 @@
 #ifndef __APP_CONFIG_H__
 #define __APP_CONFIG_H__
 
-#include <json-c/json_types.h>
+#include <json-c/json_object.h>
 #ifdef __cplusplus
 #define _APP_CONFIG_ITFC_BEGIN extern "C" {
 #define _APP_CONFIG_ITFC_END }

@@ -1,0 +1,7 @@
+Component	ComponentId	Directory_	Attributes	Condition	KeyPath
+s72	S38	s72	i2	S255	S72
+Component	Component
+oc-lmdcli	{C70C522F-930D-4810-A6BC-AB46C8AE0791}	MAINPROGDIR	2		oc-lmdcli.exe
+libcurl-4	{795E386E-8898-469F-8131-F183FEA8DA13}	MAINPROGDIR	2		libcurl-4.dll
+libintl-8	{3AF3F37A-6F90-42C0-9026-E1D0A05F7C1E}	MAINPROGDIR	2		libintl-8.dll
+libjson-c-2	{7BA10901-6A21-4DA1-9B91-3090CB62A6AC}	MAINPROGDIR	2		libjson-c-2.dll

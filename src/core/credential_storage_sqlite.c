@@ -7,7 +7,6 @@
 #include <sqlite3.h>
 #include <json-c/json_object.h>
 #include <json-c/json_object_iterator.h>
-#include <uuid/uuid.h>
 #ifdef HAVE_EMSCRIPTEN_H
 #include <emscripten.h>
 #endif
@@ -16,6 +15,7 @@
 #include "app_config.h"
 #include "user_resource.h"
 #include "wasm_i.h"
+#include "uuid_i.h"
 
 /**
  * find password by id
@@ -502,8 +502,9 @@ credential_storage_store_password(
         for (idx = 0;
             idx < sizeof(key_id_table) / sizeof(key_id_table[0]); idx++) {
             json_object* store_stmt_jobj;
-            store_stmt_jobj = json_object_object_get(
-                store_stmts_jobj, key_id_table[idx].name);
+            store_stmt_jobj = NULL;
+            json_object_object_get_ex(
+                store_stmts_jobj, key_id_table[idx].name, &store_stmt_jobj);
             result = store_stmt_jobj ? 0 : -1;
             if (result == 0) {
                 result = credential_storage_insert_if_not_exists(
@@ -608,8 +609,8 @@ credential_storage_get_id(
     prepared_str = NULL;
     prepared_str_len = 0;
 
-
-    stmt_jobj = json_object_object_get(select_statements, table);
+    stmt_jobj = NULL;
+    json_object_object_get_ex(select_statements, table, &stmt_jobj);
     result = stmt_jobj ? 0 : -1;
     if (result == 0) {
         result = credential_storage_get_statement_str_from_json(stmt_jobj,
@@ -1116,7 +1117,8 @@ credential_storage_get_json(
         jsname = va_arg(argp, const char*);
         if (jsname) {
             json_object* child_obj;   
-            child_obj = json_object_object_get(parent_obj, jsname);
+            child_obj = NULL;
+            json_object_object_get_ex(parent_obj, jsname, &child_obj);
             if (child_obj) {
                 parent_obj = child_obj;
             } else {
@@ -1198,11 +1200,14 @@ credential_storage_init_table_statement(
     condition_str = NULL;
     statement_run_str = NULL;
      
-    name_value_array_jobj = json_object_object_get(
-        statement_jobj, "name-value"); 
+    name_value_array_jobj = NULL;
+    json_object_object_get_ex(
+        statement_jobj, "name-value", &name_value_array_jobj); 
     result = name_value_array_jobj ? 0 : -1;
     if (result == 0) {
-        condition_jobj = json_object_object_get(statement_jobj, "condition"); 
+        condition_jobj = NULL;
+        json_object_object_get_ex(statement_jobj, "condition",
+            &condition_jobj); 
         result = condition_jobj ? 0 : -1;
     }
     if (result == 0) {
@@ -1221,8 +1226,10 @@ credential_storage_init_table_statement(
     }
  
     if (result == 0) {
-        statement_run_jobj = json_object_object_get(
-            statement_jobj, "statement"); 
+        statement_run_jobj = NULL;
+        json_object_object_get_ex(
+            statement_jobj, "statement",
+            &statement_run_jobj); 
         result = statement_run_jobj ? 0 : -1;
     }
     if (result == 0) {
@@ -1417,9 +1424,7 @@ credential_storage_init_tables()
     return result;
 }
 
-#ifndef UUID_STR_LEN
-#define UUID_STR_LEN 37
-#endif
+
 
 /**
  * generate uuid
@@ -1428,17 +1433,8 @@ static int
 credential_storage_generate_uuid(
     char** uuid)
 {
-    uuid_t uuid_0;
-    char* uuid_str;
     int result;
-    result = 0;
-    uuid_str = (char*)credential_i_alloc(UUID_STR_LEN);
-    result = uuid_str ? 0 : -1;
-    if (result == 0) {
-        uuid_generate(uuid_0);
-        uuid_unparse(uuid_0, uuid_str);
-        *uuid = uuid_str;
-    }
+    result = uuid_i_generate(uuid, credential_i_alloc);
     return result; 
 }
 

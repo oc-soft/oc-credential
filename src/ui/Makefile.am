@@ -119,7 +119,7 @@ vite.config.ts: vite.config.ts.in
 		-v package_name=$(PACKAGE_NAME) \
 		-v package_version=$(PACKAGE_VERSION) \
 		-e $(awk_cmd_0) $< >$@
-
+if !BUILD_MS
 mksrc-tree:
 	if [ "$(srcdir)" != "." ] ; then \
 		for item in $(src_dirs) ; do \
@@ -128,6 +128,14 @@ mksrc-tree:
 			fi \
 		done; \
 	fi
+else
+mksrc-tree:
+	if [ "$(srcdir)" != "." ] ; then \
+		for item in $(src_dirs) ; do \
+			cp -r $(srcdir)/$$item $(builddir); \
+		done; \
+	fi
+endif
 
 mkdir-tree:
 	for item in config pkg ; do \
@@ -217,11 +225,18 @@ clean-local:
 		rm -r -f node_modules; \
 		rm -r -f dist; \
 	fi
+if !BUILD_MS
 	for item in $(src_dirs) ; do \
 		if [ -h $$item ] ; then \
 			rm $$item; \
 		fi \
 	done
+else
+	for item in $(src_dirs) ; do \
+		rm -r -f $$item; \
+	done
+endif
+
 
 install-exec-local: 
 	@$(NORMAL_INSTALL)

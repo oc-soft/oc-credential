@@ -29,14 +29,15 @@ noinst_HEADERS= cred_helper_types.h \
 	mem_dbg.h \
 	option.h \
 	logging.h \
+	logging_win.h \
 	ui_token_gen.h \
 	ui_token_gen_i.h \
 	ui_token_gen_types.h \
 	token_gen_ui.h \
 	token_gen_ui_exec.h \
 	token_gen_ui_i.h \
-	str_conv.h \
 	path.h \
+	time_zone.h \
 	url.h
 
 
@@ -69,6 +70,7 @@ EXTRA_DIST = client_id.gpf.in \
 	mem_dbg_on.c.in \
 	rt_get_01.sh.in \
 	l10n_i.c.in \
+	logging_win.h.in \
 	credhelper_const.h.in \
 	mem_dbg_off.c.in \
 	rt_get_02.sh.in \
@@ -90,6 +92,9 @@ pkg_bindir = @pkg_bindir@
 GUI_EXE_SUBDIR=@GUI_EXE_SUBDIR@
 OC_EXE_ROOT_NAME=@OC_EXE_ROOT_NAME@
 LOCPATH_NAME=@LOCPATH_NAME@
+LOGGING_FILE_NAME=@LOGGING_FILE_NAME@
+LOGGING_MAX_MESSAGE_SIZE=@LOGGING_MAX_MESSAGE_SIZE@
+
 SKIP_LOCPATH_INSTALL=
 deploy_dir_def = $(abs_top_builddir)/pkg-img
 
@@ -99,6 +104,8 @@ credential_ocs_credhelper_SOURCES += l10n_user_win.c
 credential_ocs_credhelper_SOURCES += fd_io_win.c
 credential_ocs_credhelper_SOURCES += token_gen_ui_i_win.c
 credential_ocs_credhelper_SOURCES += path_win.c
+credential_ocs_credhelper_SOURCES += logging_win.c
+credential_ocs_credhelper_SOURCES += time_zone_win.c
 endif
 if RUN_LINUX
 credential_ocs_credhelper_SOURCES += exe_info_linux.c
@@ -107,6 +114,7 @@ credential_ocs_credhelper_SOURCES += fd_io.c
 credential_ocs_credhelper_SOURCES += token_gen_ui_i_posix.c
 credential_ocs_credhelper_SOURCES += path.c
 credential_ocs_credhelper_SOURCES += logging.c
+credential_ocs_credhelper_SOURCES += time_zone.c
 endif
 
 if RUN_WIN
@@ -145,7 +153,8 @@ endif
 
 
 
-credential_ocs_credhelper_LDADD=$(top_builddir)/oclib/buffer/src/libocbuffer.la \
+credential_ocs_credhelper_LDADD= \
+	$(top_builddir)/oclib/buffer/src/libocbuffer.la \
 	$(top_builddir)/oclib/cstr/src/liboccstr.la \
 	$(top_builddir)/src/core/liboccredcore.la \
 	$(credhelper_lib_flags)
@@ -312,7 +321,7 @@ clean-client-dbg:
 
 .PHONY: client-dbg clean-client-dbg
 
-all-local: rt_get_01.sh rt_get_02.sh rt_ui_01.sh
+all-local: rt_get_01.sh rt_get_02.sh rt_ui_01.sh 
 
 t_site_01.sh : t_site_01.sh.in
 	sed -e 's!%CLIENT_ID_PATH%!$(top_srcdir)/src/config/client-id.txt!' \
@@ -532,10 +541,14 @@ clean-local:
 			--preprocessor-arg -E \
 			--preprocessor-arg -x \
 			--preprocessor-arg c \
+			--preprocessor-arg -D \
+			--preprocessor-arg RC_INVOKED \
 			--preprocessor-arg -I$(top_builddir)/include \
 			--preprocessor-arg -I$(builddir) \
 			--preprocessor-arg -I$(srcdir) \
 			-i $< -o $@
+
+
 
 .gpf.c:
 	$(GPERF) --output-file=$@ $< 

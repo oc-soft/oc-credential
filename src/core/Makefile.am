@@ -15,7 +15,9 @@ noinst_HEADERS = user_resource.h \
 	credential_storage.h \
 	user_resource.h \
 	user_resource_i.h \
-	wasm_i.h
+	wasm_i.h \
+	str_conv.h \
+	uuid_i.h
 
 EXTRA_DIST = t0_credential_desc.sh.in \
 	decl.d.ts.in \
@@ -48,10 +50,13 @@ JS_MODEXT=.mjs
 TESTS=t0_credential_desc.sh
 
 if RUN_WIN
-liboccredcore_la_SOURCES += user_resource_win.c
+liboccredcore_la_SOURCES += user_resource_win.c \
+	uuid_i_win.c \
+	str_conv_win.c
 endif
 if RUN_LINUX
-liboccredcore_la_SOURCES += user_resource_linux.c
+liboccredcore_la_SOURCES += user_resource_linux.c \
+	uuid_i_posix.c
 endif
 
 
@@ -59,9 +64,14 @@ liboccredcore_la_CFLAGS= -g -O0
 
 liboccredcore_lib_flags=$(LTLIBINTL) -ljson-c -lsqlite3 -luuid -lm
 
+if RUN_WIN
+liboccredcore_lib_flags += -lshell32 -lpathcch -lole32 -lrpcrt4 -lshlwapi
+endif
+
 liboccredcore_la_LIBADD= \
 	$(top_builddir)/oclib/cstr/src/liboccstr.la \
 	$(top_builddir)/oclib/buffer/src/libocbuffer.la
+
 
 liboccredcore_la_LDFLAGS= -g \
 	$(liboccredcore_lib_flags)

@@ -1,15 +1,12 @@
-BLOCK "StringFileInfo" 
+BLOCK "040904B0" 
 BEGIN
-  BLOCK "040904B0" 
-  BEGIN
-    VALUE "CompanyName", COMPANY_NAME_W 
-    VALUE "FileDescription", L"limited device credential helper application"
-    VALUE "FileVersion", VERSION_W
-    VALUE "InternalName", LMD_CLI_APP_FILE_NAME_W 
-    VALUE "OriginalFilename", LMD_CLI_APP_FILE_NAME_W
-    VALUE "ProductName", LMD_CLI_APP_PRODUCT_NAME_W
-    VALUE "ProductVersion", VERSION_W
-  END 
-END
+  VALUE "CompanyName", COMPANY_NAME_W 
+  VALUE "FileVersion", VERSION_W
+  VALUE "FileDescription", L"limited device credential helper application"
+  VALUE "InternalName", CREDHELPER_APP_FILE_NAME_W 
+  VALUE "OriginalFilename",CREDHELPER_APP_FILE_NAME_W
+  VALUE "ProductName", CREDHELPER_APP_PRODUCT_NAME_W
+  VALUE "ProductVersion", VERSION_W
+END 
 
 /* vi: se ts=2 sw=2 et: */

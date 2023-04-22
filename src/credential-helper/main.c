@@ -14,6 +14,8 @@
 #include "l10n.h"
 #include "mem_dbg.h"
 #include "logging.h"
+#include "time_zone.h"
+
 /**
  * initialize internationalization
  */
@@ -34,6 +36,7 @@ main(
 
     cred_helper = NULL;
     mem_dbg_start_trace();
+    time_zone_set(); 
     logging_start();
     setlocale(LC_ALL, "");
     result = setup_l10n();    

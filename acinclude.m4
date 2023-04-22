@@ -105,6 +105,9 @@ electron_target_os=
 	*darwin*) 
 		electron_target_os=darwin
 		;;
+	msdosdjgpp* | cyg* | mingw* | cegcc*)
+		electron_target_os=win32
+		;;
 	esac
 
 AC_SUBST([ELECTRON_TARGET_CPU], [$electron_target_cpu])

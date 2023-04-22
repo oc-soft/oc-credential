@@ -1,2 +1,2 @@
-0x409   lmd_ver_en.rc
-0x411   lmd_ver_ja.rc
+0x409   credhelper_ver_en.rc
+0x411   credhelper_ver_ja.rc

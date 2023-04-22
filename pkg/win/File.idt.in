@@ -1,7 +1,7 @@
 File	Component_	FileName	FileSize	Version	Language	Attributes	Sequence
 s72	s72	l255	i4	S72	S20	I2	i2
 File	File
-{E219B7A6-261F-4846-A4D3-9AC3A6179F84}	oclmdcli_exe	%LMDCLI_EXE%	%LMDCLI_SIZE%	%LMDCLI_VERSION%	%LMDCLI_LANGS%	512	10
-{5D3F683B-76AE-4966-ABF4-F529E3B35F93}	libcurl_dll	%LIBCURL_DLL%	%LIBCURL_SIZE%	4	0x0	512	20
-{D4546685-B5F8-46F7-975F-7F1CC258CB83}	libintl_dll	%LIBINTL_DLL%	%LIBINTL_SIZE%	8	0x0	512	30
-{8CB86ADF-96B9-4490-BCFC-B248C49DEB2C}	libjson_c_dll	%LIBJSON_C_DLL%	%LIBJSON_C_SIZE%	2	0x0	512	40
+app_credhelper_exe	cmp_app_credhelper_exe	%CREDHELPER_EXE%	%CREDHELPER_SIZE%	%CREDHELPER_VERSION%	%CREDHELPER_LANGS%	512	10
+app_libcurl_dll	cmp_app_libcurl_dll	%LIBCURL_DLL%	%LIBCURL_SIZE%	4	0x0	512	20
+app_libintl_dll	cmp_app_libintl_dll	%LIBINTL_DLL%	%LIBINTL_SIZE%	8	0x0	512	30
+app_libjson_c_dll	cmp_app_libjson_c_dll	%LIBJSON_C_DLL%	%LIBJSON_C_SIZE%	2	0x0	512	40
