@@ -114,11 +114,10 @@ link_csv = $(top_srcdir)/url/url.csv
 dll_sys_root=@OC_DLL_SYS_ROOT@
 company_name=@OC_COMPANY_NAME@
 
-staging_dir=/tmp/staging 
+staging_dir=/tmp/staging
+credhelper_dist_name=credential-ocs
 
-libcurl_dll=libcurl-4.dll
-libintl_dll=libintl-8.dll
-libjson_c_dll=libjson-c-2.dll
+
 
 src_libcurl_dll=$(dll_sys_root)/$(libcurl_dll)
 src_libintl_dll=$(dll_sys_root)/$(libintl_dll)
@@ -126,11 +125,6 @@ src_libjson_c_dll=$(dll_sys_root)/$(libjson_c_dll)
 
 src_app_dir=App
 
-pkg_src= \
-	$(src_app_dir)/$(libcurl_dll) \
-	$(src_app_dir)/$(libintl_dll) \
-	$(src_app_dir)/$(libjson_c_dll) \
-	$(src_app_dir)/$(credhelper_prog_exe)
 
 MSI_TABLES_0 = \
 	ActionText.idt \
@@ -292,20 +286,48 @@ awk_cmd_3 = ' \
 	} \
 '
 
+copy_depends=IFS=: ; while read dll dll_dir; do \
+		if [ -n "$$dll_dir" ]; then \
+			cp $$dll_dir/$$dll $$destdir; \
+		fi ; \
+	done 
+
 
 if RUN_WIN
 all-local: Makefile $(PROGRAMS)
 endif
 
-
 staging-install:
 	$(MAKE) -C $(top_builddir) DESTDIR=$(staging_dir) install
+	mv $(staging_dir)$(libexecdir)/credential-ocs/credhelper$(EXEEXT) \
+		$(staging_dir)$(libexecdir)/credential-ocs/$(credhelper_dist_name)$(EXEEXT) 
+	$(MAKE) staging-install-post
 
 staging-uninstall:
+	rm -r $(staging_dir)$(libexecdir)/credential-ocs/local
+	rm -r -f $(staging_dir)$(libexecdir)/credential-ocs/*.dll
+	mv $(staging_dir)$(libexecdir)/credential-ocs/$(credhelper_dist_name)$(EXEEXT) \
+		$(staging_dir)$(libexecdir)/credential-ocs/credhelper$(EXEEXT) 
 	$(MAKE) -C $(top_builddir) DESTDIR=$(staging_dir) uninstall
 
+staging-install-post:
+	dstdir=$(staging_dir)$(libexecdir)/credential-ocs \
+	inputs=$(staging_dir)$(libexecdir)/credential-ocs/$(credhelper_dist_name)$(EXEEXT) \
+	dll_search_dir=`$(CC) -print-sysroot`/mingw/bin ; \
+		$(srcdir)/depends-dll.sh -s $$dll_search_dir -i $$inputs \
+		| (IFS=: ; while read dll dll_path; do \
+			if [ -n "$$dll_path" ]; then \
+				cp $$dll_path/$$dll $$dstdir; \
+			fi; \
+		done) 
+	rm $(staging_dir)$(libexecdir)/credential-ocs/locpath.txt 
+	cp -r $(staging_dir)$(localedir) $(staging_dir)$(libexecdir)/credential-ocs 
 
-.PHONY: staging-install
+
+staging-uninstall-post:
+
+.PHONY: staging-install staging-uninstall staging-install-post
+
 
 
 clean-generic:

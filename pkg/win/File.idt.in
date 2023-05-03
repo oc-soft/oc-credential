@@ -1,7 +1,7 @@
 File	Component_	FileName	FileSize	Version	Language	Attributes	Sequence
 s72	s72	l255	i4	S72	S20	I2	i2
 File	File
-app_credhelper_exe	cmp_app_credhelper_exe	%CREDHELPER_EXE%	%CREDHELPER_SIZE%	%CREDHELPER_VERSION%	%CREDHELPER_LANGS%	512	10
-app_libcurl_dll	cmp_app_libcurl_dll	%LIBCURL_DLL%	%LIBCURL_SIZE%	4	0x0	512	20
-app_libintl_dll	cmp_app_libintl_dll	%LIBINTL_DLL%	%LIBINTL_SIZE%	8	0x0	512	30
-app_libjson_c_dll	cmp_app_libjson_c_dll	%LIBJSON_C_DLL%	%LIBJSON_C_SIZE%	2	0x0	512	40
+credential_ocs_exe	cmp_credential_ocs_exe	credential-ocs.exe	%CREDHELPER_SIZE%	%CREDHELPER_VERSION%	%CREDHELPER_LANGS%	512	10
+libcurl_4_dll	cmp_libcurl_4_dll	libcurl-4.dll	%LIBCURL_SIZE%	4	0x0	512	20
+libintl_8_dll	cmp_libintl_8_dll	libintl-8.dll	%LIBINTL_SIZE%	8	0x0	512	30
+libjson_c_2_dll	cmp_libjson_c_2_dll	libjson-c-2.dll	%LIBJSON_C_SIZE%	2	0x0	512	40

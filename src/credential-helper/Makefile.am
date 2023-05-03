@@ -150,6 +150,9 @@ credhelper_lib_flags=$(LTLIBINTL) -ljson-c -lcurl -lsqlite3 -luuid -lm
 else
 credhelper_lib_flags=$(LTLIBINTL) -ljson-c -lsqlite3 -luuid -lm
 endif
+if RUN_WIN
+credhelper_lib_flags += -lucrt
+endif
 
 
 
@@ -164,6 +167,9 @@ credential_ocs_creddef_LDADD=$(top_builddir)/src/core/liboccredcore.la
 
 if TARGET_WASM
 credential_ocs_credhelper_LDFLAGS += -static
+endif
+if RUN_WIN
+credential_ocs_credhelper_LDFLAGS += -Wl,--dependency-file -Wl,credhhelper-dpd.txt
 endif
 
 SH_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/tap-driver.sh
@@ -547,7 +553,6 @@ clean-local:
 			--preprocessor-arg -I$(builddir) \
 			--preprocessor-arg -I$(srcdir) \
 			-i $< -o $@
-
 
 
 .gpf.c:

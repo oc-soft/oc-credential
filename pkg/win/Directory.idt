@@ -4,9 +4,12 @@ Directory	Directory
 TARGETDIR		SourceDir
 LocalAppDataFolder	TARGETDIR	.
 ProgramsDir	LocalAppDataFolder	Programs:.
-MAINPROGDIR	ProgramsDir	credential-ocs:App
+MAINPROGDIR	ProgramsDir	credential-ocs
 UIDIR	MAINPROGDIR	ui
 UiResources	UIDIR	resoruces
 ResApp	UiResources	app
 AppDist	ResApp	dist
 AppAssets	AppDist	assets
+Locale	MAINPROGDIR	locale
+LocaleJa	Locale	ja
+UiLocales	UIDIR	locales
