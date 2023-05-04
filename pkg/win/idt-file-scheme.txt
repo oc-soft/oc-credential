@@ -1,0 +1,51 @@
+# configure
+# at this time, host cpu was desided
+$> mkdir build; pushd build; ../configure CFLAGS=xx; popd
+
+# build application
+$> make -C build
+
+
+# install temporary staging directory
+$> make -C build/pkg/win staging-install
+
+--
+/tmp/staging/usr/libexec/your-app
+
+$> make -C build/pkg/win gen-template
+
+--
+$(src_dir)/File-x86_64.idt.gen 
+# create old commit File-x86-64.idt.in and staging installed appliation
+# to get old commit File-x86-64.idt.in, you have to call git show 1.1.0-x86_64:File-x86_64.idt.in
+
+
+#
+# modifiy contents or rename
+# from $(src_dir)/File-x86_64.idt.gen to $(src_dir)File-x86-64.idt.in
+#
+$(src_dir)File-x86-64.idt.in
+
+#
+# sometimes, you may update your-app and staging install again in this situation
+# In that case, you have to update application data size
+make -C build/pkg/win update-filetable-size
+
+--
+$(src_dir)File-x86-64.idt.in
+
+
+# make msi for your-app
+make -C build/pkg/win your-app.msi
+
+--
+$(build_dir)/File.idt
+$(build_dir)/your-app.msi
+
+
+#
+# release your-app with version(1.1.1)
+#
+git commit -m 'some release comment' $(src_dir)/File-x86-64.idt.in
+git tag '1.1.1_x86_64'
+

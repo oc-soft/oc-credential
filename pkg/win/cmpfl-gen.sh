@@ -10,6 +10,11 @@ readonly PROG_PATH_STRIP_LVL=1
 readonly DATA_SEQUENCE_OFFSET=200
 
 #
+# old component table files
+#
+declare -a old_cmp_tbl_files
+
+#
 # component dictionaries for idt file
 #
 # cmpkey cmp_directory_sub_dir_app_exe
@@ -59,6 +64,11 @@ declare -A idt0_dirkey_def
 # directory dictionary to update
 declare -A idt1_dirkey_parent
 declare -A idt1_dirkey_def
+
+#
+# old file table files
+#
+declare -a old_fl_tbl_files
 
 #
 # file dictionaries for idt file
@@ -396,6 +406,17 @@ function load_component()
 }
 
 
+#
+# load component from old files
+#
+
+function load_component_from_old_files()
+{
+  for idx in ${!old_cmp_tbl_files[*]}; do
+    load_component $1 $2 $3 $4 $5 ${old_cmp_tbl_files[$idx]}
+  done
+}
+
 
 #
 # update component from source programs
@@ -531,6 +552,16 @@ function load_file()
     fi
     let idx++
   done <"$file_path"
+}
+
+#
+# load file table from old file tables
+#
+function load_file_from_old_files()
+{
+  for idx in ${!old_fl_tbl_files[*]}; do
+    load_file $1 $2 $3 $4 $5 $6 $7 ${old_fl_tbl_files[$idx]}
+  done
 }
 
 #
@@ -896,13 +927,13 @@ function parse_options()
         options[basedir]=$OPTARG
         ;;
       c)
-        options[comp]=$OPTARG
+        old_cmp_tbl_files+=($OPTARG)
         ;;
       t)
         options[dir]=$OPTARG
         ;;
       f)
-        options[file]=$OPTARG
+        old_fl_tbl_files+=($OPTARG)
         ;;
       o)
         options[out_comp]=$OPTARG
@@ -952,20 +983,20 @@ function run()
   fi
 
 
-  if [ -v options[comp] ] && [ -e ${options[comp]} ]; then
+  if [ ${#old_cmp_tbl_files[*]} -gt 0 ]; then
     progress "load component tables"
-    load_component idt0_cmpkey_id idt0_cmpkey_dir idt0_cmpkey_attr \
-      idt0_cmpkey_cond idt0_cmpkey_key_path ${options[comp]}
-    read_header idt_cmp_header ${options[comp]}
+    load_component_from_old_files idt0_cmpkey_id idt0_cmpkey_dir \
+      idt0_cmpkey_attr idt0_cmpkey_cond idt0_cmpkey_key_path 
+
+    read_header idt_cmp_header $old_cmp_tbl_files
     status[src_comp]=true
   fi
 
-  if [ -v options[file] ] && [ -e ${options[file]} ]; then
+  if [ ${#old_fl_tbl_files[*]} -gt 0 ]; then
     progress "load file table"
-    load_file idt0_flkey_cmp idt0_flkey_file idt0_flkey_size \
-      idt0_flkey_version idt0_flkey_langs idt0_flkey_attrs idt0_flkey_seq \
-      ${options[file]}
-    read_header idt_fl_header ${options[file]}
+    load_file_from_old_files idt0_flkey_cmp idt0_flkey_file idt0_flkey_size \
+      idt0_flkey_version idt0_flkey_langs idt0_flkey_attrs idt0_flkey_seq 
+    read_header idt_fl_header $old_fl_tbl_files
     status[src_file]=true
   fi
 

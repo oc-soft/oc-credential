@@ -100,7 +100,12 @@ EXTRA_DIST = ServiceControl.idt \
 	CreateFolder.idt \
 	MsiPatchSequence.idt \
 	ProgId.idt \
-	Patch.idt 
+	Patch.idt \
+	File-x86_64.idt.in \
+	File-i386.idt.in \
+	Component-x86_64.idt.in \
+	Component-i386.idt.in
+
 
 MSIDB = msidb.exe
 MSIINFO = msiinfo.exe
@@ -116,12 +121,6 @@ company_name=@OC_COMPANY_NAME@
 
 staging_dir=/tmp/staging
 credhelper_dist_name=credential-ocs
-
-
-
-src_libcurl_dll=$(dll_sys_root)/$(libcurl_dll)
-src_libintl_dll=$(dll_sys_root)/$(libintl_dll)
-src_libjson_c_dll=$(dll_sys_root)/$(libjson_c_dll)
 
 src_app_dir=App
 
@@ -233,6 +232,7 @@ MSI_TABLES_5 = \
 	_Validation.idt 
 
 
+
 awk_cmd_0 = 'BEGIN { \
 		langs_count=0; \
 	} \
@@ -328,18 +328,46 @@ staging-uninstall-post:
 
 .PHONY: staging-install staging-uninstall staging-install-post
 
+clean-old-inst-sources:
+	rm -f -r /tmp/old-inst
 
+.PHONY: clean-old-inst-sources
+
+prepare-old-inst-sources:
+	pushd $(top_srcdir); \
+		./pkg/win/inst-log.sh -t 'v*$(host_cpu)' \
+			-f pkg/win/File-$(host_cpu).idt.in \
+			-f pkg/win/Component-$(host_cpu).idt.in -p /tmp/old-inst; \
+		popd
+
+.PHONY: prepare-old-inst-sources
+
+gen-template: prepare-old-inst-sources
+	pushd $(top_srcdir); \
+		file_idts=`./pkg/win/inst-log.sh -i -t 'v*$(host_cpu)' \
+			-f pkg/win/File-$(host_cpu).idt.in \
+			-p /tmp/old-inst | \
+			sort -V | sed -e 's/^\(.\)/-f \1/'` \
+		comp_idts=`./pkg/win/inst-log.sh -i -t 'v*$(host_cpu)' \
+			-f pkg/win/Component-$(host_cpu).idt.in \
+			-p /tmp/old-inst | \
+			sort -V | sed -e 's/^\(.\)/-c \1/'`; \
+		./pkg/win/cmpfl-gen.sh -t ./pkg/win/Directory.idt \
+			-o ./pkg/win/Component-$(host_cpu).idt.in \
+			-q ./pkg/win/File-$(host_cpu).idt.in \
+			-m -n \
+			-d $(staging_dir)/usr/local/libexec \
+			$$file_idts $$comp_idts
+
+
+.PHONY: gen-template
 
 clean-generic:
 	rm -f *.msi
 	rm -f *.idt
 
-Component.idt : Component.idt.in
-	sed -e " \
-		s/%CREDHELPER_EXE%/$(notdir $(credhelper_prog))/; \
-		s/%LIBCURL_DLL%/$(libcurl_dll)/; \
-		s/%LIBINTL_DLL%/$(libintl_dll)/; \
-		s/%LIBJSON_C_DLL%/$(libjson_c_dll)/" $< > $@ 
+Component.idt : Component-$(host_cpu).idt.in
+	cp $< >$@
 
 Property.idt : Property.idt.in $(upgrade_code_txt) $(link_csv) 
 	upgrade_code=`cat $(upgrade_code_txt)`; \
@@ -352,24 +380,8 @@ Property.idt : Property.idt.in $(upgrade_code_txt) $(link_csv)
 	awk -e $(awk_cmd_3) -v help_link=$$help_link - > $@
 
 
-File.idt : File.idt.in $(lang_map)
-	lmd_size=`du -b $(credhelper_prog) | awk -e '{ print $$1 }'` ; \
-	libcurl_dll_size=`du -b $(src_libcurl_dll) | awk -e '{print $$1 }'`; \
-	libintl_dll_size=`du -b $(src_libintl_dll) | awk -e '{print $$1 }'`; \
- 	libjson_c_dll_size=`du -b $(src_libjson_c_dll) | awk -e '{print $$1 }'`; \
-	langs=`awk -e $(awk_cmd_0) $(lang_map)`; \
-	sed -e " \
-		s/%CREDHELPER_SIZE%/$$lmd_size/; \
-	   	s/%CREDHELPER_VERSION%/$(PACKAGE_VERSION)/; \
-		s/%CREDHELPER_LANGS%/$$langs/; \
-		s/%CREDHELPER_EXE%/$(notdir $(credhelper_prog))/; \
-		s/%LIBCURL_DLL%/$(libcurl_dll)/; \
-		s/%LIBINTL_DLL%/$(libintl_dll)/; \
-		s/%LIBJSON_C_DLL%/$(libjson_c_dll)/; \
-		s/%LIBCURL_SIZE%/$$libcurl_dll_size/; \
-		s/%LIBINTL_SIZE%/$$libintl_dll_size/; \
-		s/%LIBJSON_C_SIZE%/$$libjson_c_dll_size/" $< > $@; 
-
+File.idt : File-$(host_cpu).idt.in 
+	cp $< >$@
 
 oc-credential_msi_pre: $(pkg_src)
 
@@ -409,23 +421,5 @@ oc-credential-ja.msi: oc-credential.msi $(srcdir)/ja/Control.idt $(srcdir)/ja/Ui
 	$(MSIDB) -i -f `cygpath -a -w -d $(builddir)/ja` -d $@ Property.idt && \
 	$(MSIINFO) $@ -v "{$$pkg_code}"
 	
-
-#$(src_app_dir)/$(libcurl_dll) : $(src_libcurl_dll)
-#	$(MKDIR_P) $(src_app_dir)
-#	cp $< $@
-#
-#$(src_app_dir)/$(libintl_dll) : $(src_libintl_dll)
-#	$(MKDIR_P) $(src_app_dir)
-#	cp $< $@
-#
-#$(src_app_dir)/$(libjson_c_dll) : $(src_libjson_c_dll)
-#	$(MKDIR_P) $(src_app_dir)
-#	cp $< $@
-#
-#$(src_app_dir)/$(credhelper_prog_exe) : $(credhelper_prog)
-#	$(MKDIR_P) $(src_app_dir)
-#	cp $< $@
-
-
 
 # vi: se ts=4 sw=4 noet:
