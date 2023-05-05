@@ -109,6 +109,43 @@ declare -A idt2_flkey_seq
 
 
 #
+# old remove table files
+#
+declare -a old_rm_tbl_files
+
+#
+# remove file table header
+#
+declare -a idt_rm_header
+
+#
+# removal files from old idt 
+#
+
+declare -A idt0_rmkey_cmp
+declare -A idt0_rmkey_file_name
+declare -A idt0_rmkey_dir_prop
+declare -A idt0_rmkey_ins_mode
+
+#
+# removal files created from source program tree
+#
+declare -A idt1_rmkey_cmp
+declare -A idt1_rmkey_file_name
+declare -A idt1_rmkey_dir_prop
+declare -A idt1_rmkey_ins_mode
+
+#
+# merged removal files 
+#
+declare -A idt2_rmkey_cmp
+declare -A idt2_rmkey_file_name
+declare -A idt2_rmkey_dir_prop
+declare -A idt2_rmkey_ins_mode
+
+
+
+#
 # src directory to target directory id map from idt file
 #
 # src: source/parent/directory/dir
@@ -417,6 +454,24 @@ function load_component_from_old_files()
   done
 }
 
+#
+# find compnent key not having key_path from component key.
+# the instration design is that each components belogs a component not having 
+# key_path. The component which dose not have key_path is directory component.
+#
+function find_dir_component()
+{
+  local dirkey=$1 
+  local -n key_dir=$2
+  local -n key_key_path=$3
+  for ck in ${!key_dir[*]}; do
+    if [ ${key_dir[$ck]} = $dirkey ] && [ -z ${key_key_path[$ck]} ]; then
+      comp_id_res=$ck
+      break
+    fi
+  done
+}
+
 
 #
 # update component from source programs
@@ -451,30 +506,28 @@ function update_component_from_source_programs()
 #
 function merge_comp_table()
 {
-  for ck in ${!idt0_cmpkey_id[@]}; do
-    idt2_cmpkey_id[$ck]=${idt0_cmpkey_id[$ck]}
-    idt2_cmpkey_dir[$ck]=${idt0_cmpkey_dir[$ck]}
-    idt2_cmpkey_attr[$ck]=${idt0_cmpkey_attr[$ck]}
-    idt2_cmpkey_cond[$ck]=${idt0_cmpkey_cond[$ck]}
-    idt2_cmpkey_key_path[$ck]=${idt0_cmpkey_key_path[$ck]}
-  done
-
   for ck in ${!idt1_cmpkey_id[@]}; do
-    if [ ! -v $idt2_cmpkey_id[$ck] ]; then
+    if [ ! -v idt0_cmpkey_id[$ck] ]; then
       idt2_cmpkey_id[$ck]=${idt1_cmpkey_id[$ck]}
+    else
+      idt2_cmpkey_id[$ck]=${idt0_cmpkey_id[$ck]}
     fi
     idt2_cmpkey_dir[$ck]=${idt1_cmpkey_dir[$ck]}
-    if [ ! -v $idt2_cmpkey_attr[$sk] ]; then
-      if [ -v ${idt1_cmpkey_attr[$ck]} ]; then
+    if [ ! -v idt0_cmpkey_attr[$sk] ]; then
+      if [ -v idt1_cmpkey_attr[$ck] ]; then
         idt2_cmpkey_attr[$ck]=${idt1_cmpkey_attr[$ck]}
       fi
+    else
+      idt2_cmpkey_attr[$ck]=${idt0_cmpkey_attr[$ck]}
     fi
-    if [ ! -v $id2_compkey_cond[$ck] ]; then
-      if [ -v ${idt1_cmpkey_cond[$ck]} ]; then
+    if [ ! -v id0_compkey_cond[$ck] ]; then
+      if [ -v idt1_cmpkey_cond[$ck] ]; then
         idt2_cmpkey_cond[$ck]=${idt1_cmpkey_cond[$ck]}
       fi
+    else
+      idt2_cmpkey_cond[$ck]=${idt0_cmpkey_cond[$ck]}
     fi
-    if [ -v ${idt1_cmpkey_key_path[$ck]} ]; then
+    if [ -v idt1_cmpkey_key_path[$ck] ]; then
       idt2_cmpkey_key_path[$ck]=${idt1_cmpkey_key_path[$ck]}
     fi
   done
@@ -613,23 +666,16 @@ function update_file_from_source_programs()
 #
 function merge_file_table()
 {
-  for fk in ${!idt0_flkey_cmp[@]} ; do
-    idt2_flkey_cmp[$fk]=${idt0_flkey_cmp[$fk]}
-    idt2_flkey_file[$fk]=${idt0_flkey_file[$fk]}
-    idt2_flkey_size[$fk]=${idt0_flkey_size[$fk]}
-    idt2_flkey_version[$fk]=${idt0_flkey_version[$fk]}
-    idt2_flkey_langs[$fk]=${idt0_flkey_langs[$fk]}
-    idt2_flkey_attrs[$fk]=${idt0_flkey_attrs[$fk]}
-    idt2_flkey_seq[$fk]=${idt0_flkey_seq[$fk]}
-  done
   for fk in ${!idt1_flkey_cmp[@]} ; do
     idt2_flkey_cmp[$fk]=${idt1_flkey_cmp[$fk]}
     idt2_flkey_file[$fk]=${idt1_flkey_file[$fk]}
     idt2_flkey_size[$fk]=${idt1_flkey_size[$fk]}
     idt2_flkey_version[$fk]=${idt1_flkey_version[$fk]}
     idt2_flkey_langs[$fk]=${idt1_flkey_langs[$fk]}
-    if [ ! -v  idt2_flkey_attrs[$fk] ]; then
+    if [ ! -v  idt0_flkey_attrs[$fk] ]; then
       idt2_flkey_attrs[$fk]=${idt1_flkey_attrs[$fk]}
+    else
+      idt2_flkey_attrs[$fk]=${idt0_flkey_attrs[$fk]}
     fi
     idt2_flkey_seq[$fk]=${idt1_flkey_seq[$fk]}
   done
@@ -658,6 +704,128 @@ function output_merged_file_table()
     eval {fdn}>&-
   fi
 }
+
+#
+# load removal table
+#
+function load_removal()
+{
+  local -i idx
+  local -n key_cmp=$1
+  local -n key_file_name=$2
+  local -n key_dir_prop=$3
+  local -n key_ins_mod=$4
+  local file_path=$5
+  idx=0
+  while read  key comp file_name dir_prop ins_mod; do
+    if (( idx > 2 )) ; then
+      comp=`remove_cr $comp`
+      file_name=`remove_cr $file_name`
+      dir_prop=`remove_cr $dir_prop`
+      ins_mod=`remove_cr $ins_mod`
+      key_cmp[$key]=$comp
+      key_file_name[$key]=$file_name
+      key_dir_prop[$key]=$dir_prop
+      key_ins_mod[$key]=$ins_mod
+    fi
+    let idx++
+  done <$file_path
+}
+
+#
+# load file table from old file tables
+#
+function load_removal_from_old_removals()
+{
+  for idx in ${!old_rm_tbl_files[*]}; do
+    load_removal $1 $2 $3 $4 ${old_rm_tbl_files[$idx]}
+  done
+}
+
+
+
+#
+# update removal file table
+#
+function update_removal_files()
+{
+  for fk in ${!idt0_flkey_cmp[*]}; do
+    local cmp_key=${idt0_flkey_cmp[$fk]}
+    if [ ! -v idt2_cmpkey_id[$cmp_key] ]; then
+      local dir=${idt0_cmpkey_dir[$cmp_key]}
+      local comp_id_res
+      find_dir_component $dir idt0_cmpkey_dir idt0_cmpkey_key_path
+      if [ -v comp_id_res ]; then
+        idt1_rmkey_cmp[$fk]=$comp_id_res 
+        idt1_rmkey_file_name[$fk]=${idt0_flkey_file[$fk]}
+        idt1_rmkey_dir_prop[$fk]=$dir
+        idt1_rmkey_ins_mode[$fk]=3
+      fi
+    fi
+  done
+}
+
+#
+# merge removal file table
+#
+function merge_removal_files()
+{
+  for rk in ${!idt1_rmkey_cmp[*]}; do
+    idt2_rmkey_cmp[$rk]=${idt1_rmkey_cmp[$rk]}
+    idt2_rmkey_file_name[$rk]=${idt1_rmkey_file_name[$rk]}
+    idt2_rmkey_dir_prop[$rk]=${idt1_rmkey_dir_prop[$rk]}
+    if [ ! -v idt0_rmkey_ins_mode[$rk] ]; then
+      idt2_rmkey_ins_mode[$rk]=${idt1_rmkey_ins_mode[$rk]}
+    else
+      idt2_rmkey_ins_mode[$rk]=${idt0_rmkey_ins_mode[$rk]}
+    fi
+  done 	
+}
+
+#
+# output merged removal table
+#
+function output_merged_removal_table()
+{
+  if [ -v options[out_remove] ]; then
+
+    eval {fdn}>${options[out_remove]}
+    for idx in ${!idt_rm_header[*]}; do
+      local line="${idt_rm_header[$idx]}"
+      echo -e "${line}\r" >&$fdn
+    done
+
+    for rk in ${!idt2_rmkey_cmp[@]}; do
+      printf "%s\t%s\t%s\t%s\t%s\r\n" \
+        $rk ${idt2_rmkey_cmp[$rk]} ${idt2_rmkey_file_name[$rk]} \
+        ${idt2_rmkey_dir_prop[$rk]} ${idt2_rmkey_ins_mode[$rk]} >&$fdn
+    done 
+    eval {fdn}>&-
+  fi
+}
+
+#
+# show remove file table
+#
+function show_removal()
+{
+  local -n key_cmp=$1
+  local -n key_file_name=$2
+  local -n key_dir_prop=$3
+  local -n key_ins_mode=$4
+
+  printf "total records : %d\n" ${#key_cmp[*]}
+  for key in ${!key_cmp[*]} ; do
+    echo "----------"
+    printf "%s \n" $key
+    echo "----------"
+    printf "compopnent: %s\n" ${key_cmp[$key]}
+    printf "file_name : %s\n" ${key_file_name[$key]}
+    printf "dir_prop  : %s\n" ${key_dir_prop[$key]}
+    printf "ins_mode  : %s\n" ${key_ins_mode[$key]}
+  done
+}
+
 
 
 #
@@ -884,13 +1052,19 @@ function show_help()
 
 -f [FILE_IDT_PATH]        specify File.idt path to be merged
 
+-e [REMOVE_IDT_PATH]      spedify Remove.idt path to be merged
+
 -o [COMPONENT_IDT_PATH]   Component.idt path for merged result
 
 -q [FILE_IDT_PATH]        File.idt path for merged result
 
+-r [REMOVE_IDT_PATH]      Remove.idt path to be generated.
+
 -m                        merge file table.
 
 -n                        merge component table.
+
+-s                        merge remove table.
 
 -d [APP_DIR]              specify the start directory for source programs.
 
@@ -902,6 +1076,9 @@ function show_help()
                           FILE0  : source file table
                           FILE1  : new file table
                           FILE2  : merged file table
+                          RMV0   : source remove file table
+                          RMV1   : new remove file table
+                          RMV2   : merged remove file table
                           DIR0   : source directory table
                           SRCDIR : source target directory map
                           SRCPRG : source programs
@@ -921,7 +1098,7 @@ function show_help()
 #
 function parse_options()
 {
-  while getopts 'd:b:c:t:f:l:o:q:mnph' opt; do
+  while getopts 'd:b:c:e:t:f:l:o:q:r:mnsph' opt; do
     case $opt in
       b)
         options[basedir]=$OPTARG
@@ -935,11 +1112,17 @@ function parse_options()
       f)
         old_fl_tbl_files+=($OPTARG)
         ;;
+      e)
+        old_rm_tbl_files+=($OPTARG)
+        ;;
       o)
         options[out_comp]=$OPTARG
         ;;
       q)
         options[out_file]=$OPTARG
+        ;;
+      r)
+        options[out_remove]=$OPTARG
         ;;
       d)
         options[appdir]=$OPTARG
@@ -955,6 +1138,9 @@ function parse_options()
         ;;
       n)
         options[merge_comp]=true
+        ;;
+      s)
+        options[merge_remove]=true
         ;;
       h)
         options[help]=true
@@ -1000,6 +1186,14 @@ function run()
     status[src_file]=true
   fi
 
+  if [ ${#old_rm_tbl_files[*]} -gt 0 ]; then
+    progress "load remove table"
+    load_removal_from_old_removals idt0_rmkey_cmp idt0_rmkey_file_name \
+      idt0_rmkey_dir_prop idt0_rmkey_ins_mode
+    read_header idt_rm_header $old_rm_tbl_files
+    status[rm_file]=true
+  fi
+
   if [ -v options[dir] ] && [ -e ${options[dir]} ]; then
     progress "load directory tables"
     load_directory idt0_dirkey_parent idt0_dirkey_def ${options[dir]}
@@ -1026,6 +1220,7 @@ function run()
     if [ -v status[src_comp] ] && [ -v status[new_comp] ]; then
       progress "merge old component idt and source programs"
       merge_comp_table
+      status[merge_comp]=true
     fi
   fi
 
@@ -1034,7 +1229,20 @@ function run()
     if [ -v status[src_file] ] && [ -v status[new_file] ]; then
       progress "merge old file idt and source programs"
       merge_file_table
+      status[merge_file]=true
     fi
+  fi
+
+
+  if [ -v status[merge_comp] ] && [ -v status[merge_file] ]; then
+    progress "create remove idt"
+    update_removal_files
+    status[update_removals]=true
+  fi
+  if [ -v options[merge_remove] ] && [ -v status[update_removals] ]; then
+    progress "merge old remove idt and new remove idt from source programs"
+    merge_removal_files
+    status[merge_remove]=true
   fi
 
   if [ -v options[merge_comp] ] && [ -v options[out_comp] ]; then
@@ -1042,6 +1250,10 @@ function run()
   fi
   if [ -v options[merge_file] ] && [ -v options[out_file] ]; then
     output_merged_file_table
+  fi
+
+  if [ -v options[merge_remove] ] && [ -v options[out_remove] ]; then
+    output_merged_removal_table
   fi
  
   if [ -v options[list] ]; then
@@ -1070,6 +1282,18 @@ function run()
       FILE2)
         show_file idt2_flkey_cmp idt2_flkey_file idt2_flkey_size \
           idt2_flkey_version idt2_flkey_langs idt2_flkey_attrs idt2_flkey_seq
+        ;;
+      RMV0)
+        show_removal idt0_rmkey_cmp idt0_rmkey_file_name idt0_rmkey_dir_prop \
+          idt0_rmkey_ins_mode
+        ;;
+      RMV1)
+        show_removal idt1_rmkey_cmp idt1_rmkey_file_name idt1_rmkey_dir_prop \
+          idt1_rmkey_ins_mode
+        ;;
+      RMV2)
+        show_removal idt2_rmkey_cmp idt2_rmkey_file_name idt2_rmkey_dir_prop \
+          idt2_rmkey_ins_mode
         ;;
       DIR0)
         show_directory idt0_dirkey_parent idt0_dirkey_def

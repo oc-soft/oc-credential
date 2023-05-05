@@ -355,8 +355,10 @@ gen-template: prepare-old-inst-sources
 		./pkg/win/cmpfl-gen.sh -t ./pkg/win/Directory.idt \
 			-o ./pkg/win/Component-$(host_cpu).idt.in \
 			-q ./pkg/win/File-$(host_cpu).idt.in \
-			-m -n \
+			-r ./pkg/win/RemoveFile-$(host_cpu).idt.in \
+			-m -n -s \
 			-d $(staging_dir)/usr/local/libexec \
+			-e ./pkg/win/RemoveFileHeader.idt \
 			$$file_idts $$comp_idts
 
 
