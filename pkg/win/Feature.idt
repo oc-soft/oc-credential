@@ -1,4 +1,4 @@
 Feature	Feature_Parent	Title	Description	Display	Level	Directory_	Attributes
 s38	S38	L64	L255	I2	i2	S72	i2
 Feature	Feature
-lmdcli		lmdcli	Command line iterface for Limited device access	1	1	MAINPROGDIR	0
+credential_ocs		Credential Helper	Git credential helper for oc-soft	1	1	MAINPROGDIR	0

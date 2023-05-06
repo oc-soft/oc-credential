@@ -67,7 +67,8 @@ EXTRA_DIST = ServiceControl.idt \
 	MsiPatchOldAssemblyFile.idt \
 	AppSearch.idt \
 	MsiServiceConfigFailureActions.idt \
-	FeatureComponents.idt \
+	FeatureComponents-x86_64.idt.in \
+	FeatureComponents-i386.idt.in \
 	RadioButton.idt \
 	AdvtExecuteSequence.idt \
 	RegLocator.idt \
@@ -337,12 +338,14 @@ prepare-old-inst-sources:
 	pushd $(top_srcdir); \
 		./pkg/win/inst-log.sh -t 'v*$(host_cpu)' \
 			-f pkg/win/File-$(host_cpu).idt.in \
-			-f pkg/win/Component-$(host_cpu).idt.in -p /tmp/old-inst; \
+			-f pkg/win/Component-$(host_cpu).idt.in \
+			-f pkg/win/FeatureComponents-$(host_cpu).idt.in \
+			-p /tmp/old-inst; \
 		popd
 
 .PHONY: prepare-old-inst-sources
 
-gen-template: prepare-old-inst-sources
+Component-$(host_cpu).idt.in File-$(host_cpu).idt.in RemoveFile-$(host_cpu).idt.in : prepare-old-inst-sources
 	pushd $(top_srcdir); \
 		file_idts=`./pkg/win/inst-log.sh -i -t 'v*$(host_cpu)' \
 			-f pkg/win/File-$(host_cpu).idt.in \
@@ -361,6 +364,25 @@ gen-template: prepare-old-inst-sources
 			-e ./pkg/win/RemoveFileHeader.idt \
 			$$file_idts $$comp_idts
 
+gen-comp-file-remove : Component-$(host_cpu).idt.in File-$(host_cpu).idt.in RemoveFile-$(host_cpu).idt.in 
+.PHONY: gen-comp-file-remove
+
+FeatureComponents-$(host_cpu).idt.in:gen-comp-file-remove 
+	src_ft_opt=`$(srcdir)/inst-log.sh -i -t 'v*$(host_cpu)' \
+		-f pkg/win/FeatureComponents-$(host_cpu).idt.in \
+		-p /tmp/old-inst | \
+			sort -V -r | while read ;do echo "-f $$REPLY"; break; done`; \
+	$(srcdir)/ftcmp-gen.sh $$src_ft_opt \
+		-c $(srcdir)/Component-$(host_cpu).idt.in -n credential_osc \
+	   	-o $(srcdir)/FeatureComponents-$(host_cpu).idt.in
+
+
+gen-feat-comp:FeatureComponents-$(host_cpu).idt.in
+
+
+.PHONY:gen-feat-comp
+
+gen-template: gen-feat-comp
 
 .PHONY: gen-template
 
@@ -414,7 +436,11 @@ oc-credential.msi: oc-credential_msi_pre $(MSI_TABLES_0) $(MSI_TABLES_1) $(MSI_T
 		-p "$${msi_platform};$${msi_langs}"
 
 
-oc-credential-ja.msi: oc-credential.msi $(srcdir)/ja/Control.idt $(srcdir)/ja/UiText.idt $(srcdir)/ja/Error.idt $(builddir)/ja/Property.idt
+oc-credential-ja.msi: oc-credential.msi \
+	$(srcdir)/ja/Control.idt \
+	$(srcdir)/ja/UiText.idt \
+	$(srcdir)/ja/Error.idt \
+	$(builddir)/ja/Property.idt
 	cp $< $@
 	pkg_code=`uuidgen | tr [:lower:] [:upper:]`; \
 	$(MSIDB) -i -f `cygpath -a -w -d $(srcdir)/ja` -d $@ Control.idt && \
