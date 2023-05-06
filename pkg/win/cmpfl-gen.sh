@@ -548,9 +548,9 @@ function output_merged_comp_table()
 
     for ck in ${!idt2_cmpkey_id[@]}; do
       printf "%s\t%s\t%s\t%s\t%s\t%s\r\n" \
-        $ck ${idt2_cmpkey_id[$ck]} ${idt2_cmpkey_dir[$ck]} \
-        ${idt2_cmpkey_attr[$ck]} ${idt2_cmpkey_cond[$ck]} \
-        ${idt2_cmpkey_key_path[$ck]} >&$fdn
+        "$ck" "${idt2_cmpkey_id[$ck]}" "${idt2_cmpkey_dir[$ck]}" \
+        "${idt2_cmpkey_attr[$ck]}" "${idt2_cmpkey_cond[$ck]}" \
+        "${idt2_cmpkey_key_path[$ck]}" >&$fdn
     done 
     eval {fdn}>&-
   fi
@@ -632,7 +632,6 @@ function update_file_from_source_programs()
   local -n flkey_seq=$8
   local base_dir=${options[appdir]}
   local -i idx 
-  local seq_num
 
   for idx in ${!programs_l[*]}; do
     local src_prog="${programs_l[$idx]}" 
@@ -696,10 +695,10 @@ function output_merged_file_table()
 
     for fk in ${!idt2_flkey_cmp[@]}; do
       printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\r\n" \
-        $fk ${idt2_flkey_cmp[$fk]} ${idt2_flkey_file[$fk]} \
-        ${idt2_flkey_size[$fk]} ${idt2_flkey_version[$fk]} \
-        ${idt2_flkey_langs[$fk]} ${idt2_flkey_attrs[$fk]} \
-        ${idt2_flkey_seq[$fk]} >&$fdn
+        $fk "${idt2_flkey_cmp[$fk]}" "${idt2_flkey_file[$fk]}" \
+        "${idt2_flkey_size[$fk]}" "${idt2_flkey_version[$fk]}" \
+        "${idt2_flkey_langs[$fk]}" "${idt2_flkey_attrs[$fk]}" \
+        "${idt2_flkey_seq[$fk]}" >&$fdn
     done 
     eval {fdn}>&-
   fi
@@ -797,8 +796,8 @@ function output_merged_removal_table()
 
     for rk in ${!idt2_rmkey_cmp[@]}; do
       printf "%s\t%s\t%s\t%s\t%s\r\n" \
-        $rk ${idt2_rmkey_cmp[$rk]} ${idt2_rmkey_file_name[$rk]} \
-        ${idt2_rmkey_dir_prop[$rk]} ${idt2_rmkey_ins_mode[$rk]} >&$fdn
+        "$rk" "${idt2_rmkey_cmp[$rk]}" "${idt2_rmkey_file_name[$rk]}" \
+        "${idt2_rmkey_dir_prop[$rk]}" "${idt2_rmkey_ins_mode[$rk]}" >&$fdn
     done 
     eval {fdn}>&-
   fi
@@ -889,7 +888,7 @@ function create_sequence_from_path()
     let ++exe_sequence
   else
     seq=$data_sequence 
-    let seq+=$DATA_SEQUENCE_OFFSET
+    let seq=$seq+$DATA_SEQUENCE_OFFSET
     let ++data_sequence
   fi 
 }

@@ -6,10 +6,11 @@ LocalAppDataFolder	TARGETDIR	.
 ProgramsDir	LocalAppDataFolder	Programs:.
 MAINPROGDIR	ProgramsDir	credential-ocs
 UIDIR	MAINPROGDIR	ui
-UiResources	UIDIR	resoruces
+UiResources	UIDIR	resources
 ResApp	UiResources	app
 AppDist	ResApp	dist
 AppAssets	AppDist	assets
 Locale	MAINPROGDIR	locale
 LocaleJa	Locale	ja
+JaLC_MESSAGES	LocaleJa	LC_MESSAGES
 UiLocales	UIDIR	locales

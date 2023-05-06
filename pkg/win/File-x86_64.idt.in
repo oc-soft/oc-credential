@@ -1,96 +1,97 @@
 File	Component_	FileName	FileSize	Version	Language	Attributes	Sequence
 s72	s72	l255	i4	S72	S20	I2	i2
 File	File
-ui_locales_kn_pak	cmp_ui_locales_kn_pak	kn.pak	932419	233			
-ui_version	cmp_ui_version	version	6	270			
-libzstd_1_dll	cmp_libzstd_1_dll	libzstd-1.dll	681491	1	11		
-ui_locales_he_pak	cmp_ui_locales_he_pak	he.pak	499985	226			
-ui_locales_ca_pak	cmp_ui_locales_ca_pak	ca.pak	394126	211			
-ui_resources_default_app_asar	cmp_ui_resources_default_app_asar	default_app.asar	109138	266			
-ui_locales_hr_pak	cmp_ui_locales_hr_pak	hr.pak	390596	228			
-libjson_c_2_dll	cmp_libjson_c_2_dll	libjson-c-2.dll	41984	2	512	6	
-ui_locales_el_pak	cmp_ui_locales_el_pak	el.pak	707704	215			
-ui_locales_am_pak	cmp_ui_locales_am_pak	am.pak	564800	207			
-ui_locales_vi_pak	cmp_ui_locales_vi_pak	vi.pak	449928	258			
-ui_LICENSES_chromium_html	cmp_ui_LICENSES_chromium_html	LICENSES.chromium.html	6810078	205			
-ui_locales_sl_pak	cmp_ui_locales_sl_pak	sl.pak	394532	248			
-ui_locales_hi_pak	cmp_ui_locales_hi_pak	hi.pak	841576	227			
-ui_locales_lt_pak	cmp_ui_locales_lt_pak	lt.pak	422255	235			
-ui_locales_bg_pak	cmp_ui_locales_bg_pak	bg.pak	647156	209			
-zlib1_dll	cmp_zlib1_dll	zlib1.dll	117267	1.2.13.0	20		
-ui_resources_app_dist_main_js	cmp_ui_resources_app_dist_main_js	main.js	7335	263			
-ui_resources_app_dist_preload_js	cmp_ui_resources_app_dist_preload_js	preload.js	382	264			
-libidn2_0_dll	cmp_libidn2_0_dll	libidn2-0.dll	389139	0	4		
-ui_locales_id_pak	cmp_ui_locales_id_pak	id.pak	344400	230			
-ui_locales_de_pak	cmp_ui_locales_de_pak	de.pak	391164	214			
-ui_v8_context_snapshot_bin	cmp_ui_v8_context_snapshot_bin	v8_context_snapshot.bin	483224	269			
-ui_electron_exe	cmp_ui_electron_exe	electron.exe	157664256	22.1.0.0	14		
-ui_libEGL_dll	cmp_ui_libEGL_dll	libEGL.dll	484352	2.1.19725.0	16		
-ui_locales_en_GB_pak	cmp_ui_locales_en_GB_pak	en-GB.pak	318332	216			
-ui_locales_cs_pak	cmp_ui_locales_cs_pak	cs.pak	403118	212			
-ui_locales_af_pak	cmp_ui_locales_af_pak	af.pak	348321	206			
-ui_locales_fa_pak	cmp_ui_locales_fa_pak	fa.pak	570824	221			
-ui_locales_gu_pak	cmp_ui_locales_gu_pak	gu.pak	806257	225			
-ui_ffmpeg_dll	cmp_ui_ffmpeg_dll	ffmpeg.dll	2767872	15			
-ui_locales_fil_pak	cmp_ui_locales_fil_pak	fil.pak	404181	223			
-ui_locales_nb_pak	cmp_ui_locales_nb_pak	nb.pak	353073	240			
-ui_locales_it_pak	cmp_ui_locales_it_pak	it.pak	382427	231			
-ssleay32_dll	cmp_ssleay32_dll	ssleay32.dll	410624	1.0.2.27	12		
-ui_locales_ro_pak	cmp_ui_locales_ro_pak	ro.pak	396850	245			
-ui_resources_app_package_json	cmp_ui_resources_app_package_json	package.json	79	265			
-ui_locales_ms_pak	cmp_ui_locales_ms_pak	ms.pak	360077	239			
-iconv_dll	cmp_iconv_dll	iconv.dll	33792	1			
-libsqlite3_0_dll	cmp_libsqlite3_0_dll	libsqlite3-0.dll	909843	0	8		
-ui_locales_sr_pak	cmp_ui_locales_sr_pak	sr.pak	610139	249			
-ui_vulkan_1_dll	cmp_ui_vulkan_1_dll	vulkan-1.dll	915456	1.0.1111.2222	19		
-ui_locales_pt_PT_pak	cmp_ui_locales_pt_PT_pak	pt-PT.pak	385780	244			
-ui_locales_es_pak	cmp_ui_locales_es_pak	es.pak	389410	219			
-ui_resources_pak	cmp_ui_resources_pak	resources.pak	5374671	267			
-ui_locales_te_pak	cmp_ui_locales_te_pak	te.pak	890236	253			
-ui_locales_zh_CN_pak	cmp_ui_locales_zh_CN_pak	zh-CN.pak	327403	259			
-ui_snapshot_blob_bin	cmp_ui_snapshot_blob_bin	snapshot_blob.bin	172048	268			
-ui_locales_ko_pak	cmp_ui_locales_ko_pak	ko.pak	392822	234			
-ui_locales_bn_pak	cmp_ui_locales_bn_pak	bn.pak	832302	210			
-ui_locales_pl_pak	cmp_ui_locales_pl_pak	pl.pak	406132	242			
-ui_locales_fi_pak	cmp_ui_locales_fi_pak	fi.pak	360305	222			
-ui_LICENSE	cmp_ui_LICENSE	LICENSE	1096	204			
-ui_locales_sv_pak	cmp_ui_locales_sv_pak	sv.pak	355555	250			
-ui_vk_swiftshader_icd_json	cmp_ui_vk_swiftshader_icd_json	vk_swiftshader_icd.json	106	271			
-ui_locales_et_pak	cmp_ui_locales_et_pak	et.pak	350872	220			
-locale_ja_LC_MESSAGES_credential_ocs_mo	cmp_locale_ja_LC_MESSAGES_credential_ocs_mo	credential-ocs.mo	684	200			
-libwinpthread_1_dll	cmp_libwinpthread_1_dll	libwinpthread-1.dll	55827	1.0.0.0	10		
-libssh2_1_dll	cmp_libssh2_1_dll	libssh2-1.dll	234003	1	9		
-ui_d3dcompiler_47_dll	cmp_ui_d3dcompiler_47_dll	d3dcompiler_47.dll	4891080	10.0.20348.1	13		
-ui_locales_th_pak	cmp_ui_locales_th_pak	th.pak	748623	254			
-ui_locales_en_US_pak	cmp_ui_locales_en_US_pak	en-US.pak	321156	217			
-ui_icudtl_dat	cmp_ui_icudtl_dat	icudtl.dat	10462432	203			
-ui_locales_hu_pak	cmp_ui_locales_hu_pak	hu.pak	421056	229			
-credential_ocs_exe	cmp_credential_ocs_exe	credential-ocs.exe	1121464	0.1.0.0	512	0	
-ui_locales_lv_pak	cmp_ui_locales_lv_pak	lv.pak	420279	236			
-ui_locales_uk_pak	cmp_ui_locales_uk_pak	uk.pak	649250	256			
-ui_chrome_200_percent_pak	cmp_ui_chrome_200_percent_pak	chrome_200_percent.pak	179934	202			
-ui_locales_ml_pak	cmp_ui_locales_ml_pak	ml.pak	971210	237			
-ui_locales_zh_TW_pak	cmp_ui_locales_zh_TW_pak	zh-TW.pak	324418	260			
-ui_locales_sw_pak	cmp_ui_locales_sw_pak	sw.pak	373906	251			
-ui_locales_nl_pak	cmp_ui_locales_nl_pak	nl.pak	364921	241			
-ui_vk_swiftshader_dll	cmp_ui_vk_swiftshader_dll	vk_swiftshader.dll	5133824	5.0.0.1	18		
-ui_locales_es_419_pak	cmp_ui_locales_es_419_pak	es-419.pak	389280	419	218		
-ui_locales_ru_pak	cmp_ui_locales_ru_pak	ru.pak	649383	246			
-libcurl_4_dll	cmp_libcurl_4_dll	libcurl-4.dll	649235	8.0.1.0	512	2	
-ui_locales_ur_pak	cmp_ui_locales_ur_pak	ur.pak	565728	257			
-ui_libGLESv2_dll	cmp_ui_libGLESv2_dll	libGLESv2.dll	7535104	2.1.19725.0	17		
-ui_locales_fr_pak	cmp_ui_locales_fr_pak	fr.pak	420104	224			
-ui_locales_sk_pak	cmp_ui_locales_sk_pak	sk.pak	409304	247			
-ui_locales_tr_pak	cmp_ui_locales_tr_pak	tr.pak	380102	255			
-libintl_8_dll	cmp_libintl_8_dll	libintl-8.dll	106515	0.21.1.0	512	5	
-ui_resources_app_dist_assets_main_14588580_js	cmp_ui_resources_app_dist_assets_main_14588580_js	main.14588580.js	53966	261			
-ui_locales_ja_pak	cmp_ui_locales_ja_pak	ja.pak	467741	232			
-ui_resources_app_dist_index_html	cmp_ui_resources_app_dist_index_html	index.html	376	262			
-ui_locales_ar_pak	cmp_ui_locales_ar_pak	ar.pak	616576	208			
-ui_locales_mr_pak	cmp_ui_locales_mr_pak	mr.pak	791455	238			
-ui_locales_ta_pak	cmp_ui_locales_ta_pak	ta.pak	959387	252			
-ui_chrome_100_percent_pak	cmp_ui_chrome_100_percent_pak	chrome_100_percent.pak	129653	201			
-ui_locales_pt_BR_pak	cmp_ui_locales_pt_BR_pak	pt-BR.pak	383852	243			
-ui_locales_da_pak	cmp_ui_locales_da_pak	da.pak	364770	213			
-libeay32_dll	cmp_libeay32_dll	libeay32.dll	2246144	1.0.2.27	3		
-libnghttp2_14_dll	cmp_libnghttp2_14_dll	libnghttp2-14.dll	190995	14	7		
+ui_locales_kn_pak	cmp_ui_locales_kn_pak	kn.pak	932419				233
+ui_version	cmp_ui_version	version	6				270
+libzstd_1_dll	cmp_libzstd_1_dll	libzstd-1.dll	681491	1			11
+ui_locales_he_pak	cmp_ui_locales_he_pak	he.pak	499985				226
+ui_locales_ca_pak	cmp_ui_locales_ca_pak	ca.pak	394126				211
+ui_resources_default_app_asar	cmp_ui_resources_default_app_asar	default_app.asar	109138				266
+ui_locales_hr_pak	cmp_ui_locales_hr_pak	hr.pak	390596				228
+libjson_c_2_dll	cmp_libjson_c_2_dll	libjson-c-2.dll	41984	2		512	6
+ui_locales_el_pak	cmp_ui_locales_el_pak	el.pak	707704				215
+ui_locales_am_pak	cmp_ui_locales_am_pak	am.pak	564800				207
+ui_locales_vi_pak	cmp_ui_locales_vi_pak	vi.pak	449928				258
+ui_LICENSES_chromium_html	cmp_ui_LICENSES_chromium_html	LICENSES.chromium.html	6810078				205
+ui_locales_sl_pak	cmp_ui_locales_sl_pak	sl.pak	394532				248
+ui_locales_hi_pak	cmp_ui_locales_hi_pak	hi.pak	841576				227
+ui_locales_lt_pak	cmp_ui_locales_lt_pak	lt.pak	422255				235
+ui_locales_bg_pak	cmp_ui_locales_bg_pak	bg.pak	647156				209
+zlib1_dll	cmp_zlib1_dll	zlib1.dll	117267	1.2.13.0			20
+ui_resources_app_dist_main_js	cmp_ui_resources_app_dist_main_js	main.js	7335				263
+ui_resources_app_dist_preload_js	cmp_ui_resources_app_dist_preload_js	preload.js	382				264
+libidn2_0_dll	cmp_libidn2_0_dll	libidn2-0.dll	389139	0			4
+ui_locales_id_pak	cmp_ui_locales_id_pak	id.pak	344400				230
+ui_locales_de_pak	cmp_ui_locales_de_pak	de.pak	391164				214
+ui_v8_context_snapshot_bin	cmp_ui_v8_context_snapshot_bin	v8_context_snapshot.bin	483224				269
+ui_electron_exe	cmp_ui_electron_exe	electron.exe	157664256	22.1.0.0			14
+ui_libEGL_dll	cmp_ui_libEGL_dll	libEGL.dll	484352	2.1.19725.0			16
+ui_locales_en_GB_pak	cmp_ui_locales_en_GB_pak	en-GB.pak	318332				216
+ui_locales_cs_pak	cmp_ui_locales_cs_pak	cs.pak	403118				212
+ui_locales_af_pak	cmp_ui_locales_af_pak	af.pak	348321				206
+ui_locales_fa_pak	cmp_ui_locales_fa_pak	fa.pak	570824				221
+ui_locales_gu_pak	cmp_ui_locales_gu_pak	gu.pak	806257				225
+ui_ffmpeg_dll	cmp_ui_ffmpeg_dll	ffmpeg.dll	2767872				15
+ui_locales_fil_pak	cmp_ui_locales_fil_pak	fil.pak	404181				223
+ui_locales_nb_pak	cmp_ui_locales_nb_pak	nb.pak	353073				240
+ui_locales_it_pak	cmp_ui_locales_it_pak	it.pak	382427				231
+ssleay32_dll	cmp_ssleay32_dll	ssleay32.dll	410624	1.0.2.27			12
+ui_locales_ro_pak	cmp_ui_locales_ro_pak	ro.pak	396850				245
+ui_resources_app_package_json	cmp_ui_resources_app_package_json	package.json	79				265
+credential_ocs_msi	cmp_credential_ocs_msi	credential-ocs.msi	135168				272
+ui_locales_ms_pak	cmp_ui_locales_ms_pak	ms.pak	360077				239
+iconv_dll	cmp_iconv_dll	iconv.dll	33792				1
+libsqlite3_0_dll	cmp_libsqlite3_0_dll	libsqlite3-0.dll	909843	0			8
+ui_locales_sr_pak	cmp_ui_locales_sr_pak	sr.pak	610139				249
+ui_vulkan_1_dll	cmp_ui_vulkan_1_dll	vulkan-1.dll	915456	1.0.1111.2222			19
+ui_locales_pt_PT_pak	cmp_ui_locales_pt_PT_pak	pt-PT.pak	385780				244
+ui_locales_es_pak	cmp_ui_locales_es_pak	es.pak	389410				219
+ui_resources_pak	cmp_ui_resources_pak	resources.pak	5374671				267
+ui_locales_te_pak	cmp_ui_locales_te_pak	te.pak	890236				253
+ui_locales_zh_CN_pak	cmp_ui_locales_zh_CN_pak	zh-CN.pak	327403				259
+ui_snapshot_blob_bin	cmp_ui_snapshot_blob_bin	snapshot_blob.bin	172048				268
+ui_locales_ko_pak	cmp_ui_locales_ko_pak	ko.pak	392822				234
+ui_locales_bn_pak	cmp_ui_locales_bn_pak	bn.pak	832302				210
+ui_locales_pl_pak	cmp_ui_locales_pl_pak	pl.pak	406132				242
+ui_locales_fi_pak	cmp_ui_locales_fi_pak	fi.pak	360305				222
+ui_LICENSE	cmp_ui_LICENSE	LICENSE	1096				204
+ui_locales_sv_pak	cmp_ui_locales_sv_pak	sv.pak	355555				250
+ui_vk_swiftshader_icd_json	cmp_ui_vk_swiftshader_icd_json	vk_swiftshader_icd.json	106				271
+ui_locales_et_pak	cmp_ui_locales_et_pak	et.pak	350872				220
+locale_ja_LC_MESSAGES_credential_ocs_mo	cmp_locale_ja_LC_MESSAGES_credential_ocs_mo	credential-ocs.mo	684				200
+libwinpthread_1_dll	cmp_libwinpthread_1_dll	libwinpthread-1.dll	55827	1.0.0.0			10
+libssh2_1_dll	cmp_libssh2_1_dll	libssh2-1.dll	234003	1			9
+ui_d3dcompiler_47_dll	cmp_ui_d3dcompiler_47_dll	d3dcompiler_47.dll	4891080	10.0.20348.1			13
+ui_locales_th_pak	cmp_ui_locales_th_pak	th.pak	748623				254
+ui_locales_en_US_pak	cmp_ui_locales_en_US_pak	en-US.pak	321156				217
+ui_icudtl_dat	cmp_ui_icudtl_dat	icudtl.dat	10462432				203
+ui_locales_hu_pak	cmp_ui_locales_hu_pak	hu.pak	421056				229
+credential_ocs_exe	cmp_credential_ocs_exe	credential-ocs.exe	1121464	0.1.0.0		512	0
+ui_locales_lv_pak	cmp_ui_locales_lv_pak	lv.pak	420279				236
+ui_locales_uk_pak	cmp_ui_locales_uk_pak	uk.pak	649250				256
+ui_chrome_200_percent_pak	cmp_ui_chrome_200_percent_pak	chrome_200_percent.pak	179934				202
+ui_locales_ml_pak	cmp_ui_locales_ml_pak	ml.pak	971210				237
+ui_locales_zh_TW_pak	cmp_ui_locales_zh_TW_pak	zh-TW.pak	324418				260
+ui_locales_sw_pak	cmp_ui_locales_sw_pak	sw.pak	373906				251
+ui_locales_nl_pak	cmp_ui_locales_nl_pak	nl.pak	364921				241
+ui_vk_swiftshader_dll	cmp_ui_vk_swiftshader_dll	vk_swiftshader.dll	5133824	5.0.0.1			18
+ui_locales_es_419_pak	cmp_ui_locales_es_419_pak	es-419.pak	389280	419			218
+ui_locales_ru_pak	cmp_ui_locales_ru_pak	ru.pak	649383				246
+libcurl_4_dll	cmp_libcurl_4_dll	libcurl-4.dll	649235	8.0.1.0		512	2
+ui_locales_ur_pak	cmp_ui_locales_ur_pak	ur.pak	565728				257
+ui_libGLESv2_dll	cmp_ui_libGLESv2_dll	libGLESv2.dll	7535104	2.1.19725.0			17
+ui_locales_fr_pak	cmp_ui_locales_fr_pak	fr.pak	420104				224
+ui_locales_sk_pak	cmp_ui_locales_sk_pak	sk.pak	409304				247
+ui_locales_tr_pak	cmp_ui_locales_tr_pak	tr.pak	380102				255
+libintl_8_dll	cmp_libintl_8_dll	libintl-8.dll	106515	0.21.1.0		512	5
+ui_resources_app_dist_assets_main_14588580_js	cmp_ui_resources_app_dist_assets_main_14588580_js	main.14588580.js	53966				261
+ui_locales_ja_pak	cmp_ui_locales_ja_pak	ja.pak	467741				232
+ui_resources_app_dist_index_html	cmp_ui_resources_app_dist_index_html	index.html	376				262
+ui_locales_ar_pak	cmp_ui_locales_ar_pak	ar.pak	616576				208
+ui_locales_mr_pak	cmp_ui_locales_mr_pak	mr.pak	791455				238
+ui_locales_ta_pak	cmp_ui_locales_ta_pak	ta.pak	959387				252
+ui_chrome_100_percent_pak	cmp_ui_chrome_100_percent_pak	chrome_100_percent.pak	129653				201
+ui_locales_pt_BR_pak	cmp_ui_locales_pt_BR_pak	pt-BR.pak	383852				243
+ui_locales_da_pak	cmp_ui_locales_da_pak	da.pak	364770				213
+libeay32_dll	cmp_libeay32_dll	libeay32.dll	2246144	1.0.2.27			3
+libnghttp2_14_dll	cmp_libnghttp2_14_dll	libnghttp2-14.dll	190995	14			7

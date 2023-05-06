@@ -67,8 +67,6 @@ EXTRA_DIST = ServiceControl.idt \
 	MsiPatchOldAssemblyFile.idt \
 	AppSearch.idt \
 	MsiServiceConfigFailureActions.idt \
-	FeatureComponents-x86_64.idt.in \
-	FeatureComponents-i386.idt.in \
 	RadioButton.idt \
 	AdvtExecuteSequence.idt \
 	RegLocator.idt \
@@ -102,11 +100,12 @@ EXTRA_DIST = ServiceControl.idt \
 	MsiPatchSequence.idt \
 	ProgId.idt \
 	Patch.idt \
+	FeatureComponents-x86_64.idt.in \
+	FeatureComponents-i386.idt.in \
 	File-x86_64.idt.in \
 	File-i386.idt.in \
 	Component-x86_64.idt.in \
 	Component-i386.idt.in
-
 
 MSIDB = msidb.exe
 MSIINFO = msiinfo.exe
@@ -161,7 +160,6 @@ MSI_TABLES_1 = \
 	EventMapping.idt \
 	Extension.idt \
 	Feature.idt \
-	FeatureComponents.idt \
 	FileSFPCatalog.idt \
 	Font.idt 
 
@@ -213,7 +211,6 @@ MSI_TABLES_4 = \
 	RadioButton.idt \
 	RegLocator.idt \
 	Registry.idt \
-	RemoveFile.idt \
 	RemoveIniFile.idt \
 	RemoveRegistry.idt \
 	ReserveCost.idt 
@@ -345,7 +342,7 @@ prepare-old-inst-sources:
 
 .PHONY: prepare-old-inst-sources
 
-Component-$(host_cpu).idt.in File-$(host_cpu).idt.in RemoveFile-$(host_cpu).idt.in : prepare-old-inst-sources
+gen-comp-file-remove : prepare-old-inst-sources
 	pushd $(top_srcdir); \
 		file_idts=`./pkg/win/inst-log.sh -i -t 'v*$(host_cpu)' \
 			-f pkg/win/File-$(host_cpu).idt.in \
@@ -364,34 +361,33 @@ Component-$(host_cpu).idt.in File-$(host_cpu).idt.in RemoveFile-$(host_cpu).idt.
 			-e ./pkg/win/RemoveFileHeader.idt \
 			$$file_idts $$comp_idts
 
-gen-comp-file-remove : Component-$(host_cpu).idt.in File-$(host_cpu).idt.in RemoveFile-$(host_cpu).idt.in 
+
 .PHONY: gen-comp-file-remove
 
-FeatureComponents-$(host_cpu).idt.in:gen-comp-file-remove 
-	src_ft_opt=`$(srcdir)/inst-log.sh -i -t 'v*$(host_cpu)' \
-		-f pkg/win/FeatureComponents-$(host_cpu).idt.in \
-		-p /tmp/old-inst | \
-			sort -V -r | while read ;do echo "-f $$REPLY"; break; done`; \
-	$(srcdir)/ftcmp-gen.sh $$src_ft_opt \
-		-c $(srcdir)/Component-$(host_cpu).idt.in -n credential_osc \
-	   	-o $(srcdir)/FeatureComponents-$(host_cpu).idt.in
+gen-feat-comp: 
+	if [ -f $(srcdir)/Component-$(host_cpu).idt.in ] then \
+		src_ft_opt=`$(srcdir)/inst-log.sh -i -t 'v*$(host_cpu)' \
+			-f pkg/win/FeatureComponents-$(host_cpu).idt.in \
+			-p /tmp/old-inst | \
+				sort -V -r | while read ;do echo "-f $$REPLY"; break; done`; \
+		$(srcdir)/ftcmp-gen.sh $$src_ft_opt \
+			-c $(srcdir)/Component-$(host_cpu).idt.in -n credential_ocs \
+			-o $(srcdir)/FeatureComponents-$(host_cpu).idt.in \
+	else \
+		echo "You need to run make gen-template" \
+	fi
 
-
-gen-feat-comp:FeatureComponents-$(host_cpu).idt.in
 
 
 .PHONY:gen-feat-comp
 
-gen-template: gen-feat-comp
+gen-template: gen-comp-file-remove gen-feat-comp
 
 .PHONY: gen-template
 
-clean-generic:
+clean-local:
 	rm -f *.msi
 	rm -f *.idt
-
-Component.idt : Component-$(host_cpu).idt.in
-	cp $< >$@
 
 Property.idt : Property.idt.in $(upgrade_code_txt) $(link_csv) 
 	upgrade_code=`cat $(upgrade_code_txt)`; \
@@ -403,14 +399,22 @@ Property.idt : Property.idt.in $(upgrade_code_txt) $(link_csv)
 		s/%UPGRADE_CODE%/$$upgrade_code/" $< | \
 	awk -e $(awk_cmd_3) -v help_link=$$help_link - > $@
 
+Component.idt : Component-$(host_cpu).idt.in
+	cp $< $@
 
 File.idt : File-$(host_cpu).idt.in 
-	cp $< >$@
+	cp $< $@
+
+FeatureComponents.idt : FeatureComponents-$(host_cpu).idt.in
+	cp $< $@
+
+RemoveFile.idt : RemoveFile-$(host_cpu).idt.in
+	cp $< $@
 
 oc-credential_msi_pre: $(pkg_src)
 
 
-oc-credential.msi: oc-credential_msi_pre $(MSI_TABLES_0) $(MSI_TABLES_1) $(MSI_TABLES_2) $(MSI_TABLES_3) $(MSI_TABLES_4) $(MSI_TABLES_5) File.idt Component.idt Property.idt
+credential-ocs.msi: oc-credential_msi_pre $(MSI_TABLES_0) $(MSI_TABLES_1) $(MSI_TABLES_2) $(MSI_TABLES_3) $(MSI_TABLES_4) $(MSI_TABLES_5) File.idt Component.idt Property.idt FeatureComponents.idt RemoveFile.idt
 	msi_date=`date +%Y/%m/%d\ %H:%M:%S`; \
 	pkg_code=`uuidgen | tr [:lower:] [:upper:]`; \
 	msi_platform=`case $(host_cpu) in \
@@ -425,7 +429,7 @@ oc-credential.msi: oc-credential_msi_pre $(MSI_TABLES_0) $(MSI_TABLES_1) $(MSI_T
 	$(MSIDB) -i -f `cygpath -a -w -d $(srcdir)` -d $@ $(MSI_TABLES_4) && \
 	$(MSIDB) -i -f `cygpath -a -w -d $(srcdir)` -d $@ $(MSI_TABLES_5) && \
 	$(MSIDB) -i -f `cygpath -a -w -d $(builddir)` -d $@ File.idt \
-		Component.idt Property.idt && \
+		Component.idt Property.idt FeatureComponents.idt && \
 	$(MSIINFO) $@ -a "$(company_name)" -c 20127 -t "Installation Database" \
 		-o "This installer database contains the logic and data required to install $(PACKAGE)" \
 		-k "installer,git,git-credential" \
@@ -435,8 +439,16 @@ oc-credential.msi: oc-credential_msi_pre $(MSI_TABLES_0) $(MSI_TABLES_1) $(MSI_T
 		-w 8 \
 		-p "$${msi_platform};$${msi_langs}"
 
+$(staging_dir)$(libexecdir)/credential-ocs.msi:credential-ocs.msi
+	cp $< $@
 
-oc-credential-ja.msi: oc-credential.msi \
+staging-msi:$(staging_dir)$(libexecdir)/credential-ocs.msi
+
+
+.PHONY: staging-msi
+
+
+credential-ocs-ja.msi: oc-credential.msi \
 	$(srcdir)/ja/Control.idt \
 	$(srcdir)/ja/UiText.idt \
 	$(srcdir)/ja/Error.idt \
@@ -449,5 +461,15 @@ oc-credential-ja.msi: oc-credential.msi \
 	$(MSIDB) -i -f `cygpath -a -w -d $(builddir)/ja` -d $@ Property.idt && \
 	$(MSIINFO) $@ -v "{$$pkg_code}"
 	
+
+$(staging_dir)$(libexecdir)/credential-ocs-ja.msi:credential-ocs-ja.msi
+	cp $< $@
+
+staging-msi-ja:$(staging_dir)$(libexecdir)/credential-ocs-ja.msi
+
+.PHONY: staging-msi-ja
+
+
+
 
 # vi: se ts=4 sw=4 noet:
