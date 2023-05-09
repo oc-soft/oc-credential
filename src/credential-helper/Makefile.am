@@ -151,7 +151,7 @@ else
 credhelper_lib_flags=$(LTLIBINTL) -ljson-c -lsqlite3 -luuid -lm
 endif
 if RUN_WIN
-credhelper_lib_flags += -lucrt
+credhelper_lib_flags += -spec=$(srcdir)/ucrt.specs
 endif
 
 

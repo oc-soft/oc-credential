@@ -1,4 +1,9 @@
+
 SUBDIRS = ja
+
+if BUILD_MS
+noinst_PROGRAMS = cabddf
+endif
 
 EXTRA_DIST = ServiceControl.idt \
 	_Validation.idt \
@@ -107,6 +112,7 @@ EXTRA_DIST = ServiceControl.idt \
 	Component-x86_64.idt.in \
 	Component-i386.idt.in
 
+
 MSIDB = msidb.exe
 MSIINFO = msiinfo.exe
 
@@ -124,6 +130,13 @@ credhelper_dist_name=credential-ocs
 
 src_app_dir=App
 
+
+if BUILD_MS
+cabddf_SOURCES=cabddf_main.c
+cabddf_CPPFLAGS=-I$(top_srcdir)/oclib/col/include
+cabddf_LDFLAGS= -static -municode -specs=$(srcdir)/ucrt.specs -lmsi -lpathcch
+cabddf_LDADD=$(top_builddir)/oclib/col/src/liboccol.la
+endif
 
 MSI_TABLES_0 = \
 	ActionText.idt \
@@ -365,18 +378,17 @@ gen-comp-file-remove : prepare-old-inst-sources
 .PHONY: gen-comp-file-remove
 
 gen-feat-comp: 
-	if [ -f $(srcdir)/Component-$(host_cpu).idt.in ] then \
+	if [ -f $(srcdir)/Component-$(host_cpu).idt.in ] ; then \
 		src_ft_opt=`$(srcdir)/inst-log.sh -i -t 'v*$(host_cpu)' \
 			-f pkg/win/FeatureComponents-$(host_cpu).idt.in \
 			-p /tmp/old-inst | \
 				sort -V -r | while read ;do echo "-f $$REPLY"; break; done`; \
 		$(srcdir)/ftcmp-gen.sh $$src_ft_opt \
 			-c $(srcdir)/Component-$(host_cpu).idt.in -n credential_ocs \
-			-o $(srcdir)/FeatureComponents-$(host_cpu).idt.in \
+			-o $(srcdir)/FeatureComponents-$(host_cpu).idt.in; \
 	else \
-		echo "You need to run make gen-template" \
+		echo "You need to run make gen-template"; \
 	fi
-
 
 
 .PHONY:gen-feat-comp
@@ -469,7 +481,17 @@ staging-msi-ja:$(staging_dir)$(libexecdir)/credential-ocs-ja.msi
 
 .PHONY: staging-msi-ja
 
+clean-staging-msi:
+	rm -f $(staging_dir)$(libexecdir)/*.msi
+
+.PHONY:clean-staging-msi
+
+if BUILD_MS
+create-cab-directive:cabddf$(EXEEXT) 
+	./cabddf$(EXEEXT) -m credential-ocs.msi	
 
 
+endif
+.PHONY: create-cab-directive
 
 # vi: se ts=4 sw=4 noet:
