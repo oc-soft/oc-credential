@@ -150,9 +150,6 @@ credhelper_lib_flags=$(LTLIBINTL) -ljson-c -lcurl -lsqlite3 -luuid -lm
 else
 credhelper_lib_flags=$(LTLIBINTL) -ljson-c -lsqlite3 -luuid -lm
 endif
-if RUN_WIN
-credhelper_lib_flags += -spec=$(srcdir)/ucrt.specs
-endif
 
 
 
@@ -169,7 +166,7 @@ if TARGET_WASM
 credential_ocs_credhelper_LDFLAGS += -static
 endif
 if RUN_WIN
-credential_ocs_credhelper_LDFLAGS += -Wl,--dependency-file -Wl,credhhelper-dpd.txt
+credential_ocs_credhelper_LDFLAGS += -Wl,--dependency-file -Wl,credhhelper-dpd.txt -spec=$(srcdir)/ucrt.specs
 endif
 
 SH_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/tap-driver.sh

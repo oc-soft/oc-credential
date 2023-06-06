@@ -2,7 +2,7 @@
 SUBDIRS = ja
 
 if BUILD_MS
-noinst_PROGRAMS = cabddf
+noinst_PROGRAMS = cabeng
 endif
 
 EXTRA_DIST = ServiceControl.idt \
@@ -132,10 +132,10 @@ src_app_dir=App
 
 
 if BUILD_MS
-cabddf_SOURCES=cabddf_main.c
-cabddf_CPPFLAGS=-I$(top_srcdir)/oclib/col/include
-cabddf_LDFLAGS= -static -municode -specs=$(srcdir)/ucrt.specs -lmsi -lpathcch
-cabddf_LDADD=$(top_builddir)/oclib/col/src/liboccol.la
+cabeng_SOURCES=cabeng_main.c
+cabeng_CPPFLAGS=-I$(top_srcdir)/oclib/col/include
+cabeng_LDFLAGS= -static -municode -specs=$(srcdir)/ucrt.specs -lmsi -lpathcch
+cabeng_LDADD=$(top_builddir)/oclib/col/src/liboccol.la
 endif
 
 MSI_TABLES_0 = \
@@ -487,8 +487,8 @@ clean-staging-msi:
 .PHONY:clean-staging-msi
 
 if BUILD_MS
-create-cab-directive:cabddf$(EXEEXT) 
-	./cabddf$(EXEEXT) -m credential-ocs.msi	
+create-cab-directive:cabeng$(EXEEXT) 
+	./cabeng$(EXEEXT) -m credential-ocs.msi	
 
 
 endif

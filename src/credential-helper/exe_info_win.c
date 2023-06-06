@@ -96,7 +96,7 @@ get_module_path()
         path_buffer = (LPWSTR)exe_info_alloc(
             sizeof(WCHAR) * char_size);
 
-        if (result) {
+        if (path_buffer) {
             DWORD char_size_res;
             char_size_res = GetModuleFileNameW(NULL, path_buffer, char_size); 
             if (char_size_res > 0 && char_size >= char_size_res) {

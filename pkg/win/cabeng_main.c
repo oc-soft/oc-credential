@@ -4,23 +4,68 @@
 #include <string.h>
 #include <msiquery.h>
 #include <pathcch.h>
+#include <errno.h>
 #include "col/array_list.h"
+#include "col/rb_map.h"
+#include "col/map.h"
+
+
+/**
+ * cab entry generator
+ */
+typedef struct _cabeng cabeng;
 
 /**
  * cab ddf file generator option
  */
-typedef struct _cabddf_option cabddf_option;
+typedef struct _cabeng_option cabeng_option;
 
 /**
  * cab ddf file entry
  */
-typedef struct _cabddf_file_entry cabddf_file_entry;
+typedef struct _cabeng_file_entry cabeng_file_entry;
 
 
 /**
- * cab ddf file generator option
+ * number object
  */
-struct _cabddf_option {
+typedef struct _cabeng_number cabeng_number;
+
+/**
+ * cab entry generator
+ */
+struct _cabeng 
+{
+    /**
+     * reference count
+     */
+    unsigned int ref_count;
+
+    /**
+     * entry list
+     */
+    col_list* entry_list;
+
+    /**
+     * sequence number entry map
+     */
+    col_map* seq_entry_map;
+
+
+    /**
+     * option
+     */
+    const cabeng_option* option;
+
+};
+
+
+
+
+/**
+ * cab entry generator option
+ */
+struct _cabeng_option {
     /**
      * show help message
      */
@@ -33,9 +78,9 @@ struct _cabddf_option {
 };
 
 /**
- * cab ddf file entry
+ * cab file entry
  */ 
-struct _cabddf_file_entry {
+struct _cabeng_file_entry {
     /**
      * reference count
      */
@@ -58,16 +103,70 @@ struct _cabddf_file_entry {
 };
 
 /**
- * create file entry
+ * number object
  */
-cabddf_file_entry*
-cabddf_file_entry_create();
+struct _cabeng_number {
+
+    /**
+     * reference count
+     */
+    unsigned int ref_count;
+
+    /**
+     * number
+     */
+    int number;
+};
+
+/**
+ * create entry generator
+ */
+cabeng*
+cabeng_create();
+
+
+/**
+ * increment reference count
+ */
+unsigned int
+cabeng_retain(
+    cabeng* obj);
+
+/**
+ * decrement reference count
+ */
+unsigned int
+cabeng_release(
+    cabeng* obj);
+
+/**
+ * put file entry
+ */
+int
+cabeng_put_entry(
+    cabeng* obj,
+    cabeng_file_entry* entry);
+
+/**
+ * get file entry
+ */
+int
+cabeng_get_entry(
+    cabeng* obj,
+    int seq_num,
+    cabeng_file_entry** entry);
 
 /**
  * create file entry
  */
-cabddf_file_entry*
-cabddf_file_entry_create_1(
+cabeng_file_entry*
+cabeng_file_entry_create();
+
+/**
+ * create file entry
+ */
+cabeng_file_entry*
+cabeng_file_entry_create_1(
     LPCWSTR file_name_id,
     LPCWSTR file_path,
     int seq);
@@ -76,59 +175,59 @@ cabddf_file_entry_create_1(
  * increment reference count
  */
 unsigned int
-cabddf_file_entry_retain(
-    cabddf_file_entry* obj);
+cabeng_file_entry_retain(
+    cabeng_file_entry* obj);
 
 /**
  * release file entry
  */
 unsigned int
-cabddf_file_entry_release(
-    cabddf_file_entry* obj);
+cabeng_file_entry_release(
+    cabeng_file_entry* obj);
 
 /**
  * release file entry
  */
 void
-cabddf_file_entry_release_1(
-    cabddf_file_entry* obj);
+cabeng_file_entry_release_1(
+    cabeng_file_entry* obj);
 
 /**
  * get hash
  */
 int
-cabddf_file_entry_get_hash(
-    cabddf_file_entry* obj);
+cabeng_file_entry_get_hash(
+    cabeng_file_entry* obj);
 
 /**
  * copy reference
  */
 int
-cabddf_file_entry_copy_reference(
-    cabddf_file_entry* src,
-    cabddf_file_entry** dst);
+cabeng_file_entry_copy_reference(
+    cabeng_file_entry* src,
+    cabeng_file_entry** dst);
 
 /**
  * get file name id
  */
 LPCWSTR
-cabddf_file_entry_get_file_name_id_ref(
-    cabddf_file_entry* obj);
+cabeng_file_entry_get_file_name_id_ref(
+    cabeng_file_entry* obj);
 
 
 /**
  * get file name id
  */
 LPWSTR
-cabddf_file_entry_get_file_name_id(
-    cabddf_file_entry* obj);
+cabeng_file_entry_get_file_name_id(
+    cabeng_file_entry* obj);
 
 /**
  * set file name id 
  */
 int
-cabddf_file_entry_set_file_name_id(
-    cabddf_file_entry* obj,
+cabeng_file_entry_set_file_name_id(
+    cabeng_file_entry* obj,
     LPCWSTR file_name_id);
 
 
@@ -136,56 +235,106 @@ cabddf_file_entry_set_file_name_id(
  * get file path
  */
 LPCWSTR
-cabddf_file_entry_get_file_path_ref(
-    cabddf_file_entry* obj);
+cabeng_file_entry_get_file_path_ref(
+    cabeng_file_entry* obj);
 
 
 /**
  * get file path
  */
 LPWSTR
-cabddf_file_entry_get_file_path(
-    cabddf_file_entry* obj);
+cabeng_file_entry_get_file_path(
+    cabeng_file_entry* obj);
 
 /**
  * set file path
  */
 int
-cabddf_file_entry_set_file_path(
-    cabddf_file_entry* obj,
+cabeng_file_entry_set_file_path(
+    cabeng_file_entry* obj,
     LPCWSTR file_name_id);
 
 /**
  * get file name id
  */
 LPWSTR
-cabddf_file_entry_get_file_name_id(
-    cabddf_file_entry* obj);
+cabeng_file_entry_get_file_name_id(
+    cabeng_file_entry* obj);
 
 /**
  * set file name id 
  */
 int
-cabddf_file_entry_set_file_name_id(
-    cabddf_file_entry* obj,
+cabeng_file_entry_set_file_name_id(
+    cabeng_file_entry* obj,
     LPCWSTR file_name_id);
 
 /**
  * get sequence
  */
 int
-cabddf_file_entry_get_sequence(
-    cabddf_file_entry* obj);
+cabeng_file_entry_get_sequence(
+    cabeng_file_entry* obj);
 
 /**
  * set sequence
  */
 int
-cabddf_file_entry_set_sequence(
-    cabddf_file_entry* obj,
+cabeng_file_entry_set_sequence(
+    cabeng_file_entry* obj,
     int seq);
 
 
+/**
+ * create number object
+ */
+cabeng_number*
+cabeng_number_create(
+    int number); 
+
+/**
+ * increment reference count
+ */
+unsigned int
+cabeng_number_retain(
+    cabeng_number* obj); 
+
+/**
+ * copy object
+ */
+int
+cabeng_number_copy_ref(
+    cabeng_number* src,
+    cabeng_number** dst);
+
+/**
+ * decrement reference count
+ */
+unsigned int
+cabeng_number_release(
+    cabeng_number* obj); 
+
+/**
+ * decrement reference count
+ */
+void
+cabeng_number_release_1(
+    cabeng_number* obj); 
+
+/**
+ * get number
+ */
+int
+cabeng_number_get_number(
+    cabeng_number* obj);
+
+/**
+ * compare number
+ */
+int
+cabeng_number_compare(
+    cabeng_number* obj_1,
+    cabeng_number* obj_2);
 
 /**
  * parse option
@@ -194,7 +343,7 @@ static int
 parse_option(
     int argc,
     wchar_t** argv,
-    cabddf_option* option);
+    cabeng_option* option);
 
 /**
  * show help message
@@ -214,21 +363,21 @@ read_str_from_record(
  * allocate memory
  */
 static void*
-cabddf_alloc_mem(
+cabeng_alloc_mem(
     size_t size);
 
 /**
  * free memory
  */
 static void
-cabddf_free_mem(
+cabeng_free_mem(
     void* obj);
 
 /**
  * duplicate string
  */
 static LPWSTR
-cabddf_strdupw(
+cabeng_strdupw(
     LPCWSTR srcstr);
 
 /**
@@ -251,7 +400,7 @@ get_source_dir_from_default_dir(
  */
 static int
 run(
-    const cabddf_option* option);
+    const cabeng_option* option);
 
 /**
  * load file entries
@@ -259,7 +408,7 @@ run(
 static int
 load_file_entries(
     MSIHANDLE db_hdl,
-    col_list* file_entries);
+    cabeng* entry_gen);
 
 /**
  * output file entries
@@ -267,14 +416,14 @@ load_file_entries(
 static int
 output_file_entries(
     MSIHANDLE db_hdl,
-    col_list* file_entries);
+    cabeng* entry_gen);
 
 /**
  * output file entries
  */
 static int
 output_file_entries_with_range(
-    col_list* file_entries,
+    cabeng* entry_gen,
     int start_idx, int end_idx);
 
 /**
@@ -282,7 +431,8 @@ output_file_entries_with_range(
  */
 static int
 output_file_entry(
-    cabddf_file_entry* entry);
+    cabeng_file_entry* entry,
+    int flush_cabinet);
 
 /**
  * read source directory
@@ -300,7 +450,7 @@ wmain(
     int argc,
     wchar_t** argv)
 {
-    cabddf_option option;
+    cabeng_option option;
     int result;
     memset(&option, 0, sizeof(option));
     result = 0;
@@ -322,40 +472,34 @@ wmain(
  */
 int
 run(
-    const cabddf_option* option)
+    const cabeng_option* option)
 {
     int result;
     UINT u_state;
     MSIHANDLE db_hdl;
-    col_list* file_entries;
+    cabeng* entry_gen;
     result = 0;
     db_hdl = 0;
     u_state = ERROR_SUCCESS;
-    file_entries = NULL;
+    entry_gen = NULL;
     if (option->msi_path) {
         u_state = MsiOpenDatabaseW(
             option->msi_path, (LPCWSTR)MSIDBOPEN_TRANSACT, &db_hdl);
         result = u_state == ERROR_SUCCESS ? 0 : -1;
     }
     if (result == 0) {
-        file_entries = col_array_list_create(10, 10,
-            (int (*)(void*))
-                cabddf_file_entry_get_hash,
-            (int (*)(const void*, void **))
-                cabddf_file_entry_copy_reference,
-            (void (*)(void*)) 
-                cabddf_file_entry_release_1);
-        result = file_entries ? 0 : -1;
+        entry_gen = cabeng_create(option);
+        result = entry_gen ? 0 : -1;
     }
     if (result == 0) {
-        result = load_file_entries(db_hdl, file_entries);
+        result = load_file_entries(db_hdl, entry_gen);
     }
     if (result == 0) {
-        result = output_file_entries(db_hdl, file_entries);
+        result = output_file_entries(db_hdl, entry_gen);
     }
  
-    if (file_entries) {
-        col_list_free(file_entries);
+    if (entry_gen) {
+        cabeng_release(entry_gen);
     }
 
     if (db_hdl) {
@@ -371,11 +515,10 @@ run(
 int
 load_file_entries(
     MSIHANDLE db_hdl,
-    col_list* file_entries)
+    cabeng* entry_gen)
 {
     int result;
     MSIHANDLE view_hdl;
-    col_list* file_names;
     UINT u_state;
     result = 0;
     view_hdl = 0;
@@ -405,7 +548,7 @@ load_file_entries(
             LPWSTR file_key;
             LPWSTR src_dir_path;
             LPWSTR src_path;
-            cabddf_file_entry* entry;
+            cabeng_file_entry* entry;
             int seq_num;
             rec_hdl = 0;
             file_name = NULL;
@@ -462,36 +605,36 @@ load_file_entries(
             }
 
             if (i_status == 0) {
-                entry = cabddf_file_entry_create_1(
+                entry = cabeng_file_entry_create_1(
                     file_key, src_path, seq_num);
                 i_status = entry ? 0 : -1;
                 result = i_status;
             }
             if (i_status == 0) {
-                i_status = col_list_append(file_entries, entry);
+                i_status = cabeng_put_entry(entry_gen, entry);
                 result = i_status;
             }
             if (entry) {
-                cabddf_file_entry_release(entry);
+                cabeng_file_entry_release(entry);
             }
 
             if (src_path) {
-                cabddf_free_mem(src_path);
+                cabeng_free_mem(src_path);
             }
 
             if (src_dir_path) {
-                cabddf_free_mem(src_dir_path);
+                cabeng_free_mem(src_dir_path);
             }
             
             if (file_name) {
-                cabddf_free_mem(file_name);
+                cabeng_free_mem(file_name);
             }
 
             if (dir_key) {
-                cabddf_free_mem(dir_key);
+                cabeng_free_mem(dir_key);
             }
             if (file_key) {
-                cabddf_free_mem(file_key);
+                cabeng_free_mem(file_key);
             }
  
             if (rec_hdl) {
@@ -541,7 +684,7 @@ read_src_dir(
         LPWSTR dir_path;
         LPWSTR dir_key;
         dir_path = NULL;
-        dir_key = cabddf_strdupw(start_dir_key); 
+        dir_key = cabeng_strdupw(start_dir_key); 
         status = dir_key ? 0 : -1;
         if (status == 0) {
             do {
@@ -577,17 +720,17 @@ read_src_dir(
                         if (dir_path) {
                             LPWSTR tmp_dir_path;
                             tmp_dir_path = join_path(parent_dir_path, dir_path);
-                            cabddf_free_mem(dir_path);
+                            cabeng_free_mem(dir_path);
                             dir_path = tmp_dir_path;
                         } else {
-                            dir_path = cabddf_strdupw(parent_dir_path);
+                            dir_path = cabeng_strdupw(parent_dir_path);
                         }
                     }
                 }
                 if (status == 0) {
                     parent_key = read_str_from_record(res_rec_hdl, 2);
                     if (parent_key) {
-                        cabddf_free_mem(dir_key);
+                        cabeng_free_mem(dir_key);
                         dir_key = parent_key;
                         parent_key = NULL;
                     } else {
@@ -597,10 +740,10 @@ read_src_dir(
 
                 
                 if (default_dir) {
-                    cabddf_free_mem(default_dir);
+                    cabeng_free_mem(default_dir);
                 }
                 if (parent_key) {
-                    cabddf_free_mem(parent_key);
+                    cabeng_free_mem(parent_key);
                 }
 
                 if (res_rec_hdl) {
@@ -628,7 +771,7 @@ read_src_dir(
 static int
 output_file_entries(
     MSIHANDLE db_hdl,
-    col_list* file_entries)
+    cabeng* entry_gen)
 {
     UINT u_status;
     MSIHANDLE view_hdl;
@@ -678,7 +821,7 @@ output_file_entries(
             }
             if (i_status == 0) {
                 i_status = output_file_entries_with_range(
-                    file_entries,
+                    entry_gen,
                     last_list_idx + 1,
                     end_idx);
                 result = i_status;
@@ -702,25 +845,59 @@ output_file_entries(
  */
 static int
 output_file_entries_with_range(
-    col_list* file_entries,
+    cabeng* entry_gen,
     int start_idx, int end_idx)
 {
     int idx;
-    int result = 0;
-    for (idx = start_idx; idx <= end_idx; idx++) {
-        cabddf_file_entry* entry;
-        entry = NULL;
-        result = col_list_get(file_entries, idx, (void**)&entry);
-        if (entry) {
-            result = output_file_entry(entry);
-        }
-        if (entry) {
-            cabddf_file_entry_release(entry);
-        }
-        if (result) {
-            break;
+    int result;
+    col_list* entry_list;
+    result = 0;
+    entry_list = col_array_list_create(10, 10,
+        (int (*)(void*))
+            cabeng_file_entry_get_hash,
+        (int (*)(const void*, void **))
+            cabeng_file_entry_copy_reference,
+        (void (*)(void*)) 
+            cabeng_file_entry_release_1);
+    result = entry_list ? 0 : -1; 
+    if (result == 0) {
+        for (idx = start_idx; idx <= end_idx; idx++) {
+            cabeng_file_entry* entry;
+            entry = NULL;
+            result = cabeng_get_entry(entry_gen, idx, &entry);
+            if (entry) {
+                col_list_append(entry_list, entry);
+            }
+            if (entry) {
+                cabeng_file_entry_release(entry);
+            }
+            if (result) {
+                break;
+            }
         }
     }
+    if (result == 0) {
+        for (idx = 0; idx < col_list_size(entry_list); idx++) {
+            cabeng_file_entry* entry;
+            entry = NULL;
+            result = col_list_get(entry_list, idx, (void**)&entry);
+            if (entry) {
+                result = output_file_entry(entry,
+                    (idx + 1) == col_list_size(entry_list));
+            }
+            if (entry) {
+                cabeng_file_entry_release(entry);
+            }
+            if (result) {
+                break;
+            }
+        }
+    }
+
+    if (entry_list) {
+        col_list_free(entry_list);
+    }
+
     return result;
 }
 
@@ -729,20 +906,21 @@ output_file_entries_with_range(
  */
 static int
 output_file_entry(
-    cabddf_file_entry* entry)
+    cabeng_file_entry* entry,
+    int flush_cabinet)
 {
     LPCWSTR src;
     LPCWSTR dst;
     int result;
     result = 0;
-    src = cabddf_file_entry_get_file_path_ref(entry);
+    src = cabeng_file_entry_get_file_path_ref(entry);
     result = src ? 0 : -1;
     if (result == 0) {
-        dst = cabddf_file_entry_get_file_name_id_ref(entry);
+        dst = cabeng_file_entry_get_file_name_id_ref(entry);
         result = dst ? 0 : -1;
     }    
     if (result == 0) {
-        wprintf(L"\"%ls\" \"%ls\"\n", src, dst);
+        wprintf(L"%ls,%ls,MSZIP,0,0,0,%d\n", src, dst, flush_cabinet);
     }
     return result;
 }
@@ -787,7 +965,7 @@ join_path(
     if (status == 0) {
         size_t len;
         len = wcslen(joined_path);
-        result = (LPWSTR)cabddf_alloc_mem((len + 1) * sizeof(WCHAR));
+        result = (LPWSTR)cabeng_alloc_mem((len + 1) * sizeof(WCHAR));
         if (result) {
             memcpy(result, joined_path, (len + 1) * sizeof(WCHAR));
         }
@@ -817,12 +995,12 @@ read_str_from_record(
         state = MsiRecordGetStringW(rec_hdl, field, empty_buf, &buf_count);
 
         if (state == ERROR_MORE_DATA) {
-            result = (LPWSTR)cabddf_alloc_mem((buf_count + 1) * sizeof(WCHAR));
+            result = (LPWSTR)cabeng_alloc_mem((buf_count + 1) * sizeof(WCHAR));
             if (result) {
                 buf_count += 1;
                 state = MsiRecordGetStringW(rec_hdl, field, result, &buf_count);
                 if (state != ERROR_SUCCESS) {
-                    cabddf_free_mem(result);
+                    cabeng_free_mem(result);
                     result = NULL;
                 }
             }
@@ -835,7 +1013,7 @@ read_str_from_record(
  * duplicate string
  */
 static LPWSTR
-cabddf_strdupw(
+cabeng_strdupw(
     LPCWSTR srcstr)
 {
     size_t len;
@@ -843,7 +1021,7 @@ cabddf_strdupw(
     result = NULL;
     if (srcstr) {
         len = wcslen(srcstr);
-        result = (LPWSTR)cabddf_alloc_mem((len + 1) * sizeof(WCHAR));
+        result = (LPWSTR)cabeng_alloc_mem((len + 1) * sizeof(WCHAR));
         if (result) {
             memcpy(result, srcstr, (len + 1) * sizeof(WCHAR));
         }
@@ -855,7 +1033,7 @@ cabddf_strdupw(
  * allocate memory
  */
 static void*
-cabddf_alloc_mem(
+cabeng_alloc_mem(
     size_t size)
 {
     return malloc(size);
@@ -865,7 +1043,7 @@ cabddf_alloc_mem(
  * free memory
  */
 static void
-cabddf_free_mem(
+cabeng_free_mem(
     void* obj)
 {
     free(obj);
@@ -894,7 +1072,7 @@ static int
 parse_option(
     int argc,
     wchar_t** argv,
-    cabddf_option* option)
+    cabeng_option* option)
 {
     int result;
     int idx;
@@ -919,15 +1097,162 @@ parse_option(
     return result; 
 }
 
+/**
+ * create entry generator
+ */
+cabeng*
+cabeng_create(
+    const cabeng_option* option)
+{
+    cabeng* result;
+    col_list* entry_list;
+    col_map* seq_entry_map;
+    result = cabeng_alloc_mem(sizeof(cabeng));
+    entry_list = col_array_list_create(10, 10,
+        (int (*)(void*))
+            cabeng_file_entry_get_hash,
+        (int (*)(const void*, void **))
+            cabeng_file_entry_copy_reference,
+        (void (*)(void*)) 
+            cabeng_file_entry_release_1);
+    seq_entry_map = col_rb_map_create(
+        (int (*)(const void*, const void*))cabeng_number_compare,
+        (unsigned int (*)(const void*))cabeng_number_get_number,
+        (unsigned int (*)(const void*))cabeng_file_entry_get_hash,
+        (int (*)(const void*, void**))cabeng_file_entry_copy_reference,
+        (int (*)(const void*, void**))cabeng_number_copy_ref,
+        (void (*)(void*))cabeng_file_entry_release_1,
+        (void (*)(void*))cabeng_number_release_1);
+    if (result && entry_list && seq_entry_map) {
+        result->option = option;
+        result->entry_list = entry_list;
+        result->seq_entry_map = seq_entry_map;
+        result->ref_count = 1;
+    } else {
+        if (entry_list) {
+            col_list_free(entry_list);
+        }
+        if (seq_entry_map) {
+            col_map_free(seq_entry_map);
+        }
+        cabeng_free_mem(result);
+        result = NULL;
+    }
+    return result;
+}
+
+
+/**
+ * increment reference count
+ */
+unsigned int
+cabeng_retain(
+    cabeng* obj)
+{
+    unsigned int result;
+    result = 0;
+    if (obj) {
+        result = ++obj->ref_count;
+    } else {
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * decrement reference count
+ */
+unsigned int
+cabeng_release(
+    cabeng* obj)
+{
+    unsigned int result;
+    result = 0;
+
+    if (obj) {
+        result = --obj->ref_count;
+        if (result == 0) {
+            col_list_free(obj->entry_list);
+            col_map_free(obj->seq_entry_map);
+            cabeng_free_mem(obj);
+        }
+    } else {
+        errno = EINVAL;
+    }
+
+    return result;
+}
+
+/**
+ * put file entry
+ */
+int
+cabeng_put_entry(
+    cabeng* obj,
+    cabeng_file_entry* entry)
+{
+    int result;
+
+    if (obj) {
+        cabeng_number* number;
+        number = NULL;
+        number = cabeng_number_create(cabeng_file_entry_get_sequence(entry));
+        result = number ? 0 : -1;
+        if (result == 0) {
+            result = col_map_put(obj->seq_entry_map, number, entry);
+        }
+        if (number) {
+            cabeng_number_release(number);
+        }
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * get file entry
+ */
+int
+cabeng_get_entry(
+    cabeng* obj,
+    int seq_num,
+    cabeng_file_entry** entry)
+{
+    int result;
+    result = 0;
+    if (obj && entry) {
+        cabeng_number* number;
+        number = NULL;
+        number = cabeng_number_create(seq_num);
+        result = number ? 0 : -1;
+        if (result == 0) {
+            cabeng_file_entry* tmp_entry;
+            tmp_entry = NULL;
+            col_map_get(obj->seq_entry_map, number, (void **)&tmp_entry);
+            *entry = tmp_entry;
+        }
+        if (number) {
+            cabeng_number_release(number);
+        } 
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+
+
 
 /**
  * create file entry
  */
-cabddf_file_entry*
-cabddf_file_entry_create()
+cabeng_file_entry*
+cabeng_file_entry_create()
 {
-    cabddf_file_entry* result;
-    result = (cabddf_file_entry*)cabddf_alloc_mem(sizeof(cabddf_file_entry));
+    cabeng_file_entry* result;
+    result = (cabeng_file_entry*)cabeng_alloc_mem(sizeof(cabeng_file_entry));
     if (result) {
         result->ref_count = 1;
         result->file_name_id = NULL;
@@ -940,25 +1265,25 @@ cabddf_file_entry_create()
 /**
  * create file entry
  */
-cabddf_file_entry*
-cabddf_file_entry_create_1(
+cabeng_file_entry*
+cabeng_file_entry_create_1(
     LPCWSTR file_name_id,
     LPCWSTR file_path,
     int seq)
 {
-    cabddf_file_entry* result;
-    result = cabddf_file_entry_create();
+    cabeng_file_entry* result;
+    result = cabeng_file_entry_create();
     if (result) {
         int state;
-        state = cabddf_file_entry_set_file_name_id(result, file_name_id);
+        state = cabeng_file_entry_set_file_name_id(result, file_name_id);
         if (state == 0) {
-            cabddf_file_entry_set_file_path(result, file_path);
+            cabeng_file_entry_set_file_path(result, file_path);
         }
         if (state == 0) {
-            cabddf_file_entry_set_sequence(result, seq);
+            cabeng_file_entry_set_sequence(result, seq);
         }
         if (state) {
-            cabddf_file_entry_release(result);
+            cabeng_file_entry_release(result);
             result = NULL;
         }
     }
@@ -970,8 +1295,8 @@ cabddf_file_entry_create_1(
  * increment reference count
  */
 unsigned int
-cabddf_file_entry_retain(
-    cabddf_file_entry* obj)
+cabeng_file_entry_retain(
+    cabeng_file_entry* obj)
 {
     unsigned int result;
     result = 0;
@@ -985,17 +1310,17 @@ cabddf_file_entry_retain(
  * release file entry
  */
 unsigned int
-cabddf_file_entry_release(
-    cabddf_file_entry* obj)
+cabeng_file_entry_release(
+    cabeng_file_entry* obj)
 {
     unsigned int result;
     result = 0;
     if (obj) {
         result = --obj->ref_count;
         if (result == 0) {
-            cabddf_file_entry_set_file_name_id(obj, NULL);
-            cabddf_file_entry_set_file_path(obj, NULL);
-            cabddf_free_mem(obj);
+            cabeng_file_entry_set_file_name_id(obj, NULL);
+            cabeng_file_entry_set_file_path(obj, NULL);
+            cabeng_free_mem(obj);
         }
     }
     return result;
@@ -1005,21 +1330,21 @@ cabddf_file_entry_release(
  * release file entry
  */
 void
-cabddf_file_entry_release_1(
-    cabddf_file_entry* obj)
+cabeng_file_entry_release_1(
+    cabeng_file_entry* obj)
 {
-    cabddf_file_entry_release(obj);
+    cabeng_file_entry_release(obj);
 }
 
 /**
  * get hash
  */
 int
-cabddf_file_entry_get_hash(
-    cabddf_file_entry* obj)
+cabeng_file_entry_get_hash(
+    cabeng_file_entry* obj)
 {
     union {
-        cabddf_file_entry* obj;
+        cabeng_file_entry* obj;
         int hash;
     } pointer_int;
     memset(&pointer_int, 0, sizeof(pointer_int));
@@ -1031,14 +1356,14 @@ cabddf_file_entry_get_hash(
  * copy reference
  */
 int
-cabddf_file_entry_copy_reference(
-    cabddf_file_entry* src,
-    cabddf_file_entry** dst)
+cabeng_file_entry_copy_reference(
+    cabeng_file_entry* src,
+    cabeng_file_entry** dst)
 {
     int result;
     result = 0;
     if (src && dst) {
-        cabddf_file_entry_retain(src);
+        cabeng_file_entry_retain(src);
     }
     if (dst) {
         *dst = src;
@@ -1050,8 +1375,8 @@ cabddf_file_entry_copy_reference(
  * get file name id
  */
 LPCWSTR
-cabddf_file_entry_get_file_name_id_ref(
-    cabddf_file_entry* obj)
+cabeng_file_entry_get_file_name_id_ref(
+    cabeng_file_entry* obj)
 {
     LPCWSTR result;
     result = NULL;
@@ -1067,13 +1392,13 @@ cabddf_file_entry_get_file_name_id_ref(
  * get file name id
  */
 LPWSTR
-cabddf_file_entry_get_file_name_id(
-    cabddf_file_entry* obj)
+cabeng_file_entry_get_file_name_id(
+    cabeng_file_entry* obj)
 {
     LPWSTR result;
     result = NULL;
     if (obj) {
-        result = cabddf_strdupw(obj->file_name_id);
+        result = cabeng_strdupw(obj->file_name_id);
     }
     return result;
 }
@@ -1082,8 +1407,8 @@ cabddf_file_entry_get_file_name_id(
  * set file name id 
  */
 int
-cabddf_file_entry_set_file_name_id(
-    cabddf_file_entry* obj,
+cabeng_file_entry_set_file_name_id(
+    cabeng_file_entry* obj,
     LPCWSTR file_name_id)
 {
     unsigned int result;
@@ -1091,9 +1416,9 @@ cabddf_file_entry_set_file_name_id(
     if (obj) {
         if (obj->file_name_id != file_name_id) {
             if (obj->file_name_id) {
-                cabddf_free_mem(obj->file_name_id);
+                cabeng_free_mem(obj->file_name_id);
             }
-            obj->file_name_id = cabddf_strdupw(file_name_id);
+            obj->file_name_id = cabeng_strdupw(file_name_id);
         }
     }
     return result;
@@ -1104,8 +1429,8 @@ cabddf_file_entry_set_file_name_id(
  * get file path
  */
 LPCWSTR
-cabddf_file_entry_get_file_path_ref(
-    cabddf_file_entry* obj)
+cabeng_file_entry_get_file_path_ref(
+    cabeng_file_entry* obj)
 {
     LPCWSTR result;
     result = NULL;
@@ -1121,13 +1446,13 @@ cabddf_file_entry_get_file_path_ref(
  * get file path
  */
 LPWSTR
-cabddf_file_entry_get_file_path(
-    cabddf_file_entry* obj)
+cabeng_file_entry_get_file_path(
+    cabeng_file_entry* obj)
 {
     LPWSTR result;
     result = NULL;
     if (obj) {
-        result = cabddf_strdupw(obj->file_path);
+        result = cabeng_strdupw(obj->file_path);
     }
     return result;
 }
@@ -1136,8 +1461,8 @@ cabddf_file_entry_get_file_path(
  * set file path 
  */
 int
-cabddf_file_entry_set_file_path(
-    cabddf_file_entry* obj,
+cabeng_file_entry_set_file_path(
+    cabeng_file_entry* obj,
     LPCWSTR file_path)
 {
     unsigned int result;
@@ -1145,9 +1470,9 @@ cabddf_file_entry_set_file_path(
     if (obj) {
         if (obj->file_path != file_path) {
             if (obj->file_path) {
-                cabddf_free_mem(obj->file_path);
+                cabeng_free_mem(obj->file_path);
             }
-            obj->file_path = cabddf_strdupw(file_path);
+            obj->file_path = cabeng_strdupw(file_path);
         }
     }
     return result;
@@ -1157,8 +1482,8 @@ cabddf_file_entry_set_file_path(
  * get sequence
  */
 int
-cabddf_file_entry_get_sequence(
-    cabddf_file_entry* obj)
+cabeng_file_entry_get_sequence(
+    cabeng_file_entry* obj)
 {
     int result;
     result = -1;
@@ -1172,8 +1497,8 @@ cabddf_file_entry_get_sequence(
  * set sequence
  */
 int
-cabddf_file_entry_set_sequence(
-    cabddf_file_entry* obj,
+cabeng_file_entry_set_sequence(
+    cabeng_file_entry* obj,
     int seq)
 {
     int result;
@@ -1182,6 +1507,127 @@ cabddf_file_entry_set_sequence(
         obj->seq = seq;
     } else {
         result = -1;
+    }
+    return result;
+}
+
+/**
+ * create number object
+ */
+cabeng_number*
+cabeng_number_create(
+    int number)
+{
+    cabeng_number* result;
+    result = (cabeng_number*)cabeng_alloc_mem(sizeof(cabeng_number));
+    if (result) {
+        result->ref_count = 1;
+        result->number = number;
+    }
+
+    return result;
+}
+
+/**
+ * increment reference count
+ */
+unsigned int
+cabeng_number_retain(
+    cabeng_number* obj)
+{
+    unsigned int result;
+    result = 0;
+    if (obj) {
+        result = ++obj->ref_count;
+    } else {
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * copy object
+ */
+int
+cabeng_number_copy_ref(
+    cabeng_number* src,
+    cabeng_number** dst)
+{
+    int result;
+    result = 0;
+    if (src && dst) {
+        cabeng_number_retain(src);
+    }
+    if (dst) {
+        *dst = src;
+    }
+
+    return result;
+}
+
+/**
+ * decrement reference count
+ */
+unsigned int
+cabeng_number_release(
+    cabeng_number* obj)
+{
+    unsigned int result;
+    if (obj) {
+        result = --obj->ref_count;
+        if (result == 0) {
+            cabeng_free_mem(obj);
+        }
+    } else {
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * decrement reference count
+ */
+void
+cabeng_number_release_1(
+    cabeng_number* obj) 
+{
+    cabeng_number_release(obj);
+}
+
+/**
+ * get number
+ */
+int
+cabeng_number_get_number(
+    cabeng_number* obj)
+{
+    int result;
+    result = 0;
+    if (obj) {
+        result = obj->number;
+    }
+    return result;
+}
+
+
+/**
+ * compare number
+ */
+int
+cabeng_number_compare(
+    cabeng_number* obj_1,
+    cabeng_number* obj_2)
+{
+    int result;
+    result = 0;
+    if (obj_1 && obj_2) {
+        if (obj_1 != obj_2) {
+            result = obj_1->number - obj_2->number;
+        }
+    } else if (obj_2) {
+        result = -1;
+    } else if (obj_1) {
+        result = 1;
     }
     return result;
 }
