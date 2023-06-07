@@ -1,3 +1,6 @@
 [submodule "oclib"]
 	path = oclib
 	url = ssh://toshi@oc-soft.net:8169/home/toshi/projects/repo/oclib.git
+[submodule "pkg/win/cabx"]
+	path = pkg/win/cabx
+	url = ../cabx

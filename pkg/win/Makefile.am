@@ -5,6 +5,9 @@ if BUILD_MS
 noinst_PROGRAMS = cabeng
 endif
 
+if MINGW_HOST
+SUBDIRS += cabx
+endif
 EXTRA_DIST = ServiceControl.idt \
 	_Validation.idt \
 	MsiLockPermissionsEx.idt \

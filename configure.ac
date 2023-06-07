@@ -7,7 +7,7 @@ LT_INIT([win32-dll])
 AM_GNU_GETTEXT_VERSION([0.21.1])
 
 AC_CONFIG_MACRO_DIRS([m4])
-AC_CONFIG_SUBDIRS([oclib])
+AC_CONFIG_SUBDIRS([oclib pkg/win/cabx])
 LT_LANG([Windows Resource])
 
 AC_PROG_CC
@@ -29,6 +29,8 @@ AC_CHECK_HEADER([json-c/json.h])
 AC_CHECK_HEADER([curl/curl.h])
 
 AC_CHECK_HEADERS([mcheck.h emscripten.h])
+
+AM_CONDITIONAL([MINGW_HOST], [test $host_os = mingw32])
 
 
 OC_CHECK_RUN_ON_WIN
