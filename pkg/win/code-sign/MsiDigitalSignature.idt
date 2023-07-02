@@ -1,0 +1,5 @@
+Table	SignObject	DigitalCertificate_	Hash
+s32	s72	s72	V0
+MsiDigitalSignature	Table	SignObject
+Media	appmod-0.cab	appmod_0_cab	appmod_0.ibd
+Media	appmod-1.cab	appmod_1_cab	appmod_1.ibd

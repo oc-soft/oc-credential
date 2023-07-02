@@ -2,7 +2,7 @@
 SUBDIRS = ja
 
 if BUILD_MS
-noinst_PROGRAMS = cabeng
+noinst_PROGRAMS = cabeng cabhash
 endif
 
 if MINGW_HOST
@@ -118,6 +118,7 @@ EXTRA_DIST = ServiceControl.idt \
 
 MSIDB = msidb.exe
 MSIINFO = msiinfo.exe
+MSICERT = msicert.exe
 
 credhelper_prog_exe = credhelper.exe
 credhelper_prog = $(top_builddir)/src/credential-helper/credential-ocs/credhelper.exe
@@ -139,6 +140,24 @@ cabeng_SOURCES=cabeng_main.c
 cabeng_CPPFLAGS=-I$(top_srcdir)/oclib/col/include
 cabeng_LDFLAGS= -static -municode -specs=$(srcdir)/ucrt.specs -lmsi -lpathcch
 cabeng_LDADD=$(top_builddir)/oclib/col/src/liboccol.la
+
+
+cabhash_CPPFLAGS = -I$(top_srcdir)/oclib/col/include \
+	-I$(top_srcdir)/oclib/buffer/include \
+	-I$(top_srcdir)/oclib/cstr/include \
+	-I$(top_srcdir)/oclib/csv/include
+
+cabhash_SOURCES = cabhash_main.c \
+	number_parser.c \
+	str_conv_win.c
+
+cabhash_LDFLAGS= -static -municode -specs=${srcdir}/ucrt.specs -lmsi -lpathcch -lcrypt32
+
+cabhash_LDADD=$(top_builddir)/oclib/col/src/liboccol.la \
+	$(top_builddir)/oclib/cstr/src/liboccstr.la \
+	$(top_builddir)/oclib/buffer/src/libocbuffer.la \
+	$(top_builddir)/oclib/csv/src/liboccsv.la
+
 endif
 
 MSI_TABLES_0 = \
@@ -400,7 +419,11 @@ gen-template: gen-comp-file-remove gen-feat-comp
 
 .PHONY: gen-template
 
-clean-local:
+
+clean-stmp:
+	rm -f *.stmp
+
+clean-local: clean-stmp
 	rm -f *.msi
 	rm -f *.idt
 
@@ -460,6 +483,7 @@ $(staging_dir)$(libexecdir)/credential-ocs.msi:credential-ocs.msi
 staging-msi:$(staging_dir)$(libexecdir)/credential-ocs.msi
 
 
+
 .PHONY: staging-msi
 
 
@@ -490,11 +514,86 @@ clean-staging-msi:
 .PHONY:clean-staging-msi
 
 if BUILD_MS
-create-cab-directive:cabeng$(EXEEXT) 
-	./cabeng$(EXEEXT) -m credential-ocs.msi	
+
+create-cabs.stmp:cabeng$(EXEEXT) staging-msi
+	pushd  $(staging_dir)$(libexecdir);  \
+		$(abs_builddir)/cabeng$(EXEEXT) -m credential-ocs.msi \
+		| $(abs_builddir)/cabx/src/cabx.exe -c 'appmod-%d.cab' && popd
+	: >$@
+
+create-cabs:create-cabs.stmp
 
 
+create-cabs-input:cabeng$(EXEEXT) staging-msi
+	cd $(staging_dir)$(libexecdir);  \
+		$(abs_builddir)/cabeng$(EXEEXT) -m credential-ocs.msi >cabex-in.csv
+
+setup:
+	$(MKDIR_P) setup
+		
+setup/credential-ocs.msi: staging-msi | setup
+	cp $(staging_dir)$(libexecdir)/*.msi setup
+
+setup/appmod-0.cab: create-cabs setup/credential-ocs.msi | setup
+	cp $(staging_dir)$(libexecdir)/appmod-0.cab setup
+
+setup/appmod-1.cab: create-cabs setup/credential-ocs.msi | setup
+	cp $(staging_dir)$(libexecdir)/appmod-1.cab setup
+
+update-code-sign-entry.stmp: setup/credential-ocs.msi \
+	code-sign/MsiDigitalCertificate.idt \
+	code-sign/MsiDigitalSignature.idt
+	$(MSIDB) -i -f `cygpath -a -w $(srcdir)/code-sign` \
+		-d `cygpath -a -w $<` \
+		MsiDigitalCertificate.idt MsiDigitalSignature.idt
+	: >$@
+
+update-code-sign-entry:update-code-sign-entry.stmp
+
+code-sign-cabs.stmp:setup/appmod-0.cab \
+	setup/appmod-1.cab
+	cabs=`$(srcdir)/list-signing-cab.sh \
+		$(srcdir)/code-sign/MsiDigitalSignature.idt`; \
+	pushd setup; $(abs_srcdir)/oc-code-sign.sh $$cabs ; popd
+	: >$@
+
+code-sign-cabs:code-sign-cabs.stmp
+
+include-cert-hash.stmp: update-code-sign-entry \
+	code-sign-cabs
+	for idx in `seq 0 1`; do \
+		media_id=idx; \
+		let media_id+=1; \
+		$(MSICERT) -d setup/credential-ocs.msi -m $$media_id \
+		-c setup/appmod-$${idx}.cab; \
+	done
+	: >$@
+
+include-cert-hash: include-cert-hash.stmp
+
+create-compressed-msi.stmp: include-cert-hash 
+	cd setup; for fms in *.msi; do \
+		$(MSIINFO) $$fms /W 10 ; \
+	done
+	: >$@
+
+create-compressed-msi: create-compressed-msi.stmp
+
+
+sign-compressed-msi.stmp: create-compressed-msi
+	$(abs_srcdir)/oc-code-sign.sh setup/credential-ocs.msi
+	: >$@
+
+sign-compressed-msi: sign-compressed-msi.stmp
+	
 endif
-.PHONY: create-cab-directive
+
+.PHONY: create-cabs
+.PHONY: create-cabs-input
+.PHONY: update-code-sign-entry
+.PHONY: code-sign-cabs
+.PHONY: include-cert-hash
+.PHONY: create-compressed-msi
+.PHONY: sign-compressed-msi
 
 # vi: se ts=4 sw=4 noet:

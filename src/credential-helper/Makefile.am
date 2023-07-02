@@ -166,7 +166,7 @@ if TARGET_WASM
 credential_ocs_credhelper_LDFLAGS += -static
 endif
 if RUN_WIN
-credential_ocs_credhelper_LDFLAGS += -Wl,--dependency-file -Wl,credhhelper-dpd.txt -spec=$(srcdir)/ucrt.specs
+credential_ocs_credhelper_LDFLAGS += -Wl,--dependency-file -Wl,credhhelper-dpd.txt -specs=$(srcdir)/ucrt.specs
 endif
 
 SH_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/tap-driver.sh

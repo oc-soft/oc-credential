@@ -188,8 +188,8 @@ declare -A src_pe_prog_arm32
 declare -A isi_cmpkey_dir
 declare -A isi_cmpkey_file
 
-declare -i exe_sequence=0
-declare -i data_sequence=0
+declare -i exe_sequence=1
+declare -i data_sequence=1
 
 #
 # convert string to idt identifier string
