@@ -487,7 +487,7 @@ staging-msi:$(staging_dir)$(libexecdir)/credential-ocs.msi
 .PHONY: staging-msi
 
 
-credential-ocs-ja.msi: oc-credential.msi \
+credential-ocs-ja.msi: credential-ocs.msi \
 	$(srcdir)/ja/Control.idt \
 	$(srcdir)/ja/UiText.idt \
 	$(srcdir)/ja/Error.idt \
@@ -532,7 +532,11 @@ setup:
 	$(MKDIR_P) setup
 		
 setup/credential-ocs.msi: staging-msi | setup
-	cp $(staging_dir)$(libexecdir)/*.msi setup
+	cp $(staging_dir)$(libexecdir)/credential-ocs.msi setup
+
+setup/credential-ocs-ja.msi: staging-msi-ja | setup
+	cp $(staging_dir)$(libexecdir)/credential-ocs-ja.msi setup
+
 
 setup/appmod-0.cab: create-cabs setup/credential-ocs.msi | setup
 	cp $(staging_dir)$(libexecdir)/appmod-0.cab setup
@@ -540,38 +544,29 @@ setup/appmod-0.cab: create-cabs setup/credential-ocs.msi | setup
 setup/appmod-1.cab: create-cabs setup/credential-ocs.msi | setup
 	cp $(staging_dir)$(libexecdir)/appmod-1.cab setup
 
-update-code-sign-entry.stmp: setup/credential-ocs.msi \
-	code-sign/MsiDigitalCertificate.idt \
-	code-sign/MsiDigitalSignature.idt
-	$(MSIDB) -i -f `cygpath -a -w $(srcdir)/code-sign` \
-		-d `cygpath -a -w $<` \
-		MsiDigitalCertificate.idt MsiDigitalSignature.idt
-	: >$@
-
-update-code-sign-entry:update-code-sign-entry.stmp
-
 code-sign-cabs.stmp:setup/appmod-0.cab \
 	setup/appmod-1.cab
-	cabs=`$(srcdir)/list-signing-cab.sh \
-		$(srcdir)/code-sign/MsiDigitalSignature.idt`; \
-	pushd setup; $(abs_srcdir)/oc-code-sign.sh $$cabs ; popd
+	$(abs_srcdir)/oc-code-sign.sh setup/appmod-0.cab setup/appmod-1.cab
 	: >$@
 
 code-sign-cabs:code-sign-cabs.stmp
 
-include-cert-hash.stmp: update-code-sign-entry \
-	code-sign-cabs
-	for idx in `seq 0 1`; do \
-		media_id=idx; \
-		let media_id+=1; \
-		$(MSICERT) -d setup/credential-ocs.msi -m $$media_id \
-		-c setup/appmod-$${idx}.cab; \
+include-cert-hash.stmp: code-sign-cabs.stmp \
+	setup/credential-ocs.msi \
+	setup/credential-ocs-ja.msi 
+	for msi_path in setup/*.msi; do \
+		for idx in `seq 0 1`; do \
+			media_id=idx; \
+			let media_id+=1; \
+			$(MSICERT) -d $$msi_path -m $$media_id \
+			-c setup/appmod-$${idx}.cab; \
+		done; \
 	done
 	: >$@
 
 include-cert-hash: include-cert-hash.stmp
 
-create-compressed-msi.stmp: include-cert-hash 
+create-compressed-msi.stmp: include-cert-hash.stmp
 	cd setup; for fms in *.msi; do \
 		$(MSIINFO) $$fms /W 10 ; \
 	done
@@ -580,8 +575,10 @@ create-compressed-msi.stmp: include-cert-hash
 create-compressed-msi: create-compressed-msi.stmp
 
 
-sign-compressed-msi.stmp: create-compressed-msi
-	$(abs_srcdir)/oc-code-sign.sh setup/credential-ocs.msi
+sign-compressed-msi.stmp: create-compressed-msi.stmp
+	for msi_path in setup/*.msi; do \
+		$(abs_srcdir)/oc-code-sign.sh $$msi_path; \
+	done
 	: >$@
 
 sign-compressed-msi: sign-compressed-msi.stmp
