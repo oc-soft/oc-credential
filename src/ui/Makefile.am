@@ -119,7 +119,7 @@ vite.config.ts: vite.config.ts.in
 		-v package_name=$(PACKAGE_NAME) \
 		-v package_version=$(PACKAGE_VERSION) \
 		-e $(awk_cmd_0) $< >$@
-if !BUILD_MS
+if !COPY_JS_SRC_FOR_BUILD
 mksrc-tree:
 	if [ "$(srcdir)" != "." ] ; then \
 		for item in $(src_dirs) ; do \
@@ -225,7 +225,7 @@ clean-local:
 		rm -r -f node_modules; \
 		rm -r -f dist; \
 	fi
-if !BUILD_MS
+if !COPY_JS_SRC_FOR_BUILD
 	for item in $(src_dirs) ; do \
 		if [ -h $$item ] ; then \
 			rm $$item; \
