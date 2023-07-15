@@ -2,6 +2,7 @@ build*/
 *.swp
 *~
 .exrc
+.DS_Store
 autom4te.cache/
 m4/
 configure
