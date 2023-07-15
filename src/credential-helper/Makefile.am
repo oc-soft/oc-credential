@@ -94,6 +94,7 @@ OC_EXE_ROOT_NAME=@OC_EXE_ROOT_NAME@
 LOCPATH_NAME=@LOCPATH_NAME@
 LOGGING_FILE_NAME=@LOGGING_FILE_NAME@
 LOGGING_MAX_MESSAGE_SIZE=@LOGGING_MAX_MESSAGE_SIZE@
+OC_XLINKER_OPTION = @OC_XLINKER_OPTION@
 
 SKIP_LOCPATH_INSTALL=
 deploy_dir_def = $(abs_top_builddir)/pkg-img
@@ -116,13 +117,26 @@ credential_ocs_credhelper_SOURCES += path.c
 credential_ocs_credhelper_SOURCES += logging.c
 credential_ocs_credhelper_SOURCES += time_zone.c
 endif
+if RUN_DARWIN
+credential_ocs_credhelper_SOURCES += exe_info_darwin.c
+credential_ocs_credhelper_SOURCES += l10n_user_posix.c
+credential_ocs_credhelper_SOURCES += fd_io.c
+credential_ocs_credhelper_SOURCES += token_gen_ui_i_posix.c
+credential_ocs_credhelper_SOURCES += path.c
+credential_ocs_credhelper_SOURCES += logging.c
+credential_ocs_credhelper_SOURCES += time_zone.c
+endif
+
 
 if RUN_WIN
 credential_ocs_credhelper_SOURCES += credhelper_res.rc
 endif
 
 credential_ocs_credhelper_CFLAGS= -g -O0
-credential_ocs_credhelper_LDFLAGS= -g -static
+credential_ocs_credhelper_LDFLAGS= -g -static $(OC_XLINKER_OPTION)
+
+AM_LDFLAGS = $(OC_XLINKER_OPTION)
+
 
 credential_ocs_t01_token_gen_ui_exec_SOURCES = t01_token_gen_ui_exec.c \
 	token_gen_ui_exec.c \
@@ -162,9 +176,6 @@ credential_ocs_credhelper_LDADD= \
 credential_ocs_creddef_LDADD=$(top_builddir)/src/core/liboccredcore.la
 
 
-if TARGET_WASM
-credential_ocs_credhelper_LDFLAGS += -static
-endif
 if RUN_WIN
 credential_ocs_credhelper_LDFLAGS += -Wl,--dependency-file -Wl,credhhelper-dpd.txt -specs=$(srcdir)/ucrt.specs
 endif

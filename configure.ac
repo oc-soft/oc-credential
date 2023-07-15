@@ -41,6 +41,7 @@ fi
 OC_CHECK_TARGET_WASM
 OC_CHECK_ELECTRON_TARGET
 OC_CHECK_MAC_TARGET
+OC_CHECK_LINER_OPTION
 
 if test "x$oc_run_win" = xyes; then
     oc_data_dir_name='credential-ocs'
@@ -102,17 +103,29 @@ case $host_os in
     linux*)
         oc_run_linux=yes
     ;;
+    darwin*)
+        oc_run_darwin=yes
+    ;;
 esac
+
 AM_CONDITIONAL(RUN_LINUX, test "x$oc_run_linux" = xyes)
+AM_CONDITIONAL(RUN_DARWIN, test "x$oc_run_darwin" = xyes)
+
 
 
 case $build_os in
     msdosdjgpp* | cyg* | mingw* | cegcc*)
         oc_build_ms=yes
     ;;
+    darwin*)
+        oc_build_darwin=yes
+    ;;
 esac
 
+
 AM_CONDITIONAL(BUILD_MS, test "x$oc_build_ms" = xyes)
+AM_CONDITIONAL(BUILD_DARWIN, test "x$oc_build_darwin" = xyes)
+AM_CONDITIONAL(COPY_JS_SRC_FOR_BUILD, test "x$oc_build_ms" = xyes -o "x$oc_build_darwin" = xyes)
 
 if test "x$oc_target_wasm" = xno ; then
     if test "x$WASM_BUILD_ROOT" == "x" ; then

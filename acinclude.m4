@@ -97,7 +97,12 @@ AC_DEFUN([OC_CHECK_ELECTRON_TARGET],[
 AC_REQUIRE([AC_CANONICAL_TARGET])
 electron_target_cpu=
 	case $target_cpu in 
-	x86_64) electron_target_cpu=x64;;
+	x86_64)
+		electron_target_cpu=x64
+		;;
+	aarch64)
+		electron_target_cpu=arm64
+		;;
 	esac
 electron_target_os=
 	case $target_os in
@@ -125,5 +130,23 @@ AC_REQUIRE([AC_CANONICAL_TARGET])
 AM_CONDITIONAL([TARGET_MACOS], [test x$oc_target_os = xdarwin])
 ])
 
+AC_DEFUN([OC_CHECK_LINER_OPTION], [
+OC_XLINKER_OPTION=
+case $build_os in
+	darwin*)
+		if test "$build_cpu" != "$host_cpu" ; then
+			case $host_cpu in
+				aarch64)
+					OC_XLINKER_OPTION='-Wl,-arch -Wl,arm64'
+				;;
+				x86_64)
+					OC_XLINKER_OPTION='-Wl,-arch -Wl,x86_64'
+				;;	
+			esac	
+		fi
+	;;
+esac
+AC_SUBST(OC_XLINKER_OPTION)
+])
 
 # vi: se ts=4 sw=4:

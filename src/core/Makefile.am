@@ -44,6 +44,8 @@ t0_credential_desc_DEPENDENCIES = liboccredcore.la
 
 deploy_dir = @DEPLOY_DIR@
 pkg_bindir = @pkg_bindir@
+OC_XLINKER_OPTION = @OC_XLINKER_OPTION@
+
 deploy_dir_def = $(abs_top_builddir)/pkg-img
 JS_OC_CREDCORE_MOD_NAME = createCredCore
 JS_MODEXT=.mjs
@@ -53,16 +55,16 @@ if RUN_WIN
 liboccredcore_la_SOURCES += user_resource_win.c \
 	uuid_i_win.c \
 	str_conv_win.c
-endif
-if RUN_LINUX
-liboccredcore_la_SOURCES += user_resource_linux.c \
+else
+liboccredcore_la_SOURCES += user_resource_posix.c \
 	uuid_i_posix.c
 endif
 
 
 liboccredcore_la_CFLAGS= -g -O0
 
-liboccredcore_lib_flags=$(LTLIBINTL) -ljson-c -lsqlite3 -luuid -lm
+liboccredcore_lib_flags=$(LTLIBINTL) -ljson-c -lsqlite3 -luuid -lm \
+	$(OC_XLINKER_OPTION)
 
 if RUN_WIN
 liboccredcore_lib_flags += -lshell32 -lpathcch -lole32 -lrpcrt4 -lshlwapi
