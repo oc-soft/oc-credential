@@ -1,0 +1,11 @@
+{
+  "name": "unielectron",
+  "version": "0.1.0",
+  "description": "create universal electron module",
+  "author": "Toshiyuki Ogawa <toshi@oc-soft.net>",
+  "license": "Apache-2",
+  "main": "index.mjs",
+  "dependencies": {
+    "@electron/universal": "^1.4.1"
+  }
+}
