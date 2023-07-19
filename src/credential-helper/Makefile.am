@@ -199,12 +199,20 @@ localedir = @localedir@
 
 textdomain_dir=$(pkgdatadir)/locale
 
+if !RUN_DARWIN
 ui_exe_name=electron$(EXEEXT)
+else
+ui_exe_name=Electron$(EXEEXT)
+endif
 
 ui_builddir=$(builddir)/../ui
 ui_exe_dir=$(ui_builddir)/pkg
 ui_exe_subdir=$(GUI_EXE_SUBDIR)
+if !RUN_DARWIN
 ui_exe_relative_path=$(ui_exe_subdir)/$(ui_exe_name)
+else
+ui_exe_relative_path=$(ui_exe_subdir)/Electron.app/Contents/MacOS/$(ui_exe_name)
+endif
 
 awk_cmd_0='BEGIN { \
 		FS=","; \
