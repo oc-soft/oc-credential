@@ -23,9 +23,8 @@ exe_info_get_exe_name()
     result = NULL;
     if (path_buff) {
         int size;
-	size = proc_pidpath(getpid(), path_buff, PROC_PIDPATHINFO_SIZE);
+	    size = proc_pidpath((int)getpid(), path_buff, PROC_PIDPATHINFO_SIZE);
         if (size) {
-
             char* name_ptr;
             size_t i;
             name_ptr = NULL;
@@ -58,13 +57,11 @@ exe_info_get_exe_dir()
 {
     char* result;
     char* path_buff;
-    path_buff = (char*)exe_info_alloc(PROC_PIDPATHINFO_SIZE);
-    result = NULL;
-    if (path_buff) {
+    result = (char*)exe_info_alloc(PROC_PIDPATHINFO_SIZE);
+    if (result) {
         int size;
-	size = proc_pidpath((int)getpid(), path_buff, PROC_PIDPATHINFO_SIZE);
+	    size = proc_pidpath((int)getpid(), result, PROC_PIDPATHINFO_SIZE);
         if (size) {
-
             size_t i;
             for (i = size - 1; i > 0; i--) {
                 if (result[i] == '/') {
@@ -72,7 +69,11 @@ exe_info_get_exe_dir()
                     break;
                 }
             }
+        } else  {
+            exe_info_free(result);
+            result = NULL;
         }
+
     }
     return result;
 }
@@ -98,4 +99,4 @@ exe_info_alloc(
     return malloc(size);
 }
 
-
+/* vi: se ts=4 sw=4 et: */
