@@ -39,7 +39,7 @@ OC_EXE_ROOT_NAME=@OC_EXE_ROOT_NAME@
 PKG_DEST_REL_DIR=$(OC_EXE_ROOT_NAME)/$(GUI_EXE_SUBDIR)
 
 if TARGET_MACOS
-electron_resource_dir=Electron.app/Conentents/Resources
+electron_resource_dir=Electron.app/Contents/Resources
 else
 electron_resource_dir=resources
 endif
@@ -241,15 +241,9 @@ endif
 install-exec-local: 
 	@$(NORMAL_INSTALL)
 	insdir='$(DESTDIR)$(libexecdir)/$(PKG_DEST_REL_DIR)'; \
-	for f in `find pkg -type f`; do \
-		relpath=`echo $$f | sed -e 's/^pkg\///'` \
-		child=`basename $$relpath` \
-		dstreld=`echo $$relpath | sed -e "s/$${child}$$//"`; \
-		if [ ! -d $$insdir/$$dstreld ]; then \
-			$(MKDIR_P) $$insdir/$$dstreld; \
-		fi; \
-		cp $$f $$insdir/$$relpath; \
-	done
+	$(MKDIR_P) $$insdir; \
+	cp -R pkg/ $$insdir
+
 
 
 uninstall-local:

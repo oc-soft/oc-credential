@@ -137,6 +137,11 @@ credential_ocs_credhelper_LDFLAGS= -g -static $(OC_XLINKER_OPTION)
 
 AM_LDFLAGS = $(OC_XLINKER_OPTION)
 
+if RUN_DARWIN
+LN_S_R = $(LN_S)
+else
+LN_S_R = $(LN_S) -r
+endif
 
 credential_ocs_t01_token_gen_ui_exec_SOURCES = t01_token_gen_ui_exec.c \
 	token_gen_ui_exec.c \
@@ -486,8 +491,8 @@ install-exec-hook:
 	@$(POST_INSTALL)
 	$(MKDIR_P) $(DESTDIR)$(bindir)
 	rm -f $(DESTDIR)$(bindir)/credential-ocs$(EXEEXT)
-	$(LN_S) -r $(DESTDIR)$(libexecdir)/credential-ocs/credhelper$(EXEEXT) \
-		$(DESTDIR)$(bindir)/credential-ocs$(EXEEXT)
+	pushd $(DESTDIR)/$(bindir); \
+		$(LN_S_R) ../$(libexecdir)/credhelper$(EXEEXT) credential-ocs$(EXEEXT)
 	if [ -z "$(SKIP_LOCPATH_INSTALL)" ]; then \
 		echo $(DESTDIR)$(localedir) \
 			>$(DESTDIR)$(libexecdir)/credential-ocs/$(LOCPATH_NAME) ; \
