@@ -18,7 +18,7 @@ function create_staging_dirs()
 {
   for arch in x86_64 arm64 universal ; do
     mkdir -p staging/$arch/sysroot
-    mkdir -p staging/$arch/sysroot/usr/local/libexec/credential-ocs/lib
+    mkdir -p staging/$arch/sysroot/usr/local/libexec/credential-ocs
   done
 }
 
@@ -100,9 +100,57 @@ function copy_dependent_libraries()
       local exe_path=staging/$arch/sysroot$exe_path
       ruby exe_depends.rb -m $exe_path \
         -d $dest_path \
-        -e /opt/local
+        -e /opt/local \
+        -c
     done
   done
+}
+
+#
+# install universal dependent libraries
+#
+function install_universal_dependents()
+{
+  local app_path=/usr/local/libexec/credential-ocs
+  local src_path=staging/arm64/sysroot$app_path
+  local dest_path=staging/universal/sysroot$app_path
+ 
+  for item in lib libexec; do
+    cp -f -R $src_path/$item/ $dest_path/$item;
+  done
+}
+
+#
+# update dependent libraries ld path 
+#
+function update_depends_ld_path()
+{
+  local app_path=/usr/local/libexec/credential-ocs
+  local exe_path=credhelper
+  local base_path=staging/universal/sysroot$app_path
+  ruby exe_depends.rb -m $exe_path \
+      -b $base_path \
+      -e /opt/local/ \
+      -u
+  update_entry_point_depends_ld_path
+}
+
+#
+# update entry point  dependent libraries ld path 
+#
+function update_entry_point_depends_ld_path()
+{
+  local app_path=/usr/local/libexec/credential-ocs
+  local exe_path=credhelper
+  local base_path=staging/universal/sysroot$app_path
+  ruby exe_depends.rb -m $exe_path \
+      -b $base_path \
+      -e /opt/local/ \
+      -r /opt/local/ \
+      -r /opt/homebrew/ \
+      -r /usr/local/ \
+      -r @executable_path \
+      -p
 }
 
 #
@@ -118,6 +166,18 @@ function create_universal_electron()
     --out=staging/universal/sysroot$electron_path
 }
 
+#
+# create universal credential helper main executable
+#
+function create_universal_credhelper()
+{
+  create_staging_dirs
+  local credhelper_path=/usr/local/libexec/credential-ocs/credhelper
+  lipo -create -output staging/universal/sysroot/$credhelper_path \
+    staging/arm64/sysroot/$credhelper_path \
+    staging/x86_64/sysroot/$credhelper_path
+}
+
 function show_help
 {
   echo "build.sh [OPTIONS]
@@ -129,6 +189,13 @@ copy-dependent-libraries
                     directory.
 create-universal-electron
                     create universal electron module.
+create-universal-credhelper
+                    create universal main module (credhelper).
+install-universal-dependents
+                    copy staging installed dependents into staging universal
+                    directory.
+update-depends-ld-path
+                    update ld commands in universal dependents libraries.
 help                show this message."
 }
 
@@ -151,6 +218,15 @@ while [ $# -gt 0 ]; do
       ;;
     create-universal-electron)
       cmd=create_universal_electron
+      ;;
+    create-universal-credhelper)
+      cmd=create_universal_credhelper
+      ;;
+    install-universal-dependents)
+      cmd=install_universal_dependents
+      ;;
+    update-depends-ld-path)
+      cmd=update_depends_ld_path
       ;;
     help|-h|--help)
       cmd=show_help
@@ -175,6 +251,15 @@ case $cmd in
     ;;
   create_universal_electron)
     create_universal_electron
+    ;;
+  create_universal_credhelper)
+    create_universal_credhelper 
+    ;;
+  install_universal_dependents)
+    install_universal_dependents
+    ;; 
+  update_depends_ld_path)
+    update_depends_ld_path
     ;;
   show_help)
     show_help
