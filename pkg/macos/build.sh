@@ -1,4 +1,4 @@
-#! /usr/bin/sh
+#! /bin/sh
 
 
 #
@@ -143,12 +143,10 @@ function update_entry_point_depends_ld_path()
   local app_path=/usr/local/libexec/credential-ocs
   local exe_path=credhelper
   local base_path=staging/universal/sysroot$app_path
+
   ruby exe_depends.rb -m $exe_path \
       -b $base_path \
       -e /opt/local/ \
-      -r /opt/local/ \
-      -r /opt/homebrew/ \
-      -r /usr/local/ \
       -r @executable_path \
       -p
 }
@@ -178,6 +176,33 @@ function create_universal_credhelper()
     staging/x86_64/sysroot/$credhelper_path
 }
 
+
+#
+# copy Info.plist into universal application directory
+#
+function copy_info_plist_into_universal_app()
+{
+  cp Info.plist staging/universal/sysroot/usr/local/libexec/credential-ocs
+}
+
+#
+# create installer package
+#
+function do_create_pkg()
+{
+  pkgbuild --install-location /usr/local --root staging/universal/sysroot/usr/local/libexec --component-plist pkg.plist --scripts pkg-scripts credential-ocs.pkg
+}
+
+#
+# create installer package
+#
+function create_installer_pkg()
+{
+  copy_info_plist_into_universal_app
+  do_create_pkg
+}
+
+
 function show_help
 {
   echo "build.sh [OPTIONS]
@@ -196,6 +221,8 @@ install-universal-dependents
                     directory.
 update-depends-ld-path
                     update ld commands in universal dependents libraries.
+create-installer-pkg
+                    create installer package file.
 help                show this message."
 }
 
@@ -227,6 +254,9 @@ while [ $# -gt 0 ]; do
       ;;
     update-depends-ld-path)
       cmd=update_depends_ld_path
+      ;;
+    create-installer-pkg)
+      cmd=create_installer_pkg
       ;;
     help|-h|--help)
       cmd=show_help
@@ -261,6 +291,9 @@ case $cmd in
   update_depends_ld_path)
     update_depends_ld_path
     ;;
+  create_installer_pkg)
+    $cmd
+    ;; 
   show_help)
     show_help
     ;;
