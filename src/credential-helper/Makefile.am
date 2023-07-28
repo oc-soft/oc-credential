@@ -132,6 +132,12 @@ if RUN_WIN
 credential_ocs_credhelper_SOURCES += credhelper_res.rc
 endif
 
+if !RUN_DARWIN
+ECHO_NO_NEWLINE = echo $(ECHO_N)
+else
+ECHO_NO_NEWLINE = /bin/echo -n 
+endif
+
 credential_ocs_credhelper_CFLAGS= -g -O0
 credential_ocs_credhelper_LDFLAGS= -g -static $(OC_XLINKER_OPTION)
 
@@ -149,6 +155,9 @@ credential_ocs_t01_token_gen_ui_exec_SOURCES = t01_token_gen_ui_exec.c \
 
 if RUN_WIN
 credential_ocs_t01_token_gen_ui_exec_SOURCES += path_win.c exe_info_win.c
+endif
+if RUN_DARWIN
+credential_ocs_t01_token_gen_ui_exec_SOURCES += path.c exe_info_darwin.c
 else
 credential_ocs_t01_token_gen_ui_exec_SOURCES += path.c exe_info_linux.c
 endif
@@ -393,13 +402,13 @@ client_id.gpf : client_id.gpf.in $(srcdir)/../config/client-id.txt $(builddir)/c
 		$(builddir)/client-id-dbg.txt >$@
 
 exec_names.c: exec_names.c.in
-	exe_name=`echo $(ECHO_N) '$(ui_exe_name)' | \
+	exe_name=`$(ECHO_NO_NEWLINE) '$(ui_exe_name)' | \
 		$(HEXDUMP) -v -e '1/1 "%02x "'`'00' \
-	exe_rel_path=`echo $(ECHO_N) '$(ui_exe_relative_path)' | \
+	exe_rel_path=`$(ECHO_NO_NEWLINE) '$(ui_exe_relative_path)' | \
 		$(HEXDUMP) -v -e '1/1 "%02x "'`'00' :; \
 	$(AWK) -v token_exec="$$exe_name" \
 		-v token_exec_rel_path="$$exe_rel_path" \
-		-e ' \
+		' \
 		BEGIN { \
 			token_exec = create_replacement_value(token_exec); \
 			token_exec_rel_path = create_replacement_value(token_exec_rel_path); \
