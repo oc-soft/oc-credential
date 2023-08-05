@@ -38,6 +38,22 @@ GUI_EXE_SUBDIR=@GUI_EXE_SUBDIR@
 OC_EXE_ROOT_NAME=@OC_EXE_ROOT_NAME@
 PKG_DEST_REL_DIR=$(OC_EXE_ROOT_NAME)/$(GUI_EXE_SUBDIR)
 
+TOKEN_GENERATOR_NAME=@GUI_TOKEN_GENERATOR_NAME@
+TOKEN_GENERATOR_ID=@GUI_TOKEN_GENERATOR_ID@
+TOKEN_GENERATOR_HELPER_ID=@GUI_TOKEN_GENERATOR_HELPER_ID@
+
+TOKEN_GENERATOR_HELPER_NAME=$(TOKEN_GENERATOR_NAME) Helper
+TOKEN_GENERATOR_HELPER_GPU_NAME=$(TOKEN_GENERATOR_NAME) Helper (GPU)
+TOKEN_GENERATOR_HELPER_PLUGIN_NAME=$(TOKEN_GENERATOR_NAME) Helper (Plugin)
+TOKEN_GENERATOR_HELPER_RENDERER_NAME=$(TOKEN_GENERATOR_NAME) Helper (RENDERER)
+
+if RUN_DARWIN
+TOKEN_GENERATOR_ICON=$(top_builddir)/resource/token-generator.icns
+else
+TOKEN_GENERATOR_ICON=
+endif
+
+
 if TARGET_MACOS
 electron_resource_dir=Electron.app/Contents/Resources
 else
@@ -159,6 +175,23 @@ electron-app-dir:
 electron-resources: electron-tmstamp electron-package-json build-app \
 	| mkdir-tree electron-app-dir 
 	cp -R dist $(electron_app_dir)
+
+
+rebranding-electron:
+if RUN_DARWIN
+	$(srcdir)/rebranding.rb --rebrand \
+		-s $(builddir)/pkg/Electron.app \
+		-n '$(TOKEN_GENERATOR_NAME)' \
+		-e '$(TOKEN_GENERATOR_NAME)' \
+		-l '$(TOKEN_GENERATOR_HELPER_NAME)' \
+		-m '$(TOKEN_GENERATOR_HELPER_GPU_NAME)' \
+		-o '$(TOKEN_GENERATOR_HELPER_PLUGIN_NAME)' \
+		-p '$(TOKEN_GENERATOR_HELPER_RENDERER_NAME)' \
+		-d '$(TOKEN_GENERATOR_ID)' \
+		-f '$(TOKEN_GENERATOR_HELPER_ID)' \
+		-i '$(TOKEN_GENERATOR_ICON)'
+else
+endif
 	
 .PHONY: electron-resources
 
@@ -177,9 +210,10 @@ electron-dbg:
 
 .PHONY: electron-dbg
 
-download_electron: | $(electron_zip)
+download-electron: | $(electron_zip)
 
-.PHONY: download_electron
+.PHONY: download-electron
+
 
 dist/index.html : mksrc-tree $(client_src) \
 	package-lock.json vite.config.ts 

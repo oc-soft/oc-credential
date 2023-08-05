@@ -111,6 +111,18 @@ esac
 AM_CONDITIONAL(RUN_LINUX, test "x$oc_run_linux" = xyes)
 AM_CONDITIONAL(RUN_DARWIN, test "x$oc_run_darwin" = xyes)
 
+if test "x${oc_run_dawin}" =  xyes; then
+    oc_gui_token_generator=TokenGenerator
+else
+    oc_gui_token_generator=tokengen
+fi
+
+AC_SUBST([GUI_TOKEN_GENERATOR_NAME], [${oc_gui_token_generator}])
+AC_SUBST([GUI_TOKEN_GENERATOR_ID], 
+    [net.oc-soft.git-credential-helper.generator])
+AC_SUBST([GUI_TOKEN_GENERATOR_HELPER_ID], 
+    [net.oc-soft.git-credential-helper.generator.helper])
+
 
 
 case $build_os in
@@ -179,6 +191,7 @@ AC_CONFIG_FILES([Makefile
     src/credential-helper/Makefile
     src/credential-helper/logging_win.h
     src/ui/Makefile
+    resource/Makefile
     pkg/Makefile
     pkg/win/Makefile
     pkg/win/ja/Makefile

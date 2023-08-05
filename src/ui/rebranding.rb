@@ -157,8 +157,8 @@ class App
   #
   # resources directory
   #
-  def app_resources_dir
-    'Resources'
+  def app_contents_resources_dir
+    File.join(app_contents_dir, 'Resources')
   end
 
   #
@@ -278,7 +278,7 @@ class App
       exe_elements.each { |element| element.text = exe_name }
     end
     if !icon_file.nil?
-      icon_elements.each { |element| element.test = icon_file }
+      icon_elements.each { |element| element.text = icon_file }
     end
     if !id.nil?
       id_elements.each { |element| element.text = id }
@@ -304,11 +304,11 @@ class App
   def update_icon_file
     icon_file = icon_file_or_nil
     if !icon_file.nil?
-      base_dir = File.join(@src_dir, app_resources_dir)
+      base_dir = File.join(@src_dir, app_contents_resources_dir)
       FileUtils.cp(icon_file, base_dir)
       icon_file_name = icon_file_name_or_nil
       if 'electron.icns' != icon_file_name
-        original_icon_path = File.join(base_dir, 'electron.ics')
+        original_icon_path = File.join(base_dir, 'electron.icns')
         File.delete(original_icon_path)
       end
     end
