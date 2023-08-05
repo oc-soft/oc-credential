@@ -1,4 +1,4 @@
-SUBDIRS = po oclib em-setting src pkg 
+SUBDIRS = po oclib em-setting resource src pkg 
 
 EXTRA_DIST = rc/rc.json \
 	i18n/ja/base.txt \
