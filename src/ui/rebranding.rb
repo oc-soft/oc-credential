@@ -309,7 +309,10 @@ class App
       icon_file_name = icon_file_name_or_nil
       if 'electron.icns' != icon_file_name
         original_icon_path = File.join(base_dir, 'electron.icns')
-        File.delete(original_icon_path)
+        begin
+          File.delete(original_icon_path)
+        rescue
+        end
       end
     end
   end

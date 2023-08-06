@@ -92,14 +92,13 @@ function staging_install()
 #
 function copy_dependent_libraries()
 {
-  local -a exe_paths=(/usr/local/libexec/credential-ocs/credhelper)
+  local -a exe_paths=(credhelper)
   local app_path=/usr/local/libexec/credential-ocs
   for arch in x86_64 arm64; do
-    local dest_path=staging/$arch/sysroot$app_path
+    local base_path=staging/$arch/sysroot$app_path
     for exe_path in $exe_paths ; do
-      local exe_path=staging/$arch/sysroot$exe_path
       ruby exe_depends.rb -m $exe_path \
-        -d $dest_path \
+        -b $base_path \
         -e /opt/local \
         -c
     done
@@ -157,7 +156,7 @@ function update_entry_point_depends_ld_path()
 function create_universal_electron()
 {
   create_staging_dirs
-  local electron_path=/usr/local/libexec/credential-ocs/ui/Electron.app
+  local electron_path=/usr/local/libexec/credential-ocs/ui/TokenGenerator.app
   rm -f -r staging/universal/sysroot$electron_path
   node unielectron --x64=staging/x86_64/sysroot$electron_path \
     --arm64=staging/arm64/sysroot$electron_path \

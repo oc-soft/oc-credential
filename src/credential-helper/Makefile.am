@@ -206,12 +206,15 @@ pkgdatadir=$(datadir)/$(PACKAGE_NAME)
 
 localedir = @localedir@
 
+UI_TOKEN_GENERATOR_NAME = @GUI_TOKEN_GENERATOR_NAME@
+
 textdomain_dir=$(pkgdatadir)/locale
+
 
 if !RUN_DARWIN
 ui_exe_name=electron$(EXEEXT)
 else
-ui_exe_name=Electron$(EXEEXT)
+ui_exe_name=$(UI_TOKEN_GENERATOR_NAME)$(EXEEXT)
 endif
 
 ui_builddir=$(builddir)/../ui
@@ -220,7 +223,7 @@ ui_exe_subdir=$(GUI_EXE_SUBDIR)
 if !RUN_DARWIN
 ui_exe_relative_path=$(ui_exe_subdir)/$(ui_exe_name)
 else
-ui_exe_relative_path=$(ui_exe_subdir)/Electron.app/Contents/MacOS/$(ui_exe_name)
+ui_exe_relative_path=$(ui_exe_subdir)/$(UI_TOKEN_GENERATOR_NAME).app/Contents/MacOS/$(ui_exe_name)
 endif
 
 awk_cmd_0='BEGIN { \

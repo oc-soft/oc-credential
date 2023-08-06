@@ -111,7 +111,7 @@ esac
 AM_CONDITIONAL(RUN_LINUX, test "x$oc_run_linux" = xyes)
 AM_CONDITIONAL(RUN_DARWIN, test "x$oc_run_darwin" = xyes)
 
-if test "x${oc_run_dawin}" =  xyes; then
+if test "x${oc_run_darwin}" =  xyes; then
     oc_gui_token_generator=TokenGenerator
 else
     oc_gui_token_generator=tokengen

@@ -71,15 +71,16 @@ PARAMETER options
   # display depends libraries
   #
   def list
-    puts resolve_depends
+    lib_depends = { }
+    puts resolve_depends(lib_depends)
   end
 
   #
   # copy resolved libraries into destination directory
   #
   def copy_to_base_dir
-    libs = resolve_depends
-
+    lib_depends = { }
+    libs = resolve_depends(lib_depends)
     src_dest = []
     libs.each do |lib|
       @remove_prefix.each do |prefix|
@@ -363,7 +364,7 @@ PARAMETER options
       when '--base-dir'
         @base_dir = arg
       when '--copy'
-        @do_run = method(:copy_to_dest_dir)
+        @do_run = method(:copy_to_base_dir)
       when '--update-ld-path'
         @do_run = method(:update_ld_path)
       when '--update-entry-module-ld-path'

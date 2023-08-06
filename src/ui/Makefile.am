@@ -55,12 +55,14 @@ endif
 
 
 if TARGET_MACOS
-electron_resource_dir=Electron.app/Contents/Resources
+electron_resource_dir = Electron.app/Contents/Resources
+token_generator_resource_dir = $(TOKEN_GENERATOR_NAME).app/Contents/Resources
 else
-electron_resource_dir=resources
+electron_resource_dir = resources
+token_generator_resource_dir = resources
 endif
 
-CLEAN_FOR_DEBUG=
+CLEAN_FOR_DEBUG =
 
 electron_version = v22.1.0
 electron_dist_host = https://github.com
@@ -69,8 +71,12 @@ electron_zip = electron-$(electron_version)-$(ELECTRON_TARGET_OS)-$(ELECTRON_TAR
 
 electron_dist_url = $(electron_dist_host)/$(electron_dist_path_0)/$(electron_version)/$(electron_zip)
 
-electron_app_dir = pkg/$(electron_resource_dir)/app
+electron_extract_dir = pkg
+
+electron_app_dir = $(electron_extract_dir)/$(electron_resource_dir)/app
+token_generator_app_dir = $(electron_extract_dir)/$(token_generator_resource_dir)/app
 electron_package_json = $(electron_app_dir)/package.json
+token_generator_package_json = $(token_generator_app_dir)/package.json
 
 awk_cmd_0=' \
 	{ \
@@ -92,7 +98,7 @@ package.json: package.json.in
 		-v abs_srcdir=$(abs_srcdir) \
 		-v package_name=$(PACKAGE_NAME) \
 		-v package_version=$(PACKAGE_VERSION) \
-		-e $(awk_cmd_0) $< >$@
+		$(awk_cmd_0) $< >$@
 
 rollup.config.electron.js: rollup.config.electron.js.in \
 	tsconfig.electron.json
@@ -101,7 +107,7 @@ rollup.config.electron.js: rollup.config.electron.js.in \
 		-v abs_srcdir=$(abs_srcdir) \
 		-v package_name=$(PACKAGE_NAME) \
 		-v package_version=$(PACKAGE_VERSION) \
-		-e $(awk_cmd_0) $< >$@
+		$(awk_cmd_0) $< >$@
 
 tsconfig.electron.json: tsconfig.electron.json.in 
 	$(AWK) -v srcdir=$(srcdir) \
@@ -109,7 +115,7 @@ tsconfig.electron.json: tsconfig.electron.json.in
 		-v abs_srcdir=$(abs_srcdir) \
 		-v package_name=$(PACKAGE_NAME) \
 		-v package_version=$(PACKAGE_VERSION) \
-		-e $(awk_cmd_0) $< >$@
+		$(awk_cmd_0) $< >$@
 
 
 tsconfig.json: tsconfig.json.in
@@ -118,7 +124,7 @@ tsconfig.json: tsconfig.json.in
 		-v abs_srcdir=$(abs_srcdir) \
 		-v package_name=$(PACKAGE_NAME) \
 		-v package_version=$(PACKAGE_VERSION) \
-		-e $(awk_cmd_0) $< >$@
+		$(awk_cmd_0) $< >$@
 
 tsconfig.node.json: tsconfig.node.json.in
 	$(AWK) -v srcdir=$(srcdir) \
@@ -126,7 +132,7 @@ tsconfig.node.json: tsconfig.node.json.in
 		-v abs_srcdir=$(abs_srcdir) \
 		-v package_name=$(PACKAGE_NAME) \
 		-v package_version=$(PACKAGE_VERSION) \
-		-e $(awk_cmd_0) $< >$@
+		$(awk_cmd_0) $< >$@
 
 vite.config.ts: vite.config.ts.in
 	$(AWK) -v srcdir=$(srcdir) \
@@ -134,7 +140,7 @@ vite.config.ts: vite.config.ts.in
 		-v abs_srcdir=$(abs_srcdir) \
 		-v package_name=$(PACKAGE_NAME) \
 		-v package_version=$(PACKAGE_VERSION) \
-		-e $(awk_cmd_0) $< >$@
+		$(awk_cmd_0) $< >$@
 if !COPY_JS_SRC_FOR_BUILD
 mksrc-tree:
 	if [ "$(srcdir)" != "." ] ; then \
@@ -154,7 +160,7 @@ mksrc-tree:
 endif
 
 mkdir-tree:
-	for item in config pkg ; do \
+	for item in config $(electron_extract_dir) ; do \
 		$(MKDIR_P) $$item; \
 	done
 
@@ -164,23 +170,36 @@ $(electron_zip):
 	fi
 
 electron-tmstamp: $(electron_zip) | mkdir-tree
+	$(UNZIP) $^ -d $(electron_extract_dir)
 	: > $@
-	$(UNZIP) $^ -d pkg
 
 electron-app-dir:
-	if [ ! -d $(electron_app_dir) ]; then \
+	if [ ! -d $(token_generator_app_dir) ] \
+		&& [ ! -d $(electron_app_dir) ]; then \
 		$(MKDIR_P) $(electron_app_dir) ; \
 	fi
 
+
 electron-resources: electron-tmstamp electron-package-json build-app \
 	| mkdir-tree electron-app-dir 
-	cp -R dist $(electron_app_dir)
+	if [ ! -d $(token_generator_app_dir) ]; then \
+		cp -R dist $(electron_app_dir); \
+	else \
+		cp -R dist $(token_generator_app_dir); \
+	fi
+
+.PHONY: electron-resources
 
 
-rebranding-electron:
+rebrand-electron-contents-tmstamp: electron-resources
 if RUN_DARWIN
+	if [ -d $(builddir)/$(electron_extract_dir)/Electron.app ]; then \
+		branding_dir=$(builddir)/$(electron_extract_dir)/Electron.app; \
+	else \
+		branding_dir=$(builddir)/$(electron_extract_dir)/$(TOKEN_GENERATOR_NAME).app; \
+	fi; \
 	$(srcdir)/rebranding.rb --rebrand \
-		-s $(builddir)/pkg/Electron.app \
+		-s $$branding_dir \
 		-n '$(TOKEN_GENERATOR_NAME)' \
 		-e '$(TOKEN_GENERATOR_NAME)' \
 		-l '$(TOKEN_GENERATOR_HELPER_NAME)' \
@@ -190,25 +209,45 @@ if RUN_DARWIN
 		-d '$(TOKEN_GENERATOR_ID)' \
 		-f '$(TOKEN_GENERATOR_HELPER_ID)' \
 		-i '$(TOKEN_GENERATOR_ICON)'
+	: >$@
 else
+	: >$@
 endif
 	
-.PHONY: electron-resources
+rebrand-electron-contents: rebrand-electron-contents-tmstamp
 
+.PHONY: rebrand-electron-contents
 
-$(electron_package_json): electron-package.json.in | electron-app-dir
+rebrand-electron-tmstamp: rebrand-electron-contents
+if !RUN_DARWIN
+else
+	if [ -d $(electron_extract_dir)/Electron.app ]; then \
+		mv $(electron_extract_dir)/Electron.app \
+			$(electron_extract_dir)/$(TOKEN_GENERATOR_NAME).app; \
+	fi
+endif
+	: > $@
+
+rebrand-electron: rebrand-electron-tmstamp
+
+.PHONY: rebrand-electron
+
+electron-package-json-tmstamp: electron-package.json.in | electron-app-dir
+	if [ -d $(builddir)/$(electron_extract_dir)/Electron.app ]; then \
+		dest_path=$(electron_package_json); \
+	else \
+		dest_path=$(token_generator_package_json); \
+	fi; \
 	$(AWK) -v package_name=$(PACKAGE_NAME) \
 		-v package_version=$(PACKAGE_VERSION) \
-		-e $(awk_cmd_0) $^ > $@
+		$(awk_cmd_0) $$dest_path > $@
+	: >$@
 
-electron-package-json: $(electron_package_json)
+
+electron-package-json: electron-package-json-tmstamp
 
 .PHONY: electron-package-json
 
-electron-dbg:
-	echo $(electron_package_json)
-
-.PHONY: electron-dbg
 
 download-electron: | $(electron_zip)
 
@@ -244,14 +283,16 @@ all-local: package-lock.json \
 	tsconfig.node.json \
 	vite.config.ts \
 	config/app.json \
-	| mksrc-tree mkdir-tree build-app electron-resources
+	| mksrc-tree mkdir-tree build-app rebrand-electron
 
 clean-local:
 	rm -f *.json
 	rm -f *.ts
 	rm -f *.js
-	rm -r -f pkg
+	rm -r -f $(electron_extract_dir)
 	rm -f electron-tmstamp
+	rm -f rebrand-electron-contents-tmstamp
+	rm -f rebrand-electron-tmstamp
 	rm -f config/app.json
 	if [ -z "$(CLEAN_FOR_DEBUG)" ]; then \
 		rm $(electron_zip); \
@@ -276,7 +317,7 @@ install-exec-local:
 	@$(NORMAL_INSTALL)
 	insdir='$(DESTDIR)$(libexecdir)/$(PKG_DEST_REL_DIR)'; \
 	$(MKDIR_P) $$insdir; \
-	cp -R pkg/ $$insdir
+	cp -R $(electron_extract_dir)/ $$insdir
 
 
 
