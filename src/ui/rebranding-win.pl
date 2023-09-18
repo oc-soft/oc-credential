@@ -59,6 +59,17 @@ local %loadlibex_flags = (
     LOAD_LIBRARY_REQUIRE_SIGNED_TARGET => 0x00000080,
     LOAD_LIBRARY_SAFE_CURRENT_DIRS => 0x00002000
 );
+
+#
+# windows EnumResourceLanguagesEx flags
+#
+local %enum_resource_languages_ex_flags = (
+    RESOURCE_ENUM_MUI => 0x0002,
+    RESOURCE_ENUM_LN => 0x0001,
+    RESOURCE_ENUM_MUI_SYSTEM => 0x0004,
+    RESOURCE_ENUM_VALIDATE => 0x0008
+);
+
 #
 # read resource id
 #
@@ -110,10 +121,9 @@ sub iterate_res
 
         (my $type_id, $processing_data) = read_res_id $processing_data;
         (my $name_id, $processing_data) = read_res_id $processing_data;
+        my $lang_id = unpack 'x4x2S<', $processing_data;
 
-
-
-        $iter->($idx, \@size, $type_id, $name_id);
+        $iter->($idx, \@size, $type_id, $name_id, $lang_id);
 
 
         # resource header is 4 byte aligned location in file
@@ -441,8 +451,8 @@ sub create_group_icon_resource_data_stream
 
     foreach (@$resdirs) {
         $res .= pack 'C3x', $$_{width}, $$_{height}, $$_{color_count};
-        $res .= pack 'Cx', $$_{planes};
-        $res .= pack 'S<2x2S<', 
+        $res .= pack 'S<', $$_{planes};
+        $res .= pack 'S<L<S<', 
             $$_{bit_count}, $$_{bytes_in_res}, $$_{icon_cursor_id};
     }
 
@@ -742,34 +752,47 @@ sub create_rebranding_resource
 #
 sub update_resource_in_handle
 {
+    use Win32::API;
     use Encode;
  
-    my ($update_res, $hdl, $icon_key, $data) = @_;
+    my ($hdl, $type_name_lang_ids, $res_key, $data) = @_;
 
-    my ($type_id, $type_kind, $name_id, $name_kind) = split /$;/, $icon_key;
+    my ($type_id, $type_kind, $name_id, $name_kind) = split /$;/, $res_key;
+    my $method_sig = 'N';
 
     my $lp_type;
     if ('number' eq $type_kind) {
-        $lp_type = pack 'x2S<', $type_id;
+        $lp_type = $type_id;
+        $method_sig .= 'N';
     } else {
-        $lp_type = encode 'UTF-16LE', $type_id;  
+        $lp_type = encode 'UTF-16LE', $type_id;
         $lp_type .= pack 'x2';
+        $method_sig .= 'P';
     }
+
 
     my $lp_name;
     if ('number' eq $name_kind) {
-        $lp_name = pack 'x2S<', $name_id;
+        $lp_name = $name_id;
+        $method_sig .= 'N';
     } else {
         $lp_name = encode 'UTF-16LE', $name_id;  
         $lp_name .= pack 'x2';
+        $method_sig .= 'P';
     }
-    my $lang_id = 0x0409;
+    $method_sig .= 'SPN';
 
-    # $lang_id = 0;
+    my $update_res = Win32::API::More->new(
+        'kernel32', 'UpdateResourceW', $method_sig, 'N');
+ 
     my $state;
+    my $lang_ids = $$type_name_lang_ids{$res_key};
 
-    $state = $update_res->Call($hdl, $lp_type, $lp_name,
-        $lang_id, $data, length ($data));
+    foreach my $lang_id (@$lang_ids) {
+        $state = $update_res->Call($hdl, $lp_type, $lp_name,
+            $lang_id, $data, length ($data));
+        last if !$state;
+    }
 
     $state ? 0 : -1;
 }
@@ -782,7 +805,8 @@ sub update_resource_in_exe
     use Win32::API;
     use File::Spec;
     use Encode;
-    my ($exe_path, $group_icon_key, $new_icons, $new_icon_size_map) = @_;
+    my ($exe_path, $group_icon_key, $new_icons,
+        $new_icon_size_map, $type_name_lang_ids) = @_;
 
 
     if (not File::Spec->file_name_is_absolute($exe_path)) {
@@ -799,10 +823,7 @@ sub update_resource_in_exe
         'kernel32', 'BeginUpdateResourceW', 'PN', 'N');
 
     my $end_update_res = Win32::API::More->new(
-        'kernel32', 'EndUpdateResourceW', 'PN', 'N');
-
-    my $update_res = Win32::API::More->new(
-        'kernel32', 'UpdateResourceW', 'NPPNPN', N);
+        'kernel32', 'EndUpdateResourceW', 'NN', 'N');
 
     my $exe_path_utf16 = Encode::encode 'UTF-16LE', $exe_path;
     $exe_path_utf16 .= pack 'x2';
@@ -814,8 +835,8 @@ sub update_resource_in_exe
         my $group_icon_res = create_group_icon_resource $group_icon_key,
             $new_icons, $new_icon_size_map;
 
-        $state = update_resource_in_handle $update_res, 
-            $mod_hdl, $group_icon_key,
+        $state = update_resource_in_handle $mod_hdl,
+            $type_name_lang_ids, $group_icon_key, 
             create_group_icon_resource_data_stream ($group_icon_res);
     }
 
@@ -825,8 +846,8 @@ sub update_resource_in_exe
             my $icon_key = join $;, ${$$icon_hdr{type}}{data},
                 ${$$icon_hdr{type}}{type}, ${$$icon_hdr{name}}{data},
                 ${$$icon_hdr{name}}{type};
-            $state = update_resource_in_handle $update_res,
-                $mod_hdl, $icon_key, $$_{data};
+            $state = update_resource_in_handle $mod_hdl,
+                $type_name_lang_ids, $icon_key, $$_{data};
             last if $state != 0;
         }
     }
@@ -882,6 +903,90 @@ sub rm_duplicated_file
 
 
 #
+# get languages related to a resource from executable
+#
+sub get_langs_with_resource_from_exe
+{
+    use Win32::API;
+    use Win32::API::Callback;
+    use File::Spec;
+    use Encode;
+    my ($exe_path, $res_key) = @_;
+
+    my ($type_id, $type_kind, $name_id, $name_kind) = split /$;/, $res_key;
+
+    if (not File::Spec->file_name_is_absolute($exe_path)) {
+        $exe_path = File::Spec->rel2abs($exe_path); 
+    }
+
+    if ($^O =~ /.*cygwin.*/) {
+        $exe_path = `cygpath -w $exe_path`;
+        $exe_path =~ s/^\s+|\s+$//g;
+    }
+
+    my $load_lib = Win32::API::More->new(
+        'kernel32', 'LoadLibraryExW', 'PNN', 'N');
+
+    my $exe_path_utf16 = Encode::encode 'UTF-16LE', $exe_path;
+    $exe_path_utf16 .= pack 'x2';
+
+    my $enum_sign;
+    $enum_sig = 'N';
+
+    my $lp_type;
+    if ('number' eq $type_kind) {
+        $lp_type = $type_id;
+        $enum_sig .= 'N';
+    } else {
+        $lp_type = encode 'UTF-16LE', $type_id;
+        $lp_type .= pack 'x2';
+        $enum_sig .= 'P';
+    }
+
+
+    my $lp_name;
+    if ('number' eq $name_kind) {
+        $lp_name = $name_id;
+        $enum_sig .= 'N';
+    } else {
+        $lp_name = encode 'UTF-16LE', $name_id;  
+        $lp_name .= pack 'x2';
+        $enum_sig .= 'P';
+    }
+ 
+    $enum_sig .= 'KNNN';
+
+    my $enum_res_langs = Win32::API::More->new(
+        'kernel32', 'EnumResourceLanguagesExW', $enum_sig, 'N');
+
+ 
+    my $mod_hdl = $load_lib->Call($exe_path_utf16, 0,
+        $loadlibex_flags{LOAD_LIBRARY_AS_IMAGE_RESOURCE}
+            | $loadlibex_flags{LOAD_LIBRARY_AS_DATAFILE});
+
+    my @langs;
+
+    my $enum_cb = Win32::API::Callback->new(
+        sub {
+            my ($mod, $type, $name, $lang) = @_;
+            push @langs, $lang;
+            1;
+        },
+        'NNNIN', 'N'
+    );
+
+    my $state = $enum_res_langs->Call(
+        $mod_hdl, $lp_type, $lp_name, $enum_cb, 0,
+        $enum_resource_languages_ex_flags{RESOURCE_ENUM_LN}, 0); 
+
+    if ($mod_hdl) {
+        Win32::API::FreeLibrary($mod_hdl);
+    }
+    \@langs;
+}
+
+
+#
 # run main program
 #
 sub run_main_program
@@ -890,8 +995,9 @@ sub run_main_program
     my $buf = read_res_from_exe $$opts{exe};
 
     my %type_name_indecies;
+    my %type_name_lang_ids;
     my $create_type_name_indecies = sub {
-        my ($offset, $size, $type_id, $name_id) = @_;
+        my ($offset, $size, $type_id, $name_id, $lang_id) = @_;
         my %value = (
             offset => $offset,
             data_size => $$size[0],
@@ -901,6 +1007,12 @@ sub run_main_program
         my $key = join $;, $$type_id{data}, $$type_id{type},
             $$name_id{data}, $$name_id{type};
         $type_name_indecies{$key} = \%value;
+        my $lang_ids = $type_name_lang_ids{$key};
+        if (!$lang_ids) {
+            $lang_ids = [];
+            $type_name_lang_ids{$key} = $lang_ids;
+        }
+        push @$lang_ids, $lang_id;
     };
 
     iterate_res $buf, $create_type_name_indecies;
@@ -937,19 +1049,44 @@ sub run_main_program
     }
 
     my $exe_for_rebranding = duplicate_exe_for_rebranding $opts;
+    {
+        my $group_icon_res_langs;
+        $group_icon_res_langs = get_langs_with_resource_from_exe
+            $exe_for_rebranding,
+            $group_icon_keys[0];
+        if (!scalar @$group_icon_res_langs) {
+            push @$group_icon_res_langs, 0;
+        }
+        $type_name_lang_ids{$group_icon_keys[0]} = $group_icon_res_langs;
+    }
+    foreach (@icon_resources) {
+        my $icon_hdr = $$_{header};
+        my $icon_key = join $;, 
+            ${$$icon_hdr{type}}{data}, ${$$icon_hdr{type}}{type},
+            ${$$icon_hdr{name}}{data}, ${$$icon_hdr{name}}{type};
+
+        my $icon_res_langs;
+        $icon_res_langs = get_langs_with_resource_from_exe
+            $exe_for_rebranding, $icon_key;
+
+        if (!scalar @$icon_res_langs) {
+            push @$icon_res_langs, 0;
+        }
+        $type_name_lang_ids{$icon_key} = $icon_res_langs;
+    }
 
     my $state;
     $state = update_resource_in_exe $exe_for_rebranding, $group_icon_keys[0],
-        \@icon_resources, $icon_size_map; 
+        \@icon_resources, $icon_size_map, \%type_name_lang_ids; 
 
     if ($state == 0)  {
-        system 'windres', '-i', $exe_for_rebranding;
+        # system 'windres', '-i', $exe_for_rebranding;
     } else {
         print $^E . "\n";
     }
 
-    rm_duplicated_file $exe_for_rebranding;
-
+    # rm_duplicated_file $exe_for_rebranding;
+    print $exe_for_rebranding . "\n";
 }
 
 
