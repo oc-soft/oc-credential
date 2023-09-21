@@ -1,11 +1,5 @@
 #! /usr/bin/env perl
-
 use Scalar::Util qw(looks_like_number);
-use List::Util qw(min);
-use File::Basename;
-use File::Temp qw(tempfile tempdir);
-
-
 
 #
 # resource type name to identifier number map
@@ -63,7 +57,7 @@ local %loadlibex_flags = (
 #
 # windows EnumResourceLanguagesEx flags
 #
-local %enum_resource_languages_ex_flags = (
+local %enum_resource_ex_flags = (
     RESOURCE_ENUM_MUI => 0x0002,
     RESOURCE_ENUM_LN => 0x0001,
     RESOURCE_ENUM_MUI_SYSTEM => 0x0004,
@@ -101,39 +95,6 @@ sub read_res_id
     return (\%res_id, $rest);
 }
 
-#
-# iterate resource data
-#
-sub iterate_res
-{
-    my $res_start = shift;
-    my $iter = shift;
-
-    if (!$iter) {
-        $iter = sub { };
-    }
-
-    my $idx = 0;
-    while (length($res_start)) {
-        my $processing_data = $res_start;
-        my @size = unpack 'L<L<', $processing_data;
-        my $processing_data = substr $processing_data, 8;
-
-        (my $type_id, $processing_data) = read_res_id $processing_data;
-        (my $name_id, $processing_data) = read_res_id $processing_data;
-        my $lang_id = unpack 'x4x2S<', $processing_data;
-
-        $iter->($idx, \@size, $type_id, $name_id, $lang_id);
-
-
-        # resource header is 4 byte aligned location in file
-        my $offset = ($size[0] + $size[1] + 4 - 1) & ~(4 - 1);
-
-        $res_start = substr $res_start, $offset;
-        $idx += $offset;
-    } 
-}
-
 
 #
 # print help message
@@ -144,46 +105,34 @@ sub show_help_message()
     pod2usage;
 }
 
-
 #
-# read res file from exe
+# convert a file path to windows absolute file system path
 #
-sub read_res_from_exe
+sub to_win_absolute_path
 {
-    my $exe_path = shift;
-    my $path;
-    my $state;
-    my $out_path;
-    my $res_fh;
-    my $read_size = 1;
-    ($res_fh, $out_path) = tempfile;
-    close $res_fh;
-    system 'windres', '-o', $out_path, '-i', $exe_path, '-O', 'res';
-    if (open $res_fh, '<:raw', $out_path) {
-        while ($read_size) {
-            $read_size = read $res_fh, $buf, 100, length($buf);
-        }
-        close $res_fh;
+    use File::Spec;
+    my $path = shift;
+    if (not File::Spec->file_name_is_absolute($path)) {
+        $path = File::Spec->rel2abs($path); 
     }
-    unlink $out_path;
-    return $buf;
+
+    if ($^O =~ /.*cygwin.*/) {
+        $path = `cygpath -w $path`;
+        $path =~ s/^\s+|\s+$//g;
+    }
+    $path;
 }
+
 
 #
 # extract group icon
 #
 sub extract_group_icon
 {
-    my ($buffer, $type_name_indecies, $group_key) = @_;
+    my ($data) = @_;
 
-    my $indecies = $$type_name_indecies{$group_key};
 
-    my $idx = $$indecies{offset};
-    my $size_hdr = substr $buffer, $idx, 8;
-    my @size = unpack 'L<2', $size_hdr;
-    my $body_buf = substr $buffer, $idx + $size[1], $size[0];
-
-    my ($res_count) = unpack 'x4S<', $body_buf;
+    my ($res_count) = unpack 'x4S<', $data;
 
     my $newhdr_size = 3 * 2;
     my $icondir_size = 4;
@@ -200,11 +149,11 @@ sub extract_group_icon
         $idx = $newhdr_size + $_ * $resdir_size;
         my %resdir;
         ($resdir{width}, $resdir{height}, $resdir{color_count}) = 
-            unpack "x${idx}C3", $body_buf;
+            unpack "x${idx}C3", $data;
         ($resdir{planes}, 
             $resdir{bit_count}, 
             $resdir{bytes_in_res},
-            $resdir{id}) = unpack "x${idx}x4S<2L<S<", $body_buf;
+            $resdir{id}) = unpack "x${idx}x4S<2L<S<", $data;
         push @res, \%resdir;
     } 
     \@res;
@@ -268,8 +217,6 @@ sub find_index_from_resource_id_array
     }
     $result;
 }
-
-
 
 
 #
@@ -560,7 +507,7 @@ sub create_icon_resource_with_id
         version => 4,
         characteristics => 4
     );
-    if (${$$hdr{name}}{type} eq 'string') {
+    if (${$hdr{name}}{type} eq 'string') {
         use Encode qw(encode);
 
         my $utf16_str = encode 'UTF-16LE', ${$hdr{name}}{data};
@@ -596,20 +543,24 @@ sub create_icon_resource_with_id
 #
 sub create_icon_resource_id
 {
-    my ($icon_keys, $icon_keys_replaced, $size, $generated_id) = @_;
+    my ($icon_keys, $size, $icon_keys_replaced, $generated_id) = @_;
 
     my $res;
     if (exists $$icon_keys_replaced{$size}) {
         $res = $$icon_keys_replaced{$size};
+    } elsif ($size == 256 && exists $$icon_keys_replaced{0}) {
+        $res = $$icon_keys_replaced{0};
     } else {
         my $last_icon_id;
         if (scalar @$generated_id) {
             $last_icon_id = $$generated_id[-1];
         } else {
-            ((undef) x 2, $last_icon_id) = split /$;/, $icon_keys[-1];
+            ((undef) x 2, $last_icon_id) = split /$;/, $$icon_keys[-1];
         }
-        $res = $last_icon_id + 1;
-        push @$generated_id, $res;
+        my $new_id = $last_icon_id + 1;
+        push @$generated_id, $new_id;
+
+        $res = join $;, $res_type_id{RT_ICON}, 'number', $new_id, 'number';
     }
 
     return $res;
@@ -620,30 +571,27 @@ sub create_icon_resource_id
 #
 sub create_icon_resource
 {
-    my ($icon_keys, $icon_keys_replaced, $size, $generated_id, $opts) = @_;
-
+    (undef, $size, (undef) x 2, my $opts) = @_;
     my $res_id = create_icon_resource_id @_;
 
     my $icon_size_file = $$opts{icon_size_file};
+    ((undef) x 2, my $icon_id) = split /$;/, $res_id;
 
-    create_icon_resource_with_id $res_id, $$icon_size_file{$size};
+    create_icon_resource_with_id $icon_id, $$icon_size_file{$size};
 }
 
 #
 # extract icon keys which are going to be replaced by new icon.
 #
-sub extract_icon_keys_replaced
+sub extract_icon_keys_from_group_icon
 {
-    my ($buf,
-        $type_name_indecies,
+    my ($icon_group_data,
         $icon_keys,
-        $group_icon_key,
         $opts) = @_;
 
     my $icon_size_file = $$opts{icon_size_file};
 
-    my $icondirs = extract_group_icon $buf, 
-        $type_name_indecies, $group_icon_key;
+    my $icondirs = extract_group_icon $icon_group_data;
  
     my %res;
     foreach (@$icondirs) {
@@ -653,7 +601,7 @@ sub extract_icon_keys_replaced
         if ($icon_key) {
             if (($$_{width} == 0 and exists $$icon_size_file{256})
                 or exists $$icon_size_file{$$_{width}}) {
-                $res{$_width} = $$icon_key;
+                $res{$$_{width}} = $icon_key;
             } 
         }
     }
@@ -661,91 +609,6 @@ sub extract_icon_keys_replaced
     \%res;
 }
 
-
-
-#
-# create rebranding resource buffer
-#
-sub create_rebranding_resource
-{
-    my ($original_buf, $type_name_indecies, 
-        $group_key, $new_icons, $new_icon_size_map) = @_;
-
-    my @keys_for_processing = sort { 
-        ${$$type_name_indecies{$a}}{offset}
-        <=> ${$$type_name_indecies{$b}}{offset}
-    } keys %$type_name_indecies;
-
-    my @new_icons = sort { 
-        my $a_type_id = ${$$a{header}}{type};
-        my $a_name_id = ${$$a{header}}{name};
-        my $b_type_id = ${$$b{header}}{type};
-        my $b_name_id = ${$$b{header}}{name};
-        my $a_key = join $;, $$a_type_id{data}, $$a_type_id{type},
-            $$a_name_id{data}, $$a_name_id{type};
-        my $b_key = join $;, $$b_type_id{data}, $$b_type_id{type},
-            $$b_name_id{data}, $$b_name_id{type};
-        compare_resource_id_1 $a_key, $b_key;
-    } @$new_icons;
-    my @new_icon_keys = map {
-        create_resource_key_from_resource_header $$_{header};
-    } @new_icons;
-
-    my %processed_new_icon_keys;
-
-    my $res;
-    foreach (@keys_for_processing) {
-
-        my $indecies = $$type_name_indecies{$_};
-        my $data_offset = $$indecies{offset};
-
-        my ($data_size, $hdr_size) = unpack "x${data_offset}L<2", $original_buf;
-
-        my $hdr = substr $original_buf, $data_offset, $hdr_size;
-
-        my ($type_id, $processing_data) = read_res_id substr ($hdr, 4 * 2);
-        my ($name_id) = read_res_id $processing_data;
-        my $name_key = join $;, $$name_id{data}, $$name_id{type};
-        my $icon_res_idx_replaced;
-        if ('number' eq $$type_id{type}
-            and $res_type_id{RT_ICON} == $$type_id{data}) {
-            $icon_res_idx_replaced = find_index_from_resource_id_array 
-                \@new_icon_keys, $$name_id{data}, $$name_id{type};
-        }
-
-        if ('number' eq $$type_id{type}
-            and $res_type_id{RT_GROUP_ICON} == $$type_id{data}
-            and $group_key eq $_) {
-            $res .= create_group_icon_resource_stream $name_id, $new_icons,
-                $new_icon_size_map;
-        } elsif (looks_like_number $icon_res_idx_replaced) {
-            my $new_icon = $new_icons[$icon_res_idx_replaced];
-            my $new_icon_key = create_resource_key_from_resource_header
-                $$new_icon{header};
-            $processed_new_icon_keys{$new_icon_key} = undef;
-
-            $res .= create_icon_resource_stream $new_icon;
-        } else {
-            my $res_data_offset = $data_offset + $hdr_size;
-            my $data = substr $original_buf, $res_data_offset, $data_size;
-                
-            $res .= $hdr . $data;
-            my $padding = -((length $res) % -4);
-
-            if ($padding) {
-                $res .= pack "x${padding}";
-            }
-        }
-    }
-
-    foreach (@new_icons) {
-        my $icon_key = create_resource_key_from_resource_header $$_{header};
-        if (not exists $processed_new_icon_keys{$icon_key}) {
-            $res .= create_icon_resource_stream $_;
-        }
-    }
-    $res;
-}
 
 #
 # update resource in file handle
@@ -803,20 +666,12 @@ sub update_resource_in_handle
 sub update_resource_in_exe
 {
     use Win32::API;
-    use File::Spec;
     use Encode;
     my ($exe_path, $group_icon_key, $new_icons,
         $new_icon_size_map, $type_name_lang_ids) = @_;
 
 
-    if (not File::Spec->file_name_is_absolute($exe_path)) {
-        $exe_path = File::Spec->rel2abs($exe_path); 
-    }
-
-    if ($^O =~ /.*cygwin.*/) {
-        $exe_path = `cygpath -w $exe_path`;
-        $exe_path =~ s/^\s+|\s+$//g;
-    }
+    $exe_path = to_win_absolute_path $exe_path;
 
 
     my $begin_update_res = Win32::API::More->new(
@@ -868,6 +723,99 @@ sub update_resource_in_exe
 }
 
 #
+# find resource in module handle
+#
+sub find_resource_in_handle
+{
+    use Win32::API;
+    use Encode;
+
+    my ($mod_hdl, $res_key) = @_;
+
+    my ($type_id, $type_kind, $name_id, $name_kind) = split $;, $res_key;
+
+
+    my $method_sig = 'N';
+
+
+    my $lp_name;
+    if ('number' eq $name_kind) {
+        $lp_name = $name_id;
+        $method_sig .= 'I';
+    } else {
+        $lp_name = encode 'UTF-16LE', $name_id;  
+        $lp_name .= pack 'x2';
+        $method_sig .= 'P';
+    }
+    my $lp_type;
+    if ('number' eq $type_kind) {
+        $lp_type = $type_id;
+        $method_sig .= 'I';
+    } else {
+        $lp_type = encode 'UTF-16LE', $type_id;
+        $lp_type .= pack 'x2';
+        $method_sig .= 'P';
+    }
+
+ 
+    my $state;
+    my $find_res = Win32::API::More->new(
+        'kernel32', 'FindResourceW', $method_sig, 'N');
+
+    $state = $find_res ? 0 : -1;
+
+    my $hres;
+    if ($state == 0) {
+        $hres = $find_res->Call($mod_hdl, $lp_name, $lp_type);
+        $state = $hres ? 0 : -1;
+    }
+
+    my $res;
+    if ($state == 0) {
+        my $load_res = Win32::API::More->new(
+            'kernel32', 'LoadResource', 'NN', 'N');
+        my $res_hdl;
+        
+        $res_hdl = $load_res->Call($mod_hdl, $hres);
+        $state = $res_hdl ? 0 : -1;
+
+        if ($state == 0) {
+            my $res_data_ptr;
+            my $res_data_size;
+            my $lock_res = Win32::API::More->new(
+                'kernel32', 'LockResource', 'N', 'N');
+
+            my $size_of_res = Win32::API::More->new(
+                'kernel32', 'SizeofResource', 'NN', 'I');
+
+            $res_data_ptr = $lock_res->Call($res_hdl);
+            $res_data_size = $size_of_res->Call($mod_hdl, $hres);
+            $res = Win32::API::ReadMemory($res_data_ptr, $res_data_size);
+        } 
+    }
+
+    $res;
+}
+#
+# find resource in executable file
+#
+sub find_resource_in_exe
+{
+    my ($exe_path, $res_key) = @_;
+    my $mod_hdl = load_exe_module $exe_path;
+    my $res;
+   
+    if ($mod_hdl) {
+        $res = find_resource_in_handle $mod_hdl, $res_key;
+    }
+
+    if ($mod_hdl) {
+        Win32::API::FreeLibrary $mod_hdl;
+    }
+    $res;
+}
+
+#
 # create executable file for rebranding
 #
 sub duplicate_exe_for_rebranding
@@ -875,10 +823,11 @@ sub duplicate_exe_for_rebranding
     use File::Copy;
     use File::Basename;
     use File::Spec::Functions;
+    use File::Temp qw(tempdir);
 
     my $opts = shift;
 
-    my $exe_path = $$opts{exe};
+    my $exe_path = $$opts{src_exe};
     my $res;
 
     my $tmp_dir = tempdir;
@@ -891,6 +840,25 @@ sub duplicate_exe_for_rebranding
 }
 
 #
+# move working copied executable to specified file
+#
+sub move_working_path_to_dest_exe
+{
+    use File::Copy;
+    use File::Basename;
+
+    my ($exe_path, $opts) = @_;
+
+    my $dst_path = $$opts{dst_exe};
+
+    move $exe_path, $dst_path;
+    rmdir (dirname $exe_path);
+}
+
+
+
+
+#
 # remove a file and a directory containing the file.
 #
 sub rm_duplicated_file
@@ -901,34 +869,106 @@ sub rm_duplicated_file
     rmdir dirname ($path);
 }
 
+#
+# load exe and get module handle
+#
 
-#
-# get languages related to a resource from executable
-#
-sub get_langs_with_resource_from_exe
+sub load_exe_module
 {
     use Win32::API;
-    use Win32::API::Callback;
-    use File::Spec;
-    use Encode;
-    my ($exe_path, $res_key) = @_;
+    my ($exe_path) = @_;
 
-    my ($type_id, $type_kind, $name_id, $name_kind) = split /$;/, $res_key;
-
-    if (not File::Spec->file_name_is_absolute($exe_path)) {
-        $exe_path = File::Spec->rel2abs($exe_path); 
-    }
-
-    if ($^O =~ /.*cygwin.*/) {
-        $exe_path = `cygpath -w $exe_path`;
-        $exe_path =~ s/^\s+|\s+$//g;
-    }
+    $exe_path = to_win_absolute_path $exe_path;
 
     my $load_lib = Win32::API::More->new(
         'kernel32', 'LoadLibraryExW', 'PNN', 'N');
 
     my $exe_path_utf16 = Encode::encode 'UTF-16LE', $exe_path;
     $exe_path_utf16 .= pack 'x2';
+
+    $load_lib->Call($exe_path_utf16, 0,
+        $loadlibex_flags{LOAD_LIBRARY_AS_IMAGE_RESOURCE}
+            | $loadlibex_flags{LOAD_LIBRARY_AS_DATAFILE});
+}
+
+#
+# find group icon resource id
+#
+sub find_group_icon_from_handle
+{
+    use Win32::API;
+    use Win32::API::Callback;
+    my ($mod_hdl) = @_;
+
+    my $enum_sig;
+    $enum_sig = 'NNKNII';
+
+    my $enum_res_names = Win32::API::More->new(
+        'kernel32', 'EnumResourceNamesExW', $enum_sig, 'I');
+
+    my $lp_name;
+
+    my $enum_cb = Win32::API::Callback->new(
+        sub {
+            my ($mod, $type, $name, $param) = @_;
+            my ($marker) = unpack 'S<', $name;
+            if ($maker) {
+                $str_id = Win32::API::SafeReadWideCString $name;
+                $lp_name = {
+                    type => 'string',
+                    data => $str_id
+                };
+            } else {
+                $lp_name = {
+                    type => 'number',
+                    data => $name
+                };
+            }
+            0;
+        },
+        'NNNN', 'I'
+    );
+
+    my $state = $enum_res_names->Call(
+        $mod_hdl, $res_type_id{RT_GROUP_ICON}, $enum_cb, 0,
+        $enum_resource_ex_flags{RESOURCE_ENUM_LN}, 0); 
+
+    $lp_name;
+}
+
+
+#
+# find group icon resource id
+#
+sub find_group_icon_from_exe
+{
+    use Win32::API;
+    my ($exe_path) = @_;
+    my $mod_hdl = load_exe_module $exe_path;
+
+    my $res;
+    if ($mod_hdl) {
+        find_group_icon_from_handle $mod_hdl
+    }
+
+    if ($mod_hdl) {
+        Win32::API::FreeLibrary $mod_hdl;
+    }
+    $res;
+}
+
+
+#
+# get languages related to a resource from module handle 
+#
+sub get_langs_with_resource_from_handle
+{
+    use Win32::API;
+    use Win32::API::Callback;
+    use Encode;
+    my ($mod_hdl, $res_key) = @_;
+
+    my ($type_id, $type_kind, $name_id, $name_kind) = split /$;/, $res_key;
 
     my $enum_sign;
     $enum_sig = 'N';
@@ -942,7 +982,6 @@ sub get_langs_with_resource_from_exe
         $lp_type .= pack 'x2';
         $enum_sig .= 'P';
     }
-
 
     my $lp_name;
     if ('number' eq $name_kind) {
@@ -958,12 +997,7 @@ sub get_langs_with_resource_from_exe
 
     my $enum_res_langs = Win32::API::More->new(
         'kernel32', 'EnumResourceLanguagesExW', $enum_sig, 'N');
-
  
-    my $mod_hdl = $load_lib->Call($exe_path_utf16, 0,
-        $loadlibex_flags{LOAD_LIBRARY_AS_IMAGE_RESOURCE}
-            | $loadlibex_flags{LOAD_LIBRARY_AS_DATAFILE});
-
     my @langs;
 
     my $enum_cb = Win32::API::Callback->new(
@@ -977,14 +1011,134 @@ sub get_langs_with_resource_from_exe
 
     my $state = $enum_res_langs->Call(
         $mod_hdl, $lp_type, $lp_name, $enum_cb, 0,
-        $enum_resource_languages_ex_flags{RESOURCE_ENUM_LN}, 0); 
+        $enum_resource_ex_flags{RESOURCE_ENUM_LN}, 0); 
 
-    if ($mod_hdl) {
-        Win32::API::FreeLibrary($mod_hdl);
-    }
     \@langs;
 }
 
+
+#
+# get languages related to a resource from executable
+#
+sub get_langs_with_resource_from_exe
+{
+    use Win32::API;
+    use Win32::API::Callback;
+    use Encode;
+    my ($exe_path, $res_key) = @_;
+
+
+    my $mod_hdl = load_exe_module $exe_path;
+
+    my $res = [];
+    
+    if ($mod_hdl) {
+        $res = get_langs_with_resource_from_handle $mod_hdl, $res_key;
+    }
+
+    if ($mod_hdl) {
+        Win32::API::FreeLibrary $mod_hdl;
+    }
+    $res;
+}
+
+#
+# get resource names in module handle
+#
+sub get_resource_names_in_handle
+{
+    my ($mod_hdl, $type_id, $type_kind) = @_;
+
+    my $lp_type;
+    my $method_sig = 'N';
+    if ('number' eq $type_kind) {
+        $lp_type = $type_id;
+        $method_sig .= 'N';
+    } else {
+        $lp_type = encode 'UTF-16LE', $type_id;
+        $lp_type .= pack 'x2';
+        $method_sig .= 'P';
+    }
+    $method_sig .= 'KNII';
+
+    my $enum_res_names = Win32::API::More->new(
+        'kernel32', 'EnumResourceNamesExW', $method_sig, 'I');
+
+    my @res;
+    my $name_iter = Win32::API::Callback->new(
+        sub {
+            my ($mod, $type, $lp_name) = @_;
+            my ($marker) = unpack 'S<', $lp_name;
+            my $name;
+            if ($maker) {
+                $str_id = Win32::API::SafeReadWideCString $lp_name;
+                $name = {
+                    type => 'string',
+                    data => $str_id
+                };
+            } else {
+                $name = {
+                    type => 'number',
+                    data => $lp_name
+                };
+            }
+            push @res, $name;
+            1;
+         }, 'NNNN', 'I');
+    my $b_state = $enum_res_names->Call(
+        $mod_hdl, $lp_type, $name_iter, 0,
+            $enum_resource_ex_flags{RESOURCE_ENUM_LN}, 0);
+
+    \@res;
+}
+#
+# get resource names in executable
+#
+sub get_resource_names_in_exe
+{
+    use Win32::API;
+    my ($exe_path, $type_id, $type_kind) = @_;
+    my $mod_hdl = load_exe_module $exe_path;
+    my $res;
+   
+    if ($mod_hdl) {
+        $res = get_resource_names_in_handle 
+            $mod_hdl, $type_id, $type_kind;
+    }
+    if ($mod_hdl) {
+        Win32::API::FreeLibrary $mod_hdl;
+    }
+    $res;
+}
+
+
+
+#
+# get resource names in module handle
+#
+sub get_icon_res_names_in_handle
+{
+    my $mod_hdl = shift;
+    get_resource_names_in_handle $mod_hdl, $res_type_id{RT_ICON}, 'number';
+}
+
+#
+# get icon keys from module handle
+#
+sub get_icon_keys_from_handle
+{
+    my $mod_hdl = shift;
+
+    my $icon_names = get_icon_res_names_in_handle $mod_hdl;
+
+    my @icon_keys = map { 
+        join $;,  $res_type_id{RT_ICON}, 'number', $$_{data}, $$_{type};
+    } @$icon_names; 
+
+    @icon_keys = sort { compare_resource_id_1 $a, $b; } @icon_keys;
+
+    \@icon_keys;
+}
 
 #
 # run main program
@@ -992,101 +1146,114 @@ sub get_langs_with_resource_from_exe
 sub run_main_program
 {
     my $opts = shift;
-    my $buf = read_res_from_exe $$opts{exe};
 
-    my %type_name_indecies;
     my %type_name_lang_ids;
-    my $create_type_name_indecies = sub {
-        my ($offset, $size, $type_id, $name_id, $lang_id) = @_;
-        my %value = (
-            offset => $offset,
-            data_size => $$size[0],
-            header_size => $$size[1]
-        );
 
-        my $key = join $;, $$type_id{data}, $$type_id{type},
-            $$name_id{data}, $$name_id{type};
-        $type_name_indecies{$key} = \%value;
-        my $lang_ids = $type_name_lang_ids{$key};
-        if (!$lang_ids) {
-            $lang_ids = [];
-            $type_name_lang_ids{$key} = $lang_ids;
-        }
-        push @$lang_ids, $lang_id;
-    };
+    my $state;
+    my @icon_sizes;
+    @icon_sizes = sort { $a <=> $b } keys (%{$$opts{icon_size_file}});
+    $state = scalar @icon_sizes ? 0 : -1;
 
-    iterate_res $buf, $create_type_name_indecies;
-
-
-    my @icon_keys = create_res_type_array_from_type_name_map(
-        \%type_name_indecies, $res_type_id{RT_ICON}, 'number');
-
-    my @group_icon_keys = create_res_type_array_from_type_name_map(
-        \%type_name_indecies, $res_type_id{RT_GROUP_ICON}, 'number');
-
-    my $icon_keys_replaced;
-
-    if (scalar @group_icon_keys) {
-        $icon_keys_replaced = extract_icon_keys_replaced $buf, 
-            \%type_name_indecies, \@icon_keys, $group_icon_keys[0], $opts;
+    my $exe_for_rebranding;
+    if ($state == 0) {
+        $exe_for_rebranding = duplicate_exe_for_rebranding $opts;
+        $state = $exe_for_rebranding ? 0 : -1;
     }
 
-    my @icon_sizes = sort { $a <=> $b } keys (%{$$opts{icon_size_file}});
-    my @generated_icon_ids;
-
-    my @icon_resources;
-    my %icon_size_map;
-    foreach (@icon_sizes) {
-        my $icon_res = create_icon_resource \@icon_keys, 
-            $icon_keys_replaced, $_, \@generated_icon_ids, $opts;
-        push @icon_resources, $icon_res;
-
-        my $icon_hdr = $$icon_res{header};
-        my $icon_key = join $;, 
-            ${$$icon_hdr{type}}{data}, ${$$icon_hdr{type}}{type},
-            ${$$icon_hdr{name}}{data}, ${$$icon_hdr{name}}{type};
-        $$icon_size_map{$icon_key} = $_;
+    my $mod_hdl;
+    if ($state == 0) {
+        $mod_hdl = load_exe_module $exe_for_rebranding;
+        $state = $mod_hdl ? 0 : -1;
+    }
+    my $group_icon_name_id;
+    if ($state == 0) {
+        $group_icon_name_id = find_group_icon_from_handle $mod_hdl;
+        $state = $group_icon_name_id ? 0 : -1;
+    }
+     
+    my $icon_keys;
+    if ($state == 0) {
+        $icon_keys = get_icon_keys_from_handle $mod_hdl;
+        $state = $icon_keys ? 0 : -1;
     }
 
-    my $exe_for_rebranding = duplicate_exe_for_rebranding $opts;
-    {
+    my $group_icon_key;
+    if ($state == 0) {
+        $group_icon_key = join $;, 
+            $res_type_id{RT_GROUP_ICON}, 'number',
+            $$group_icon_name_id{data}, $$group_icon_name_id{type};
+
         my $group_icon_res_langs;
-        $group_icon_res_langs = get_langs_with_resource_from_exe
-            $exe_for_rebranding,
-            $group_icon_keys[0];
+        $group_icon_res_langs = get_langs_with_resource_from_handle
+            $mod_hdl, $group_icon_key;
         if (!scalar @$group_icon_res_langs) {
             push @$group_icon_res_langs, 0;
         }
-        $type_name_lang_ids{$group_icon_keys[0]} = $group_icon_res_langs;
+        $type_name_lang_ids{$group_icon_key} = $group_icon_res_langs;
     }
-    foreach (@icon_resources) {
-        my $icon_hdr = $$_{header};
-        my $icon_key = join $;, 
-            ${$$icon_hdr{type}}{data}, ${$$icon_hdr{type}}{type},
-            ${$$icon_hdr{name}}{data}, ${$$icon_hdr{name}}{type};
 
-        my $icon_res_langs;
-        $icon_res_langs = get_langs_with_resource_from_exe
-            $exe_for_rebranding, $icon_key;
 
-        if (!scalar @$icon_res_langs) {
-            push @$icon_res_langs, 0;
+    my $size_icon_id_map;
+    if ($state == 0) {
+        my $res_data = find_resource_in_handle $mod_hdl, $group_icon_key;
+        $state = $res_data ? 0 : -1;
+        if ($state == 0) {
+            $size_icon_id_map = extract_icon_keys_from_group_icon 
+                $res_data, $icon_keys, $opts;
+        }   
+    }
+
+
+    my @icon_resources;
+    my %icon_size_map;
+    if ($state == 0) {
+        my @generated_icon_ids;
+        foreach (@icon_sizes) {
+            my $icon_res = create_icon_resource $icon_keys, 
+                $_, $size_icon_id_map, \@generated_icon_ids, $opts;
+            push @icon_resources, $icon_res;
+
+            my $icon_hdr = $$icon_res{header};
+            my $icon_key = join $;, 
+                ${$$icon_hdr{type}}{data}, ${$$icon_hdr{type}}{type},
+                ${$$icon_hdr{name}}{data}, ${$$icon_hdr{name}}{type};
+            $$icon_size_map{$icon_key} = $_;
         }
-        $type_name_lang_ids{$icon_key} = $icon_res_langs;
     }
 
-    my $state;
-    $state = update_resource_in_exe $exe_for_rebranding, $group_icon_keys[0],
-        \@icon_resources, $icon_size_map, \%type_name_lang_ids; 
+    if ($state == 0) {
+        foreach (@icon_resources) {
+            my $icon_hdr = $$_{header};
+            my $icon_key = join $;, 
+                ${$$icon_hdr{type}}{data}, ${$$icon_hdr{type}}{type},
+                ${$$icon_hdr{name}}{data}, ${$$icon_hdr{name}}{type};
 
-    if ($state == 0)  {
-        # system 'windres', '-i', $exe_for_rebranding;
+            my $icon_res_langs;
+            $icon_res_langs = get_langs_with_resource_from_handle
+                $mod_hdl, $icon_key;
+
+            if (!scalar @$icon_res_langs) {
+                push @$icon_res_langs, 0;
+            }
+            $type_name_lang_ids{$icon_key} = $icon_res_langs;
+        }
+    }
+    if ($mod_hdl) {
+        use Win32::API;
+        Win32::API::FreeLibrary $mod_hdl;
+    }
+ 
+    if ($state == 0) {
+        $state = update_resource_in_exe 
+            $exe_for_rebranding, $group_icon_key,
+            \@icon_resources, $icon_size_map, \%type_name_lang_ids; 
+    }
+
+    if ($state == 0) {
+        move_working_path_to_dest_exe $exe_for_rebranding, $opts;
     } else {
-        print $^E . "\n";
+        rm_duplicated_file $exe_for_rebranding;
     }
-
-    # rm_duplicated_file $exe_for_rebranding;
-    print $exe_for_rebranding . "\n";
 }
 
 
@@ -1096,12 +1263,14 @@ sub run_main_program
 sub parse_option
 {
     use Getopt::Long;
+    use List::Util qw(min);
     my %opts;
     my $show_help;
     $opts{cmd} = \&run_main_program;
     GetOptions (
         \%opts,
-        'exe|e=s',
+        'src_exe|src-exe|s=s',
+        'dst_exe|dst-exe|d=s',
         'icon-file|i=s' => \@icon_files_opt,
         'icon-size|c=s' => \@icon_sizes_opt,
         'help|h' => \$show_help);
@@ -1149,7 +1318,8 @@ rebranding-win [OPTIONS]
 
   Options:
     -h,--help                   show helpmessage.
-    -e,--exe=[EXEPATH]          specify executable path
+    -s,--src-exe=[EXEPATH]      specify source executable path.
+    -d,--dst-exe=[EXEPATH]      specify destination executable path.
     -i,--icon-files=[ICONFILE]  specify icon file for rebranding. 
     -c,--icon-size=ICON_SIZE    specify comma separated size.
 
@@ -1158,11 +1328,18 @@ rebranding-win [OPTIONS]
 show the manualpage and exists.
 
 
-=item B<-e,--exe=> EXEPATH
+=item B<-s,--src-exe=> EXEPATH
 
-specify executable path for rebranding.
+specify source executable path for rebranding.
 
 =back
+
+=item B<-d,--dst-exe=> EXEPATH
+
+specify destination executable path for rebranding.
+
+=back
+
 
 =item B<-i,--icon-files=> ICONFILE
 
