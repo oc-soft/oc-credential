@@ -7,11 +7,11 @@
    viewBox="0 0 270.93333 270.93334"
    version="1.1"
    id="svg978"
-   sodipodi:docname="icon-0.svg"
-   inkscape:version="1.1.2 (b8e25be8, 2022-02-05)"
-   inkscape:export-filename="/Users/toshiyuki/Projects/credential-ocs/resource/mac-icon.png"
-   inkscape:export-xdpi="96"
-   inkscape:export-ydpi="96"
+   sodipodi:docname="token-generator-0.svg"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   inkscape:export-filename="win-token-generator-16x16.png"
+   inkscape:export-xdpi="1.5"
+   inkscape:export-ydpi="1.5"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -30,15 +30,15 @@
      showgrid="false"
      inkscape:lockguides="false"
      units="px"
-     inkscape:zoom="0.25"
-     inkscape:cx="706"
-     inkscape:cy="580"
-     inkscape:window-width="1366"
-     inkscape:window-height="660"
-     inkscape:window-x="0"
-     inkscape:window-y="25"
+     inkscape:zoom="0.47"
+     inkscape:cx="-434.04255"
+     inkscape:cy="580.85106"
+     inkscape:window-width="1920"
+     inkscape:window-height="1094"
+     inkscape:window-x="-11"
+     inkscape:window-y="-11"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer3"
+     inkscape:current-layer="layer4"
      showguides="false"
      inkscape:guide-bbox="true"
      inkscape:snap-intersection-paths="true"
@@ -49,7 +49,9 @@
      inkscape:snap-midpoints="false"
      inkscape:snap-nodes="true"
      inkscape:snap-bbox="false"
-     inkscape:object-paths="true">
+     inkscape:object-paths="true"
+     inkscape:showpageshadow="2"
+     inkscape:deskcolor="#d1d1d1">
     <sodipodi:guide
        position="135.46667,135.46667"
        orientation="0,1"
@@ -190,9 +192,35 @@
        inkscape:label=""
        inkscape:locked="false"
        inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="237.06667,135.46667"
+       orientation="-1,0"
+       id="guide10245"
+       inkscape:locked="false"
+       inkscape:label=""
+       inkscape:color="rgb(0,134,229)" />
+    <sodipodi:guide
+       position="33.866667,135.46667"
+       orientation="-1,0"
+       id="guide12072"
+       inkscape:label=""
+       inkscape:locked="false"
+       inkscape:color="rgb(0,134,229)" />
   </sodipodi:namedview>
   <defs
      id="defs975">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient14785">
+      <stop
+         style="stop-color:#222222;stop-opacity:1;"
+         offset="0"
+         id="stop14781" />
+      <stop
+         style="stop-color:#dadada;stop-opacity:1;"
+         offset="1"
+         id="stop14783" />
+    </linearGradient>
     <linearGradient
        inkscape:collect="always"
        id="4325">
@@ -298,11 +326,20 @@
        x2="42.110195"
        y2="137.8996"
        gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient14785"
+       id="linearGradient14787"
+       x1="135.46667"
+       y1="252.80939"
+       x2="135.46667"
+       y2="18.123959"
+       gradientUnits="userSpaceOnUse" />
   </defs>
   <g
      inkscape:groupmode="layer"
      id="layer2"
-     inkscape:label="Layer 2"
+     inkscape:label="mac-guide-lines"
      style="display:none">
     <g
        style="filter:url(#shadow)"
@@ -397,19 +434,89 @@
   </g>
   <g
      inkscape:groupmode="layer"
+     id="layer5"
+     inkscape:label="win-guide-lines"
+     style="display:none">
+    <rect
+       style="fill:none;stroke:#919191;stroke-width:0.264583;stroke-dasharray:none;stroke-opacity:1"
+       id="rect1276"
+       width="270.93332"
+       height="270.93332"
+       x="0"
+       y="0"
+       ry="11.288887" />
+    <rect
+       style="fill:none;stroke:#919191;stroke-width:0.529167;stroke-dasharray:none;stroke-opacity:1"
+       id="rect8761"
+       width="135.20235"
+       height="270.93356"
+       x="67.865494"
+       y="0.13216242"
+       ry="11.288898" />
+    <rect
+       style="fill:none;stroke:#919191;stroke-width:0.529167;stroke-dasharray:none;stroke-opacity:1"
+       id="rect8761-2"
+       width="135.20235"
+       height="270.93356"
+       x="67.997772"
+       y="-270.93344"
+       ry="11.288898"
+       transform="rotate(90)" />
+    <rect
+       style="fill:none;stroke:#919191;stroke-width:0.646789;stroke-dasharray:none;stroke-opacity:1"
+       id="rect8761-2-2"
+       width="202.07497"
+       height="270.81595"
+       x="34.350365"
+       y="-270.87463"
+       ry="11.283998"
+       transform="rotate(90)" />
+    <rect
+       style="fill:none;stroke:#919191;stroke-width:0.64901;stroke-dasharray:none;stroke-opacity:1"
+       id="rect8761-9"
+       width="203.47612"
+       height="270.80115"
+       x="33.728607"
+       y="0.2645835"
+       ry="11.283381" />
+    <rect
+       style="fill:none;stroke:#919191;stroke-width:0.529167;stroke-dasharray:none;stroke-opacity:1"
+       id="rect13943"
+       width="234.68542"
+       height="234.68542"
+       x="18.123959"
+       y="18.123959"
+       ry="11.283381" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
      id="layer3"
-     inkscape:label="Layer 3">
+     inkscape:label="mac-background"
+     style="display:inline">
     <path
-       style="display:inline;fill:url(#linearGradient1697);fill-opacity:1;stroke:#919191;stroke-width:0.79375;stroke-miterlimit:4;stroke-dasharray:0,8.73125005;stroke-dashoffset:0"
+       style="display:none;fill:url(#linearGradient1697);fill-opacity:1;stroke:#919191;stroke-width:0.79375;stroke-miterlimit:4;stroke-dasharray:0, 8.73125;stroke-dashoffset:0"
        d="M 2.5714193e-7,195.52735 V 75.406519 C 2.5714193e-7,35.719019 29.633333,5.0874413e-6 75.405985,5.0874413e-6 H 195.52735 C 241.3,5.0874413e-6 270.93333,35.719019 270.93333,75.406519 V 195.52735 c 0,39.6875 -29.63333,75.40599 -75.40598,75.40599 H 75.405985 C 29.633333,270.93334 2.5714193e-7,235.21485 2.5714193e-7,195.52735 Z"
        id="path1152-3">
       <title
-         id="title1150-9"
-         style="fill:url(#linearGradient1697);fill-opacity:1">Outer Bounding Box</title>
+         id="title1150-9">Outer Bounding Box</title>
     </path>
   </g>
   <g
-     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer4"
+     inkscape:label="windows-background"
+     style="display:inline">
+    <rect
+       style="display:inline;fill:url(#linearGradient14787);fill-opacity:1;stroke:none;stroke-width:0.529167;stroke-dasharray:none;stroke-opacity:1"
+       id="rect13943-7"
+       width="234.68542"
+       height="234.68542"
+       x="18.123959"
+       y="18.123959"
+       ry="11.283381" />
+  </g>
+  <g
+     inkscape:label="icon"
      inkscape:groupmode="layer"
      id="layer1"
      style="display:inline"
@@ -463,7 +570,7 @@
        inkscape:transform-center-y="-40.986021"
        transform="matrix(-0.70710678,0.70710678,0.70710678,0.70710678,0,0)" />
     <circle
-       style="fill:url(#linearGradient7987);fill-opacity:1;fill-rule:evenodd;stroke:#282828;stroke-width:0.18745"
+       style="fill:url(#linearGradient7987);fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.18745"
        id="path1083"
        cx="-1.0654165"
        cy="191.57878"
