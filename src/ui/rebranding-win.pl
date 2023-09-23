@@ -95,6 +95,41 @@ sub read_res_id
     return (\%res_id, $rest);
 }
 
+#
+# iterate resource data
+#
+sub iterate_res
+{
+    my $res_start = shift;
+    my $iter = shift;
+
+    if (!$iter) {
+        $iter = sub { };
+    }
+
+    my $idx = 0;
+    while (length($res_start)) {
+        my $processing_data = $res_start;
+        my @size = unpack 'L<L<', $processing_data;
+        my $processing_data = substr $processing_data, 8;
+
+        (my $type_id, $processing_data) = read_res_id $processing_data;
+        (my $name_id, $processing_data) = read_res_id $processing_data;
+
+
+
+        $iter->($idx, \@size, $type_id, $name_id);
+
+
+        # resource header is 4 byte aligned location in file
+        my $offset = ($size[0] + $size[1] + 4 - 1) & ~(4 - 1);
+
+        $res_start = substr $res_start, $offset;
+        $idx += $offset;
+    } 
+}
+
+
 
 #
 # print help message
@@ -250,6 +285,32 @@ sub create_res_type_array_from_type_name_map
     }
     sort { compare_resource_id_1 $a, $b; } @icon_keys; 
 }
+
+#
+# load resource
+#
+sub read_res_stream
+{
+    my $buf = shift;
+    my %type_name_indecies;
+    my $create_type_name_indecies = sub {
+        my ($offset, $size, $type_id, $name_id) = @_;
+        my %value = (
+            offset => $offset,
+            data_size => $$size[0],
+            header_size => $$size[1]
+        );
+
+        my $key = join $;, $$type_id{data}, $$type_id{type},
+            $$name_id{data}, $$name_id{type};
+        $type_name_indecies{$key} = \%value;
+    };
+    if ($state == 0) {
+        iterate_res $buf, $create_type_name_indecies;
+    }
+    \%type_name_indecies;
+}
+
 
 #
 # create group icon resource
@@ -668,7 +729,7 @@ sub update_resource_in_exe
     use Win32::API;
     use Encode;
     my ($exe_path, $group_icon_key, $new_icons,
-        $new_icon_size_map, $type_name_lang_ids) = @_;
+        $new_icon_size_map, $type_name_lang_ids, $version_res) = @_;
 
 
     $exe_path = to_win_absolute_path $exe_path;
@@ -705,6 +766,13 @@ sub update_resource_in_exe
                 $type_name_lang_ids, $icon_key, $$_{data};
             last if $state != 0;
         }
+    }
+
+    if ($state == 0) {
+        my $version_key = join $;, $res_type_id{RT_VERSION}, 'number',
+            1, 'number';
+        $state = update_resource_in_handle $mod_hdl,
+            $type_name_lang_ids, $version_key, $version_res; 
     }
 
     if ($mod_hdl) {
@@ -814,6 +882,123 @@ sub find_resource_in_exe
     }
     $res;
 }
+#
+# convert rc file to res file
+#
+sub rc_to_res
+{
+    my ($opt, $res) = @_;
+    my $rc = $$opt{rc};
+    my $cpp = $$opt{cpp};
+
+    my @cmd;
+    push @cmd, 'windres';
+    if ($cpp) {
+        push @cmd, "--preprocessor=${cpp}";
+        my $cpp_args = $$opt{cpp_args};
+        if (scalar @$cpp_args) {
+            push @cmd, (map { "--preprocessor-arg=${_}" } @$cpp_args);
+        }
+    }
+    push @cmd, ('-O', 'res', '-i', $rc, '-o', $res);
+    system @cmd;
+}
+
+#
+# load resource and create index map 
+#
+sub load_res_index_map
+{
+    my $res = $_[0];
+    my $fh;
+    my $state = 0;
+    if ($state == 0) {
+        $state = open ($fh, "<:raw", $res) ? 0 : -1;
+    }
+
+    my $buf = '';
+    if ($state == 0) {
+        while () {
+            my $read_size = read $fh, my $tmp_buf, 0x7ff;
+            if ($read_size) {
+                $buf .= $tmp_buf;
+            } else {
+                last;
+            }
+        }
+    }
+    if ($fh) {
+        close $fh;
+    }
+    my @res;
+
+    if ($state == 0) {
+        my $type_name_indecies;
+        $type_name_indecies = read_res_stream $buf;
+        push @res, $buf, $type_name_indecies;
+    }
+    @res;
+}
+
+#
+# find version resource
+#
+sub find_version_resource
+{
+    my ($buf, $type_name_indecies) = @_;
+
+    my $version_key = join $;, $res_type_id{RT_VERSION}, 'number', 1, 'number';
+
+    my $res;
+    if (exists $$type_name_indecies{$version_key}) {
+        my $indecies = $$type_name_indecies{$version_key};
+
+        my ($offset, $data_size, $header_size) = (
+            $$indecies{offset},
+            $$indecies{data_size},
+            $$indecies{header_size});
+        $res = substr $buf, $offset + $header_size, $data_size;
+    }
+    $res;
+}
+
+
+#
+# read version resource
+#
+sub read_version_resource
+{
+    use File::Temp qw(tempfile);
+    my $opt = $_[0];
+    my $state;
+
+    my ($fh, $res_file) = tempfile;
+
+    $state = $fh ? 0 : -1;
+
+    if ($fh) {
+        close $fh;
+    }
+   
+    if ($state == 0) { 
+        $state = rc_to_res $opt, $res_file;
+    }
+
+    my $res;
+    if ($state == 0) {
+        my ($buf, $type_name_indecies) = load_res_index_map $res_file;
+
+        if ($buf) {
+            $res = find_version_resource $buf, $type_name_indecies;
+        }
+    }
+    if ($res_file) {
+        unlink $res_file;
+    }
+
+    $res;
+}
+
 
 #
 # create executable file for rebranding
@@ -1242,17 +1427,37 @@ sub run_main_program
         use Win32::API;
         Win32::API::FreeLibrary $mod_hdl;
     }
+
+    my $version_res;
+    if ($state == 0) {
+        $version_res = read_version_resource $opts;
+
+        if ($version_res) {
+            my $version_key = join $;, $res_type_id{RT_VERSION}, 'number',
+                1, 'number';
+            my $version_langs;
+            $version_langs = get_langs_with_resource_from_handle
+                $mod_hdl, $version_key;
+            if (!scalar @$version_langs) {
+                push @$version_langs, 0;
+            }
+            $type_name_lang_ids{$version_key} = $version_langs;
+        }
+    }
  
     if ($state == 0) {
         $state = update_resource_in_exe 
             $exe_for_rebranding, $group_icon_key,
-            \@icon_resources, $icon_size_map, \%type_name_lang_ids; 
+            \@icon_resources, $icon_size_map, \%type_name_lang_ids,
+            $version_res; 
     }
 
     if ($state == 0) {
         move_working_path_to_dest_exe $exe_for_rebranding, $opts;
     } else {
-        rm_duplicated_file $exe_for_rebranding;
+        if ($exe_for_rebranding) {
+            rm_duplicated_file $exe_for_rebranding;
+        }
     }
 }
 
@@ -1266,13 +1471,21 @@ sub parse_option
     use List::Util qw(min);
     my %opts;
     my $show_help;
+    my @icon_files_opt;
+    my @icon_sizes_opt;
+    my @cpp_args;
     $opts{cmd} = \&run_main_program;
+
     GetOptions (
         \%opts,
         'src_exe|src-exe|s=s',
         'dst_exe|dst-exe|d=s',
         'icon-file|i=s' => \@icon_files_opt,
         'icon-size|c=s' => \@icon_sizes_opt,
+        'rc|rc-file|r=s',
+        'cpp|preprocessor|p=s',
+        'preprocessor-args|e=s' => \@cpp_args,
+        'rc=s',
         'help|h' => \$show_help);
 
     my @icon_files;
@@ -1296,6 +1509,7 @@ sub parse_option
 
     $opts{icon_file_size} = \%icon_file_size_map;
     $opts{icon_size_file} = \%icon_size_file_map;
+    $opts{cpp_args} = \@cpp_args;
 
     if ($show_help) {
         $opts{cmd} = \&show_help_message;
@@ -1317,11 +1531,14 @@ rebranding-win [OPTIONS]
 rebranding-win [OPTIONS]
 
   Options:
-    -h,--help                   show helpmessage.
-    -s,--src-exe=[EXEPATH]      specify source executable path.
-    -d,--dst-exe=[EXEPATH]      specify destination executable path.
-    -i,--icon-files=[ICONFILE]  specify icon file for rebranding. 
-    -c,--icon-size=ICON_SIZE    specify comma separated size.
+    -h,--help                       show helpmessage.
+    -s,--src-exe=[EXEPATH]          specify source executable path.
+    -d,--dst-exe=[EXEPATH]          specify destination executable path.
+    -i,--icon-files=[ICONFILE]      specify icon file for rebranding. 
+    -c,--icon-size=ICON_SIZE        specify comma separated size.
+    -r,--rc-file=[RCFILE]           specify rc file.
+    -p,--preprocessor=[CPPEXE]      specify preprocessor for windres.
+    -e,--preprocessor-args=[ARG]    specify preprocessor arguments.
 
 =item B<-h,--help>
 
@@ -1343,16 +1560,37 @@ specify destination executable path for rebranding.
 
 =item B<-i,--icon-files=> ICONFILE
 
-specify icon file for rebranding.  You can specify mutiple times this option.
+specify icon file for rebranding. You can specify mutiple times this option.
  
 =back
 
 =item B<-c,--icon-size=> ICON_SIZE
 
-specify comma separated size. each value was related icon files in specified 
+specify comma separated size. Each values are related icon files in specified 
 order. You can specify this option mutiple times.
 
 =back
+
+=item B<-r,--rc-file=> RC_FILE
+
+specify rc file. You can overwrite VERSIONINFO if it contains VERSIONINFO
+resource.
+
+=back
+
+=item B<-p,--preprocessor=> CPPEXE
+
+specify preprocessor for windres.
+
+=back
+
+=item B<-e,--preprocessor-args=> ARG
+
+specify preprocessor arguments. You can specify mutiple times this option.
+
+
+=back
+
 
 =head1 DESCRIPTION
 
@@ -1360,5 +1598,4 @@ B<This program> will replace application icon and version resources with
 new product ones.
 
 =cut
-
 # vi: se ts=4 sw=4 et:
