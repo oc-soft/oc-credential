@@ -1424,11 +1424,6 @@ sub run_main_program
             $type_name_lang_ids{$icon_key} = $icon_res_langs;
         }
     }
-    if ($mod_hdl) {
-        use Win32::API;
-        Win32::API::FreeLibrary $mod_hdl;
-    }
-
     my $version_res;
     if ($state == 0) {
         $version_res = read_version_resource $opts;
@@ -1445,6 +1440,11 @@ sub run_main_program
             $type_name_lang_ids{$version_key} = $version_langs;
         }
     }
+    if ($mod_hdl) {
+        use Win32::API;
+        Win32::API::FreeLibrary $mod_hdl;
+    }
+
  
     if ($state == 0) {
         $state = update_resource_in_exe 
