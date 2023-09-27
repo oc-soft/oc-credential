@@ -337,10 +337,13 @@ staging-install:
 	$(MAKE) staging-install-post
 
 staging-uninstall:
-	rm -r $(staging_dir)$(libexecdir)/credential-ocs/local
+	rm -r -f $(staging_dir)$(libexecdir)/credential-ocs/locale
 	rm -r -f $(staging_dir)$(libexecdir)/credential-ocs/*.dll
-	mv $(staging_dir)$(libexecdir)/credential-ocs/$(credhelper_dist_name)$(EXEEXT) \
-		$(staging_dir)$(libexecdir)/credential-ocs/credhelper$(EXEEXT) 
+	src_exe=$(staging_dir)$(libexecdir)/credential-ocs/$(credhelper_dist_name)$(EXEEXT); \
+	dst_exe=$(staging_dir)$(libexecdir)/credential-ocs/credhelper$(EXEEXT); \
+	if [ ! -f $$dst_exe ] && [ -f $$src_exe ]; then \
+		mv $$src_exe $$dst_exe; \
+	fi
 	$(MAKE) -C $(top_builddir) DESTDIR=$(staging_dir) uninstall
 
 staging-install-post:
