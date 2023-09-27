@@ -1037,7 +1037,7 @@ sub move_working_path_to_dest_exe
     my $dst_path = $$opts{dst_exe};
 
     move $exe_path, $dst_path;
-    rmdir (dirname $exe_path);
+    rmdir (dirname $exe_path) ? 0 : -1;
 }
 
 
@@ -1051,6 +1051,7 @@ sub rm_duplicated_file
     use File::Basename;
     my $path = shift;
     unlink $path;
+    print dirname ($path) . "\n";
     rmdir dirname ($path);
 }
 
