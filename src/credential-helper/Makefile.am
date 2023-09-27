@@ -96,6 +96,11 @@ LOGGING_FILE_NAME=@LOGGING_FILE_NAME@
 LOGGING_MAX_MESSAGE_SIZE=@LOGGING_MAX_MESSAGE_SIZE@
 OC_XLINKER_OPTION = @OC_XLINKER_OPTION@
 
+PRODUCT_NAME=@PRODUCT_NAME@
+APP_FILE_NAME=@APP_FILE_NAME@
+APP_FILE_DESC=@APP_FILE_DESC@
+WINDRES_CPP_OPTION=@WINDRES_CPP_OPTION@
+
 SKIP_LOCPATH_INSTALL=
 deploy_dir_def = $(abs_top_builddir)/pkg-img
 
@@ -260,39 +265,15 @@ awk_cmd_0='BEGIN { \
 	}' 
 
 awk_cmd_1 = '{ \
-			gsub(/@CREDHELPER_APP_FILE_NAME@/, \
-				"\"credhelper\""); \
-			gsub(/@CREDHELPER_APP_PRODUCT_NAME@/, \
-				"\"OC credential helper\""); \
-			print \
+			gsub(/!CREDHELPER_APP_FILE_NAME!/, \
+				"\"$(APP_FILE_NAME)\""); \
+			gsub(/!CREDHELPER_APP_PRODUCT_NAME!/, \
+				"\"$(PRODUCT_NAME)\""); \
+			gsub(/!CREDHELPER_APP_FILE_DESC!/, \
+				"\"$(APP_FILE_DESC)\""); \
+			print; \
 		} \
 	'
-awk_cmd_2 = 'BEGIN { \
-		map_size = 0; \
-		src_file = "$(srcdir)/credhelper_res.rc.in"; \
-	} \
-	{ \
-		langs[map_size] = $$1; \
-		inc_file[map_size] = $$2; \
-		map_size++; \
-	} \
-	END { \
-		trans_lines = "\"Translation\", 0x0, 1200"; \
-		if (map_size > 0) { \
-			for (i = 0; i < map_size; i++) { \
-				trans_lines = trans_lines ",\n" langs[i] ", 1200"; \
-			} \
-			inc_lines = "\x23include \"" inc_file[0] "\""; \
-			for (i = 1; i < map_size; i++) { \
-				inc_lines = inc_lines "\n\x23include \"" inc_file[i] "\""; \
-			} \
-		} \
-		while ((getline line < src_file) > 0) { \
-			gsub(/@INCLUDE@/, inc_lines, line); \
-			gsub(/@TRANSLATION@/, trans_lines, line); \
-			print line; \
-		} \
-	}'
 
 awk_cmd_3 = 'BEGIN { \
 		line_num = 0; \
@@ -459,8 +440,7 @@ l10n_i.c : l10n_i.c.in
 credhelper_const.h : credhelper_const.h.in $(srcdir)/Makefile.am
 	awk $(awk_cmd_1) $< >$@
 
-credhelper_res.rc : credhelper_res.rc.in credhelper_const.h
-	awk $(awk_cmd_2) $(top_srcdir)/win/lang_map.txt > $@
+credhelper_res.o:credhelper_const.h
 
 pkg-install-local:
 	depdir=$(deploy_dir) ; \
@@ -574,17 +554,26 @@ clean-local:
 	fi
 
 .rc.o:
+	WINDRES_CPP_CMD=`echo $(CPP) $(WINDRES_CPP_OPTION) | awk '\
+		{ \
+			cpp_cmd = $$1; \
+			if (NF > 1) { \
+				cpp_args = " "; \
+				for (i = 2; i <= NF; i++) { \
+					cpp_args = cpp_args	" --preprocessor-arg=" $$i; \
+				} \
+			} \
+			print "--preprocessor=" cpp_cmd cpp_args; \
+		}'`; \
+		echo $$WINDRES_CPP_CMD; \
 	$(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --tag=RC --mode=compile \
 		$(RC) $(RCFLAGS) \
-			--preprocessor $(CC) \
-			--preprocessor-arg -E \
-			--preprocessor-arg -x \
-			--preprocessor-arg c \
-			--preprocessor-arg -D \
-			--preprocessor-arg RC_INVOKED \
-			--preprocessor-arg -I$(top_builddir)/include \
-			--preprocessor-arg -I$(builddir) \
-			--preprocessor-arg -I$(srcdir) \
+			$$WINDRES_CPP_CMD \
+			--preprocessor-arg=-D \
+			--preprocessor-arg=RC_INVOKED \
+			--preprocessor-arg=-I$(top_builddir)/include \
+			--preprocessor-arg=-I$(builddir) \
+			--preprocessor-arg=-I$(srcdir) \
 			-i $< -o $@
 
 

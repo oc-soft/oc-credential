@@ -37,10 +37,13 @@ ELECTRON_TARGET_OS=@ELECTRON_TARGET_OS@
 GUI_EXE_SUBDIR=@GUI_EXE_SUBDIR@
 OC_EXE_ROOT_NAME=@OC_EXE_ROOT_NAME@
 PKG_DEST_REL_DIR=$(OC_EXE_ROOT_NAME)/$(GUI_EXE_SUBDIR)
+PRODUCT_NAME=@PRODUCT_NAME@
 
 TOKEN_GENERATOR_NAME=@GUI_TOKEN_GENERATOR_NAME@
 TOKEN_GENERATOR_ID=@GUI_TOKEN_GENERATOR_ID@
 TOKEN_GENERATOR_HELPER_ID=@GUI_TOKEN_GENERATOR_HELPER_ID@
+TOKEN_GENERATOR_FILE_DESC=@GUI_TOKEN_GENERATOR_FILE_DESC@
+WINDRES_CPP_OPTION=@WINDRES_CPP_OPTION@
 
 TOKEN_GENERATOR_HELPER_NAME=$(TOKEN_GENERATOR_NAME) Helper
 TOKEN_GENERATOR_HELPER_GPU_NAME=$(TOKEN_GENERATOR_NAME) Helper (GPU)
@@ -80,12 +83,12 @@ token_generator_package_json = $(token_generator_app_dir)/package.json
 
 awk_cmd_0=' \
 	{ \
-		gsub("!PACKAGE_NAME!", package_name); \
-		gsub("!PACKAGE_VERSION!", package_version); \
-		gsub("!SRCDIR!", srcdir); \
-		gsub("!ABS_BUILDDIR!", abs_builddir); \
-		gsub("!ABS_SRCDIR!", abs_srcdir); \
-		print $$0; \
+		gsub(/!PACKAGE_NAME!/, package_name); \
+		gsub(/!PACKAGE_VERSION!/, package_version); \
+		gsub(/!SRCDIR!/, srcdir); \
+		gsub(/!ABS_BUILDDIR!/, abs_builddir); \
+		gsub(/!ABS_SRCDIR!/, abs_srcdir); \
+		print; \
 	} \
 '
 
@@ -141,6 +144,22 @@ vite.config.ts: vite.config.ts.in
 		-v package_name=$(PACKAGE_NAME) \
 		-v package_version=$(PACKAGE_VERSION) \
 		$(awk_cmd_0) $< >$@
+
+
+ui_const.h: ui_const.h.in
+	$(AWK) ' \
+	{ \
+		gsub(/!TOKEN_GEN_FILE_NAME!/, \
+			"\"$(TOKEN_GENERATOR_NAME)$(EXEEXT)\""); \
+		gsub(/!TOKEN_GEN_PRODUCT_NAME!/, \
+			"\"$(PRODUCT_NAME)\""); \
+		gsub(/!TOKEN_GEN_FILE_DESC!/, \
+			"\"$(TOKEN_GENERATOR_FILE_DESC)\""); \
+		print; \
+	} \
+' $< >$@
+
+
 if !COPY_JS_SRC_FOR_BUILD
 mksrc-tree:
 	if [ "$(srcdir)" != "." ] ; then \
@@ -190,8 +209,13 @@ electron-resources: electron-tmstamp electron-package-json build-app \
 
 .PHONY: electron-resources
 
+if !RUN_WIN
+rebrand-resource:
+else
+rebrand-resource: ui_const.h
+endif	
 
-rebrand-electron-contents-tmstamp: electron-resources
+rebrand-electron-contents-tmstamp: electron-resources rebrand-resource
 if RUN_DARWIN
 	if [ -d $(builddir)/$(electron_extract_dir)/Electron.app ]; then \
 		branding_dir=$(builddir)/$(electron_extract_dir)/Electron.app; \
@@ -209,21 +233,52 @@ if RUN_DARWIN
 		-d '$(TOKEN_GENERATOR_ID)' \
 		-f '$(TOKEN_GENERATOR_HELPER_ID)' \
 		-i '$(TOKEN_GENERATOR_ICON)'
-	: >$@
-else
-	: >$@
 endif
+if RUN_WIN
+	REBRAND_CPP_OPTION=`echo $(CPP) $(WINDRES_CPP_OPTION) | awk '\
+		{ \
+			cpp_cmd = $$1; \
+			if (NF > 1) { \
+				cpp_args = " "; \
+				for (i = 2; i <= NF; i++) { \
+					cpp_args = cpp_args	" -e " $$i; \
+				} \
+			} \
+			print "-p " cpp_cmd cpp_args; \
+		}'`; \
+	$(srcdir)/rebranding-win.pl \
+		-s $(builddir)/$(electron_extract_dir)/electron.exe \
+		-d $(builddir)/$(electron_extract_dir)/$(TOKEN_GENERATOR_NAME)$(EXEEXT) \
+		-r $(srcdir)/rebranding-win.rc \
+		$$REBRAND_CPP_OPTION -e -D -e RC_INVOKED \
+		-e -I$(top_builddir)/include \
+		-e -I$(builddir) \
+	  	-i $(top_srcdir)/resource/win-token-generator-16x16.png \
+		-i $(top_srcdir)/resource/win-token-generator-24x24.png \
+		-i $(top_srcdir)/resource/win-token-generator-32x32.png \
+		-i $(top_srcdir)/resource/win-token-generator-48x48.png \
+		-i $(top_srcdir)/resource/win-token-generator-256x256.png \
+		-c 16,24,32,48,256
+endif
+	: >$@
+
 	
 rebrand-electron-contents: rebrand-electron-contents-tmstamp
 
 .PHONY: rebrand-electron-contents
 
 rebrand-electron-tmstamp: rebrand-electron-contents
-if !RUN_DARWIN
-else
+if RUN_DARWIN
 	if [ -d $(electron_extract_dir)/Electron.app ]; then \
 		mv $(electron_extract_dir)/Electron.app \
 			$(electron_extract_dir)/$(TOKEN_GENERATOR_NAME).app; \
+	fi
+endif
+if RUN_WIN
+	if [ -f $(builddir)/$(electron_extract_dir)/$(TOKEN_GENERATOR_NAME)$(EXEEXT) ]; then \
+   		if [ -f $(builddir)/$(electron_extract_dir)/electron.exe ] ; then \
+			rm $(builddir)/$(electron_extract_dir)/electron.exe; \
+		fi \
 	fi
 endif
 	: > $@

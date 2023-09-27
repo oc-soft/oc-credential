@@ -2,7 +2,7 @@ BLOCK "040904B0"
 BEGIN
   VALUE "CompanyName", COMPANY_NAME_W 
   VALUE "FileVersion", VERSION_W
-  VALUE "FileDescription", L"limited device credential helper application"
+  VALUE "FileDescription", CREDHELPER_APP_FILE_DESC_W
   VALUE "InternalName", CREDHELPER_APP_FILE_NAME_W 
   VALUE "OriginalFilename",CREDHELPER_APP_FILE_NAME_W
   VALUE "ProductName", CREDHELPER_APP_PRODUCT_NAME_W

@@ -62,13 +62,13 @@ fi
 
 AC_ARG_VAR([DEPLOY_DIR], [specifiy directory to deploy programs])
 AC_ARG_VAR([DEPLOY_LIB_DIR], [specify library directory deploy image])
-
+AC_ARG_VAR([WINDRES_CPP_OPTION], [specify cpreprocessor option to be able to preprocess non c extenion file.])
 
 AM_GNU_GETTEXT([external])
 
-oc_ver_major=`echo ${PACKAGE_VERSION} | awk -e '{ split($1, vst, "."); print vst[[1]]; }'`
-oc_ver_minor=`echo ${PACKAGE_VERSION} | awk -e '{ split($1, vst, "."); print vst[[2]]; }'`
-oc_ver_rev=`echo ${PACKAGE_VERSION} | awk -e '{ split($1, vst, "."); print vst[[3]]; }'`
+oc_ver_major=`echo ${PACKAGE_VERSION} | awk '{ split($1, vst, "."); print vst[[1]]; }'`
+oc_ver_minor=`echo ${PACKAGE_VERSION} | awk '{ split($1, vst, "."); print vst[[2]]; }'`
+oc_ver_rev=`echo ${PACKAGE_VERSION} | awk '{ split($1, vst, "."); print vst[[3]]; }'`
 
 oc_company_name=OC\ Soft
 
@@ -99,6 +99,10 @@ AC_SUBST([LOCPATH_NAME], [locpath.txt])
 AC_SUBST([LOGGING_FILE_NAME], [log.txt])
 AC_SUBST([LOGGING_MAX_MESSAGE_SIZE], [1024])
 
+AC_SUBST([PRODUCT_NAME], [git\ crendential\ helper\ for\ oc\ soft])
+AC_SUBST([APP_FILE_DESC], [limited\ device\ credential\ helper\ application])
+AC_SUBST([APP_FILE_NAME], [credhelper])
+
 case $host_os in
     linux*)
         oc_run_linux=yes
@@ -118,12 +122,10 @@ else
 fi
 
 AC_SUBST([GUI_TOKEN_GENERATOR_NAME], [${oc_gui_token_generator}])
-AC_SUBST([GUI_TOKEN_GENERATOR_ID], 
-    [net.oc-soft.git-credential-helper.generator])
-AC_SUBST([GUI_TOKEN_GENERATOR_HELPER_ID], 
-    [net.oc-soft.git-credential-helper.generator.helper])
+AC_SUBST([GUI_TOKEN_GENERATOR_ID], [net.oc-soft.git-credential-helper.generator])
+AC_SUBST([GUI_TOKEN_GENERATOR_HELPER_ID], [net.oc-soft.git-credential-helper.generator.helper])
 
-
+AC_SUBST([GUI_TOKEN_GENERATOR_FILE_DESC], [Token\ generator\ gui\ executable])
 
 case $build_os in
     msdosdjgpp* | cyg* | mingw* | cegcc*)
