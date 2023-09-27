@@ -503,7 +503,7 @@ install-exec-hook:
 
 preuninstall:
 	@$(PRE_UNINSTALL)
-	rm $(DESTDIR)$(libexecdir)/credential-ocs/$(LOCPATH_NAME)
+	rm -f $(DESTDIR)$(libexecdir)/credential-ocs/$(LOCPATH_NAME)
 	rm -f $(DESTDIR)$(bindir)/credential-ocs$(EXEEXT)
 
 uninstall-libexecPROGRAMS:
