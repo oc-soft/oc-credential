@@ -70,7 +70,8 @@ exe_info_get_exe_dir()
         length = lstrlenW(mod_path);
         PathCchRemoveFileSpec(mod_path, length + 1);
         result = (char*)str_conv_utf16_to_utf8(
-            mod_path, lstrlenW(mod_path), exe_info_alloc, exe_info_free);
+            mod_path, lstrlenW(mod_path) + 1,
+            exe_info_alloc, exe_info_free);
     }
     if (mod_path) {
         exe_info_free(mod_path);
