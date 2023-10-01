@@ -54,6 +54,7 @@ token_gen_ui_run(
     out_str = NULL;
     err_str = NULL;
     state = 0;
+    logging_log(LOG_LEVEL_DEBUG, "token generator run ui");
     for (idx = 0;
         idx < sizeof(std_ioe_state) / sizeof(std_ioe_state[0]);
         idx++) {
@@ -61,7 +62,6 @@ token_gen_ui_run(
         if (result) {
             break;
         }
-
     }
     if (result == 0) {
         for (idx = 0;
@@ -88,21 +88,24 @@ token_gen_ui_run(
         }
     }
     if (result == 0) {
-        int fd;
-        fd = fd_io_dup2(
+        result = fd_io_dup2(
             std_ioe_state[0].pipe_fd[0],
             std_ioe_state[0].original_fd);
-        result = fd == std_ioe_state[0].original_fd ? 0 : -1;
         if (result == 0) {
             for (idx = 1; idx < 3; idx++) {
-                fd = fd_io_dup2(
+                result = fd_io_dup2(
                     std_ioe_state[idx].pipe_fd[1],
                     std_ioe_state[idx].original_fd);
-                result = fd == std_ioe_state[idx].original_fd ? 0 : -1;
+
                 if (result) {
                     break;
                 }
             }
+        }
+        if (result) {
+            logging_log(LOG_LEVEL_EMERG,
+                "tonken generator run ui failed dup2: %d\n"
+                "%s:%d", errno, __FILE__, __LINE__);
         }
     }
 
@@ -115,6 +118,7 @@ token_gen_ui_run(
         const char* args[] = {
             exec_path
         };
+
         result = token_gen_ui_i_run(
             in_data, in_data_size,
             exec_path, 1, args,
