@@ -13,7 +13,7 @@
 #include "credential_desc.h"
 #include "credential_storage.h"
 #include "buffer/char_buffer.h"
-
+#include "logging.h"
 
 /**
  * find client id and clietn secret
@@ -255,6 +255,7 @@ get_oauth_token(
 {
     int result;
     result = 0;
+    logging_log(LOG_LEVEL_DEBUG, "get oauth token");
     if (cred_helper_dose_run_gui_generator(obj) 
         && cred_helper_dose_run_limited_device(obj)) {
         int state;
@@ -289,6 +290,8 @@ get_oauth_token_with_ui(
     descriptor = NULL;
     descriptor_length = 0;
     result = 0;
+
+    logging_log(LOG_LEVEL_DEBUG, "get oauth token with ui");
 
     token_gen = cred_helper_get_ui_token_gen(obj);
     result = token_gen ? 0 : -1;
@@ -531,6 +534,7 @@ cred_helper_op_get_0(
 
     result = 0;
     password = NULL;
+    logging_log(LOG_LEVEL_DEBUG, "operation get credential");
     if (!lmd_is_generator_mode(0)) {
         result = credential_storage_find_password(desc->protocol, desc->host,
             desc->path, desc->username, &password);

@@ -1,3 +1,4 @@
+#include "config.h"
 #include "logging.h"
 #include "logging_win.h"
 #include <windows.h>
@@ -63,6 +64,13 @@ logging_log_v(
     va_list v_arg);
 
 /**
+ * the messaige is written into log file if input priority is greater than or
+ * equals level.
+ */
+static int
+logging_level = DEFAULT_LOGGING_LEVEL;
+
+/**
  * start logging
  */
 void
@@ -79,16 +87,28 @@ logging_log(
     const char* format,
     ...)
 {
-    va_list v_arg;
+    if (priority >= logging_level) {
+        va_list v_arg;
 
-    if (priority > LOG_LEVEL_DEBUG) {
-        priority = LOG_LEVEL_DEBUG;
-    } else if (priority < 0) {
-        priority = LOG_LEVEL_EMERG;
+        if (priority > LOG_LEVEL_DEBUG) {
+            priority = LOG_LEVEL_DEBUG;
+        } else if (priority < 0) {
+            priority = LOG_LEVEL_EMERG;
+        }
+        va_start(v_arg, format);
+        logging_log_v(priority, format, v_arg);
+        va_end(v_arg);
     }
-    va_start(v_arg, format);
-    logging_log_v(priority, format, v_arg);
-    va_end(v_arg);
+}
+
+/**
+ * set logging level
+ */
+void
+logging_set_level(
+    int priority)
+{
+    logging_level = priority;
 }
 
 /**
@@ -159,7 +179,7 @@ logging_log_v(
             fprintf(fs,
                 "%s\n"
                 "%0x\n"
-                "%0x\n",
+                "%0x\n"
                 "%d\n"
                 "%s\n", 
                 time_str_buffer, 
@@ -327,7 +347,7 @@ logging_get_logging_dir()
     }
     if (state == 0) {
         exe_name_1 = str_conv_utf8_to_utf16(exe_name_0,
-            strlen(exe_name_0),
+            strlen(exe_name_0) + 1,
             logging_alloc, 
             logging_free);
         state = exe_name_1 ? 0 : -1;

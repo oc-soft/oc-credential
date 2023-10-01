@@ -36,6 +36,14 @@ logging_log(
     const char* format,
     ...);
 
+
+/**
+ * set logging level
+ */
+void
+logging_set_level(
+    int priority);
+
 /**
  * stop logging
  */

@@ -6,6 +6,9 @@
 /* Wide char company name */
 #undef COMPANY_NAME_W
 
+/* application default logging level */
+#undef DEFAULT_LOGGING_LEVEL
+
 /* Define to 1 if translation of program messages to the user's native
    language is requested. */
 #undef ENABLE_NLS

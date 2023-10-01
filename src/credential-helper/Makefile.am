@@ -215,12 +215,8 @@ UI_TOKEN_GENERATOR_NAME = @GUI_TOKEN_GENERATOR_NAME@
 
 textdomain_dir=$(pkgdatadir)/locale
 
-
-if !RUN_DARWIN
-ui_exe_name=electron$(EXEEXT)
-else
 ui_exe_name=$(UI_TOKEN_GENERATOR_NAME)$(EXEEXT)
-endif
+
 
 ui_builddir=$(builddir)/../ui
 ui_exe_dir=$(ui_builddir)/pkg

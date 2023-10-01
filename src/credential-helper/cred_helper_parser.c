@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include "logging.h"
 
 /**
  * display usage
@@ -72,6 +73,11 @@ cred_helper_parser_parse_from_commands(
                     .val = 'l',
                 },
                 {
+                    .name = "logging-level",
+                    .has_arg = required_argument,
+                    .val = 'e',
+                },
+                {
                     .name = "help",
                     .has_arg = no_argument,
                     .flag = NULL,
@@ -86,7 +92,8 @@ cred_helper_parser_parse_from_commands(
             };
             int do_parse;
             do_parse = 1;
-            switch (getopt_long(argc, argv, "hugi:j:l:v::", long_opts, NULL)) {
+            switch (getopt_long(argc, argv,
+                "huge:i:j:l:v::", long_opts, NULL)) {
             case 'i':
                 cred_helper_set_client_id(result, optarg); 
                 break;
@@ -103,6 +110,17 @@ cred_helper_parser_parse_from_commands(
             case 'l':
                 cred_helper_run_limited_device(result, 
                     cred_helper_parser_parse_on_off(optarg, 1));
+                break;
+            case 'e':
+                {
+                    char* endptr;
+                    long level;
+                    endptr = NULL;
+                    level = strtol(optarg, &endptr, 10);
+                    if (optarg != endptr) {
+                        logging_set_level((int)level);
+                    }
+                }
                 break;
             case 'v':
                 if (optarg) {
@@ -209,14 +227,15 @@ cred_helper_parser_display_usage()
 {
     puts(
         "cred_helper [OPTION]\n"
-        "-i, --cid=[CID]           set client id\n"
-        "-u, --auth-url=[URL]      set authentication url\n"
-        "-v, --verbose=[LEVEL?]    set verbose level\n"
-        "-g, --generator           run generator only\n"
-        "-j, --gui=[on|off]        run gui generator\n"
-        "-l, --limited=[on|off]    run generator for limited device\n" 
-        "-h, --help                display this message\n"
-        "[GIT_OPERATION]           get, store, erase");
+        "-i, --cid=[CID]                set client id\n"
+        "-u, --auth-url=[URL]           set authentication url\n"
+        "-v, --verbose=[LEVEL?]         set verbose level\n"
+        "-e, --logging-level=[LEVEL]    set logging level.\n"
+        "-g, --generator                run generator only\n"
+        "-j, --gui=[on|off]             run gui generator\n"
+        "-l, --limited=[on|off]         run generator for limited device\n" 
+        "-h, --help                     display this message\n"
+        "[GIT_OPERATION]                get, store, erase");
 }
 
 /* vi: se ts=4 sw=4 et: */
