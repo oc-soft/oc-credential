@@ -54,7 +54,7 @@ l10n_get_locale_dir()
     if (state == 0) {
         result = str_conv_utf16_to_utf8(
             locpath_w,
-            (wcslen(locpath_w) + 1) * sizeof(WCHAR),
+            wcslen(locpath_w) + 1,
             l10n_alloc, l10n_free);
     }
 
