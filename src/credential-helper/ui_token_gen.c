@@ -75,6 +75,7 @@ ui_token_gen_create_token(
         credential_desc* desc; 
         char* token;
         token = NULL;
+        logging_log(LOG_LEVEL_DEBUG, "ui token generator create token");
         desc = credential_desc_decode(descriptor, descriptor_length);
         result = desc ? 0 : -1;
         if (result == 0) {

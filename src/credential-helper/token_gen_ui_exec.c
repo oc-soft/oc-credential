@@ -4,6 +4,7 @@
 #include "exe_info.h"
 #include "path.h"
 #include "exec_names.h"
+#include "logging.h"
 
 /**
  * get ui exec relative path
@@ -27,6 +28,7 @@ token_gen_ui_exec_get_path()
     char* exe_dir;
     char* result;
     result = NULL;
+    logging_log(LOG_LEVEL_DEBUG, "token generator executable get path");
     exe_dir = exe_info_get_exe_dir();
     if (exe_dir) {
         result = path_join(exe_dir, token_gen_ui_exec_get_relpath(),

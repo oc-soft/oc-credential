@@ -6,6 +6,7 @@
 #include "buffer/char_buffer.h"
 #include "str_conv.h"
 #include "fd_io.h"
+#include "logging.h"
 
 /**
  * convert from utf8 string to utf16 string and fill argv
@@ -58,6 +59,7 @@ token_gen_ui_i_run(
     program_w = NULL;
     argv_param = NULL;
     rest_in_data = in_data_size;
+    logging_log(LOG_LEVEL_DEBUG, "token generator run %s", program);
     if (result == 0) {
         for (idx = 0; idx < sizeof(buff) / sizeof(buff[0]); idx++) {
             buff[idx] = buffer_char_buffer_create_00(
