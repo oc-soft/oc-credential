@@ -188,8 +188,18 @@ $(electron_zip):
 		$(CURL) -L -o $@ '$(electron_dist_url)' ; \
 	fi
 
+
 electron-tmstamp: $(electron_zip) | mkdir-tree
 	$(UNZIP) $^ -d $(electron_extract_dir)
+if RUN_WIN
+	for f in `find $(electron_extract_dir) -type f`; do \
+		chmod og-w $$f; \
+		ft=`file -b $$f | grep '^PE32'`; \
+		if [ -n "$$ft" ]; then \
+			chmod +x $$f; \
+		fi \
+	done
+endif
 	: > $@
 
 electron-app-dir:
@@ -201,11 +211,7 @@ electron-app-dir:
 
 electron-resources: electron-tmstamp electron-package-json build-app \
 	| mkdir-tree electron-app-dir 
-	if [ ! -d $(token_generator_app_dir) ]; then \
-		cp -R dist $(electron_app_dir); \
-	else \
-		cp -R dist $(token_generator_app_dir); \
-	fi
+	cp -R dist $(token_generator_app_dir) 
 
 .PHONY: electron-resources
 
@@ -295,7 +301,7 @@ electron-package-json-tmstamp: electron-package.json.in | electron-app-dir
 	fi; \
 	$(AWK) -v package_name=$(PACKAGE_NAME) \
 		-v package_version=$(PACKAGE_VERSION) \
-		$(awk_cmd_0) $$dest_path > $@
+		$(awk_cmd_0) $< >$$dest_path
 	: >$@
 
 
@@ -340,6 +346,10 @@ all-local: package-lock.json \
 	config/app.json \
 	| mksrc-tree mkdir-tree build-app rebrand-electron
 
+clean-unziped-electron:
+	rm -r -f $(electron_extract_dir)
+	rm electron-tmstamp
+
 clean-local:
 	rm -f *.json
 	rm -f *.ts
@@ -372,7 +382,7 @@ install-exec-local:
 	@$(NORMAL_INSTALL)
 	insdir='$(DESTDIR)$(libexecdir)/$(PKG_DEST_REL_DIR)'; \
 	$(MKDIR_P) $$insdir; \
-	cp -R $(electron_extract_dir)/ $$insdir
+	cp -R $(electron_extract_dir)/* $$insdir
 
 
 
