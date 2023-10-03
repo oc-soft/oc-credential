@@ -6,7 +6,30 @@
 #include "buffer/char_buffer.h"
 #include "str_conv.h"
 #include "fd_io.h"
+#include "fd_io_win.h"
 #include "logging.h"
+
+
+/**
+ *  block for reading file descriptor in thead
+ */
+typedef struct _token_gen_ui_read_fd_info token_gen_ui_read_fd_info;
+
+/**
+ *  block for reading file descriptor in thead
+ */
+struct _token_gen_ui_read_fd_info
+{
+    /**
+     * file descriptor
+     */
+    int fd;
+    /**
+     * buffer to accumerate 
+     */
+    buffer_char_buffer* buffer;
+};
+
 
 /**
  * convert from utf8 string to utf16 string and fill argv
@@ -16,6 +39,24 @@ token_gen_ui_i_fill_argv(
     int argc,
     const char* const * argv,
     wchar_t** wargv);
+
+/** 
+ * read fd into buffer
+ */
+int
+token_gen_ui_i_read_blocked_fd_into_buffer(
+    int fd,
+    char* tmp_buffer,
+    size_t tmp_buffer_size,
+    buffer_char_buffer* buffer);
+
+/**
+ * call back to read file descriptor.
+ */
+static void
+token_gen_ui_i_read_fd_cb(
+    token_gen_ui_read_fd_info* info);
+
 /**
  * run token generator program
  */
@@ -26,9 +67,9 @@ token_gen_ui_i_run(
     const char* program,
     int argc,
     const char** argv,
-    int std_in_fd,
-    int std_out_fd,
-    int std_err_fd,
+    file_desc* std_in_fd,
+    file_desc* std_out_fd,
+    file_desc* std_err_fd,
     char** out_str,
     char** err_str)
 {
@@ -39,45 +80,44 @@ token_gen_ui_i_run(
     size_t idx;
     char* out_res;
     char* err_res;
-    char* tmp_buffer;
-    size_t tmp_buffer_size;
     size_t rest_in_data;
     ssize_t written_size[] = { 0, 0 };
-    buffer_char_buffer* buff[] = { 
-        NULL, NULL
-    }; 
-    int buffer_src[] = {
-        std_out_fd,
-        std_err_fd
+    uintptr_t thread_ids[] = { -1L, -1L };
+    DWORD thread_status[] = { -1, -1 };
+    token_gen_ui_read_fd_info read_fd_info[] = {
+        {
+            file_desc_get_desc(std_out_fd),
+            NULL,
+        },
+        {
+            file_desc_get_desc(std_err_fd),
+            NULL,
+        }
     };
+
     result = 0;
     child_pid = -1;
     out_res = NULL;
     err_res = NULL;
-    tmp_buffer = NULL;
-    tmp_buffer_size = 256;
     program_w = NULL;
     argv_param = NULL;
     rest_in_data = in_data_size;
     logging_log(LOG_LEVEL_DEBUG, "token generator run %s", program);
     if (result == 0) {
-        for (idx = 0; idx < sizeof(buff) / sizeof(buff[0]); idx++) {
-            buff[idx] = buffer_char_buffer_create_00(
+        for (idx = 0;
+            idx < sizeof(read_fd_info) / sizeof(read_fd_info[0]); idx++) {
+            read_fd_info[idx].buffer = buffer_char_buffer_create_00(
                 token_gen_ui_i_alloc,
                 token_gen_ui_i_realloc,
                 token_gen_ui_i_free,
                 token_gen_ui_i_mem_copy,
                 token_gen_ui_i_mem_move,
                 100);
-            result = buff[idx] ? 0 : -1;
+            result = read_fd_info[idx].buffer ? 0 : -1;
             if (result) {
                 break;
             }
         }
-    }
-    if (result == 0) {
-        tmp_buffer = (char*)token_gen_ui_i_alloc(tmp_buffer_size); 
-        result = tmp_buffer ? 0 : -1;
     }
     if (result == 0) {
         program_w = (wchar_t*)str_conv_utf8_to_utf16(program,
@@ -96,7 +136,8 @@ token_gen_ui_i_run(
     }
     if (result == 0) {
         written_size[1] = fd_io_write(
-            std_in_fd, &in_data[written_size[0]], rest_in_data);
+            file_desc_get_desc(std_in_fd),
+            &in_data[written_size[0]], rest_in_data);
         if (written_size[1] != -1) {
             written_size[0] = written_size[1];
             rest_in_data -= written_size[1];
@@ -107,7 +148,23 @@ token_gen_ui_i_run(
     if (result == 0) {
         child_pid = _wspawnv(_P_NOWAIT, program_w,
             (const wchar_t* const*)argv_param);
+
+        result = child_pid != -1 ? 0 : -1;
     }
+
+    if (result == 0) {
+        for (idx = 0;
+            idx < sizeof(thread_ids) / sizeof(thread_ids[0]); idx++) {
+            thread_ids[idx] = _beginthread(
+                (void (__cdecl *)(void*))token_gen_ui_i_read_fd_cb,
+                0, &read_fd_info[idx]);
+
+            logging_log(LOG_LEVEL_DEBUG,
+                "token generator run start thread %d", 
+                thread_ids[idx]);
+        }
+    }
+
 
     if (result == 0) {
         DWORD proc_status;
@@ -116,7 +173,8 @@ token_gen_ui_i_run(
             DWORD wstate;
             if (rest_in_data) {
                 written_size[1] = fd_io_write(
-                    std_in_fd, &in_data[written_size[0]], rest_in_data);
+                    file_desc_get_desc(std_in_fd),
+                    &in_data[written_size[0]], rest_in_data);
                 if (written_size[1] != -1) {
                     written_size[0] = written_size[1];
                     rest_in_data -= written_size[1];
@@ -124,7 +182,11 @@ token_gen_ui_i_run(
                     result = -1;
                 }
             }
+            logging_log(LOG_LEVEL_DEBUG, "token generator wait for %d", 
+                child_pid);
             wstate = WaitForSingleObject((HANDLE)child_pid, 0); 
+            logging_log(LOG_LEVEL_DEBUG, "token generator get res %d", 
+                wstate);
             if (wstate == WAIT_OBJECT_0) {
                 GetExitCodeProcess((HANDLE)child_pid, &proc_status);
                 break;
@@ -135,43 +197,52 @@ token_gen_ui_i_run(
                 proc_status = -1;
                 result = -1;
             }
-            if (result == 0) {
-                for (idx = 0; idx < sizeof(buff) / sizeof(buff[0]); idx++) {
-                    result = token_gen_ui_i_read_fd_into_buffer(
-                        buffer_src[idx], tmp_buffer, tmp_buffer_size,
-                        buff[idx]); 
-                    if (result) {
-                        break;
-                    }
-                }
-            }
             if (result) {
                 break;
             }
         } while (1);
 
-        if (proc_status == 0) {
-            result = token_gen_ui_i_read_fd_into_buffer(
-                buffer_src[0], tmp_buffer, tmp_buffer_size, buff[0]); 
-        } else {
-            result = token_gen_ui_i_read_fd_into_buffer(
-                buffer_src[1], tmp_buffer, tmp_buffer_size, buff[1]); 
+        logging_log(LOG_LEVEL_DEBUG, "token generator run proc status %d", 
+            proc_status);
+
+        for (idx = 0;
+            idx < sizeof(thread_ids) / sizeof(thread_ids[0]); idx++) {
+            if (thread_ids[idx] != -1L) {
+                DWORD wstate;
+                wstate = WaitForSingleObject(
+                    (HANDLE)thread_ids[idx], 
+                    INFINITE);
+                if (wstate == WAIT_OBJECT_0) {
+                    GetExitCodeThread((HANDLE)thread_ids[idx],
+                        &thread_status[idx]);
+                } else if (wstate == WAIT_FAILED) {
+                    thread_status[idx] = GetLastError();
+                } 
+            }
         }
+
+
         if (proc_status == 0) {
             out_res = (char*)token_gen_ui_i_alloc(
-                buffer_char_buffer_get_size(buff[0]) + 1);
+                buffer_char_buffer_get_size(
+                    read_fd_info[0].buffer) + 1);
             result = out_res ? 0 : -1;
             if (result == 0) {
-                buffer_char_buffer_copy_to(buff[0], out_res);
-                out_res[buffer_char_buffer_get_size(buff[0])] = '\0'; 
+                buffer_char_buffer_copy_to(
+                    read_fd_info[0].buffer, out_res);
+                out_res[buffer_char_buffer_get_size(
+                    read_fd_info[0].buffer)] = '\0'; 
             }
         } else {
             err_res = (char*)token_gen_ui_i_alloc(
-                buffer_char_buffer_get_size(buff[1]) + 1);
+                buffer_char_buffer_get_size(
+                    read_fd_info[1].buffer) + 1);
             result = err_res ? 0 : -1;
             if (result == 0) {
-                buffer_char_buffer_copy_to(buff[1], err_res);
-                err_res[buffer_char_buffer_get_size(buff[1])] = '\0'; 
+                buffer_char_buffer_copy_to(
+                    read_fd_info[1].buffer, err_res);
+                err_res[buffer_char_buffer_get_size(
+                    read_fd_info[1].buffer)] = '\0'; 
             }
         } 
         if (proc_status == 0) {
@@ -198,13 +269,10 @@ token_gen_ui_i_run(
         token_gen_ui_i_free(program_w);
     }
 
-    for (idx = 0; idx < sizeof(buff) / sizeof(buff[0]); idx++) {
-        if (buff[idx]) {
-            buffer_char_buffer_release(buff[idx]);
+    for (idx = 0; idx < sizeof(read_fd_info) / sizeof(read_fd_info[0]); idx++) {
+        if (read_fd_info[idx].buffer) {
+            buffer_char_buffer_release(read_fd_info[idx].buffer);
         }
-    }
-    if (tmp_buffer) {
-        token_gen_ui_i_free(tmp_buffer);
     }
     return result;
 }
@@ -243,4 +311,77 @@ token_gen_ui_i_fill_argv(
 }
 
 
+
+
+/**
+ * call back to read file descriptor.
+ */
+static void 
+token_gen_ui_i_read_fd_cb(
+    token_gen_ui_read_fd_info* info)
+{
+    char* tmp_buffer;
+    size_t tmp_buffer_size;
+    int result;
+    tmp_buffer = NULL;
+    tmp_buffer_size = 256;
+    result = 0;
+    if (result == 0) {
+        tmp_buffer = (char*)token_gen_ui_i_alloc(tmp_buffer_size); 
+        result = tmp_buffer ? 0 : -1;
+    }
+
+    if (result == 0) {
+        result = token_gen_ui_i_read_fd_into_buffer(info->fd,
+            tmp_buffer, tmp_buffer_size, info->buffer);
+    }
+
+    if (tmp_buffer) {
+        token_gen_ui_i_free(tmp_buffer);
+    }
+    _endthreadex(result);
+}
+
+/** 
+ * read fd into buffer
+ */
+int
+token_gen_ui_i_read_fd_into_buffer(
+    int fd,
+    char* tmp_buffer,
+    size_t tmp_buffer_size,
+    buffer_char_buffer* buffer) 
+{
+    int result;
+    while (1) {
+        int do_read;
+        if (fd_io_win_is_pipe(fd)) {
+            do_read = fd_io_win_pipe_has_data(fd);
+        } else {
+            do_read = 1;
+        }
+        if (do_read) {
+            ssize_t read_size; 
+            read_size = fd_io_read(fd, tmp_buffer, tmp_buffer_size);
+            if (read_size > 0) {
+                result = buffer_char_buffer_append(
+                    buffer, tmp_buffer, read_size);
+            } else if (read_size == 0) {
+                result = 0;
+                break;
+            } else {
+                if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                    result = 0;
+                } else {
+                    result = -1;
+                }
+                break;
+            }
+        } else {
+            result = 0;
+            break;
+        }
+    }
+    return result;
+}
 /* vi: se ts=4 sw=4 et: */

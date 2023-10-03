@@ -63,34 +63,5 @@ token_gen_ui_i_realloc(
 
 
 
-/** 
- * read fd into buffer
- */
-int
-token_gen_ui_i_read_fd_into_buffer(
-    int fd,
-    char* tmp_buffer,
-    size_t tmp_buffer_size,
-    buffer_char_buffer* buffer) 
-{
-    int result;
-    while (1) {
-        ssize_t read_size; 
-        read_size = fd_io_read(fd, tmp_buffer, tmp_buffer_size);
-        if (read_size > 0) {
-            result = buffer_char_buffer_append(buffer, tmp_buffer, read_size);
-        } else if (read_size == 0) {
-            result = 0;
-            break;
-        } else {
-            if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                result = 0;
-            } else {
-                result = -1;
-            }
-            break;
-        }
-    }
-    return result;
-}
+
 /* vi: se ts=4 sw=4 et: */

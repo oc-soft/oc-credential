@@ -16,9 +16,9 @@ token_gen_ui_i_run(
     const char* program,
     int argc,
     const char** argv,
-    int std_in_fd,
-    int std_out_fd,
-    int std_err_fd,
+    file_desc* std_in_fd,
+    file_desc* std_out_fd,
+    file_desc* std_err_fd,
     char** out_str,
     char** err_str)
 {
@@ -36,8 +36,8 @@ token_gen_ui_i_run(
         NULL, NULL
     }; 
     int buffer_src[] = {
-        std_out_fd,
-        std_err_fd
+        file_desc_get_file_desc(std_out_fd),
+        file_desc_get_file_desc(std_err_fd)
     };
     result = 0;
     child_pid = 0;
@@ -76,7 +76,8 @@ token_gen_ui_i_run(
     }
     if (result == 0) {
         written_size[1] = fd_io_write(
-            std_in_fd, &in_data[written_size[0]], rest_in_data);
+            file_desc_get_file_desc(std_in_fd),
+            &in_data[written_size[0]], rest_in_data);
         if (written_size[1] != -1) {
             written_size[0] = written_size[1];
             rest_in_data -= written_size[1];
@@ -103,7 +104,8 @@ token_gen_ui_i_run(
 
             if (rest_in_data) {
                 written_size[1] = fd_io_write(
-                    std_in_fd, &in_data[written_size[0]], rest_in_data);
+                    file_desc_get_file_desc(std_in_fd),
+                    &in_data[written_size[0]], rest_in_data);
                 if (written_size[1] != -1) {
                     written_size[0] = written_size[1];
                     rest_in_data -= written_size[1];
@@ -200,6 +202,37 @@ token_gen_ui_i_run(
     }
     if (tmp_buffer) {
         token_gen_ui_i_free(tmp_buffer);
+    }
+    return result;
+}
+
+/** 
+ * read fd into buffer
+ */
+int
+token_gen_ui_i_read_fd_into_buffer(
+    int fd,
+    char* tmp_buffer,
+    size_t tmp_buffer_size,
+    buffer_char_buffer* buffer) 
+{
+    int result;
+    while (1) {
+        ssize_t read_size; 
+        read_size = fd_io_read(fd, tmp_buffer, tmp_buffer_size);
+        if (read_size > 0) {
+            result = buffer_char_buffer_append(buffer, tmp_buffer, read_size);
+        } else if (read_size == 0) {
+            result = 0;
+            break;
+        } else {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                result = 0;
+            } else {
+                result = -1;
+            }
+            break;
+        }
     }
     return result;
 }

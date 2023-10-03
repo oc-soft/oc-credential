@@ -16,6 +16,8 @@ noinst_HEADERS= cred_helper_types.h \
 	exe_info.h \
 	exec_names.h \
 	fd_io.h \
+	file_desc.h \
+	std_file_desc.h \
 	http.h \
 	l10n.h \
 	l10n_i.h \
@@ -46,6 +48,8 @@ credhelper_src = main.c \
 	cred_helper_i.c \
 	cred_helper_op.c \
 	cred_helper_parser.c \
+	file_desc.c \
+	std_file_desc.c \
 	lmd.c \
 	lmd_parser.c \
 	client_secret.c \

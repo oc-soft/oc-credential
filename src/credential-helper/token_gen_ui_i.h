@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 #include "buffer/char_buffer.h"
-
+#include "file_desc.h"
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -69,9 +69,9 @@ token_gen_ui_i_run(
     const char* program,
     int argc,
     const char** argv,
-    int std_in_fd,
-    int std_out_fd,
-    int std_err_fd,
+    file_desc* std_in_fd,
+    file_desc* std_out_fd,
+    file_desc* std_err_fd,
     char** out_str,
     char** err_str);
 
