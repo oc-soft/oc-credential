@@ -609,7 +609,7 @@ cred_helper_set_str_field(
     int do_copy;
     do_copy = 0;
     result = 0;
-    if (*field) {
+    if (field) {
         do_copy = *field != value;
     }
     if (do_copy) {
