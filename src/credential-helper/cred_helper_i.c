@@ -70,6 +70,7 @@ cred_helper_i_strdup(
     } else {
         result = NULL;
     }
+    return result;
 }
 
 /* vi: se ts=4 sw=4 et: */
