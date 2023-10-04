@@ -150,6 +150,7 @@ token_gen_ui_run(
             &out_str,
             &err_str);
     }
+    logging_log(LOG_LEVEL_DEBUG, "ui run result: %d", result);
     if (exec_path) {
         token_gen_ui_exec_free(exec_path);
     }
@@ -175,10 +176,16 @@ token_gen_ui_run(
         }
     }
     if (result == 0) {
+        logging_log(LOG_LEVEL_DEBUG, "ui output %p", out_str);
+
         if (out_str) {
             credential_desc* desc;
+            logging_log(LOG_LEVEL_DEBUG,
+                "descriptor source data(%d) \n%s", strlen(out_str), out_str);
             desc = credential_desc_decode(out_str, strlen(out_str));
+            logging_log(LOG_LEVEL_DEBUG, "decoded descriptor %p", desc);
             if (desc) {
+                logging_log(LOG_LEVEL_DEBUG, "password ptr %p", desc->password);
                 if (desc->password) {
                     char* token_0;
                     size_t password_len;

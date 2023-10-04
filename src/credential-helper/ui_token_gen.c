@@ -83,6 +83,7 @@ ui_token_gen_create_token(
         }
           
         if (token) {
+            logging_log(LOG_LEVEL_DEBUG, "got token %s", token);
             if (result == 0) {
                 result = credential_desc_set_password(desc, token);
             }
