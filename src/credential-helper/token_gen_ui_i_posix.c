@@ -28,9 +28,9 @@ token_gen_ui_i_run(
     const char* program,
     int argc,
     const char** argv,
-    file_desc* std_in_fd,
-    file_desc* std_out_fd,
-    file_desc* std_err_fd,
+    int std_in_fd,
+    int std_out_fd,
+    int std_err_fd,
     char** out_str,
     char** err_str)
 {
@@ -48,8 +48,8 @@ token_gen_ui_i_run(
         NULL, NULL
     }; 
     int buffer_src[] = {
-        file_desc_get_file_desc(std_out_fd),
-        file_desc_get_file_desc(std_err_fd)
+        std_out_fd,
+        std_err_fd
     };
     result = 0;
     child_pid = 0;

@@ -82,9 +82,9 @@ token_gen_ui_i_run(
     const char* program,
     int argc,
     const char** argv,
-    file_desc* std_in_fd,
-    file_desc* std_out_fd,
-    file_desc* std_err_fd,
+    int std_in_fd,
+    int std_out_fd,
+    int std_err_fd,
     char** out_str,
     char** err_str)
 {
@@ -101,12 +101,12 @@ token_gen_ui_i_run(
     DWORD thread_status[] = { -1, -1 };
     token_gen_ui_read_fd_info read_fd_info[] = {
         {
-            file_desc_get_desc(std_out_fd),
+            std_out_fd,
             NULL,
             0,
         },
         {
-            file_desc_get_desc(std_err_fd),
+            std_err_fd,
             NULL,
             0 
         }
@@ -153,7 +153,7 @@ token_gen_ui_i_run(
     }
     if (result == 0) {
         written_size[1] = fd_io_write(
-            file_desc_get_desc(std_in_fd),
+            std_in_fd,
             &in_data[written_size[0]], rest_in_data);
         if (written_size[1] != -1) {
             written_size[0] = written_size[1];
@@ -189,7 +189,7 @@ token_gen_ui_i_run(
             DWORD wstate;
             if (rest_in_data) {
                 written_size[1] = fd_io_write(
-                    file_desc_get_desc(std_in_fd),
+                    std_in_fd,
                     &in_data[written_size[0]], rest_in_data);
                 if (written_size[1] != -1) {
                     written_size[0] = written_size[1];

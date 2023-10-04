@@ -8,8 +8,6 @@
 #include "credential_desc.h"
 #include "fd_io.h"
 #include "logging.h"
-#include "file_desc.h"
-#include "std_file_desc.h"
 
 /**
  * run token generator and get token
@@ -31,28 +29,24 @@ token_gen_ui_run(
         int original_fd;
         int saved_fd;
         FILE* stream;
-        file_desc* file_desc;
     } std_ioe_state[3] = {
         {
             { -1, -1 },
             fd_io_fileno(stdin),
             -1,
-            stdin,
-            NULL 
+            stdin 
         },
         {
             { -1, -1 },
             fd_io_fileno(stdout),
             -1,
-            stdout,
-            NULL
+            stdout
         },
         {
             { -1, -1 },
             fd_io_fileno(stderr),
             -1,
-            stderr,
-            NULL
+            stderr
         },
     };
     result = 0;
@@ -111,26 +105,6 @@ token_gen_ui_run(
             }
         }
     }
-    if (result == 0) {
-        file_desc* f_desc;
-        f_desc = std_file_desc_create(std_ioe_state[0].pipe_fd[1]);
-        result = f_desc ? 0 : -1;
-        if (result == 0) {
-            std_ioe_state[0].file_desc = f_desc;
-            for (idx = 1; idx < 3; idx++) {
-                f_desc = std_file_desc_create(std_ioe_state[idx].pipe_fd[0]);
-                result = f_desc ? 0 : -1;
-                if (result == 0) {
-                    std_ioe_state[idx].file_desc = f_desc;
-                }
-                if (result) {
-                    break;
-                }
-            }
-        }
- 
-    }
-
 
     if (result == 0) {
         exec_path = token_gen_ui_exec_get_path();
@@ -144,9 +118,9 @@ token_gen_ui_run(
         result = token_gen_ui_i_run(
             in_data, in_data_size,
             exec_path, 1, args,
-            std_ioe_state[0].file_desc,
-            std_ioe_state[1].file_desc,
-            std_ioe_state[2].file_desc,
+            std_ioe_state[0].pipe_fd[1],
+            std_ioe_state[1].pipe_fd[0],
+            std_ioe_state[2].pipe_fd[0],
             &out_str,
             &err_str);
     }
@@ -162,14 +136,17 @@ token_gen_ui_run(
                 std_ioe_state[idx].original_fd);
         }
     }
-    for (idx = 0; 
-        idx < sizeof(std_ioe_state) / sizeof(std_ioe_state[0]);
-        idx++) {
-        if (std_ioe_state[idx].file_desc) {
+    if (std_ioe_state[0].pipe_fd[1] != -1) {
+        int state_0;
+        state_0 = fd_io_close(std_ioe_state[0].pipe_fd[1]);
+        if (state == 0) {
+            state = state_0;
+        }
+    }
+    for (idx = 1; idx < 3; idx++) {
+        if (std_ioe_state[idx].pipe_fd[0] != -1) {
             int state_0;
-            state_0 = file_desc_close(std_ioe_state[idx].file_desc);
-            file_desc_release(std_ioe_state[idx].file_desc);
-            std_ioe_state[idx].file_desc = NULL;
+            state_0 = fd_io_close(std_ioe_state[idx].pipe_fd[0]);
             if (state == 0) {
                 state = state_0;
             }

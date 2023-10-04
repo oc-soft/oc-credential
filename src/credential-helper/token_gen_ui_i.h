@@ -2,11 +2,6 @@
 #define __TOKEN_GEN_UI_I_H__
 
 #include <stddef.h>
-#include "buffer/char_buffer.h"
-#include "file_desc.h"
-#ifdef _WIN32
-#include <windows.h>
-#endif
 
 #ifdef __cplusplus
 #define _TOKEN_GEN_UI_I_BEGIN extern "C" {
@@ -69,9 +64,9 @@ token_gen_ui_i_run(
     const char* program,
     int argc,
     const char** argv,
-    file_desc* std_in_fd,
-    file_desc* std_out_fd,
-    file_desc* std_err_fd,
+    int std_in_fd,
+    int std_out_fd,
+    int std_err_fd,
     char** out_str,
     char** err_str);
 
