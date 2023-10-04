@@ -311,6 +311,8 @@ get_oauth_token_with_ui(
             credential_desc* desc_res;
             desc_res = credential_desc_decode(
                 desc_encoded_res, desc_encoded_res_size); 
+            logging_log(LOG_LEVEL_DEBUG,
+                "desc_res password: %p", desc_res->password);
             result = desc_res ? 0 : -1;
             if (result == 0) {
                 result = cred_helper_set_access_token(obj, desc_res->password);
@@ -330,7 +332,6 @@ get_oauth_token_with_ui(
     if (token_gen) {
         ui_token_gen_release(token_gen);
     }
-    result = 1;
     return result;
 }
 
