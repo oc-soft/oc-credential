@@ -1,6 +1,7 @@
 #include "token_gen_ui_i.h"
 #include <process.h>
 #include <wchar.h>
+#include <ctype.h>
 #include <windows.h>
 
 #include "buffer/char_buffer.h"
@@ -28,6 +29,11 @@ struct _token_gen_ui_read_fd_info
      * buffer to accumerate 
      */
     buffer_char_buffer* buffer;
+
+    /**
+     * flag whether do read data from file descriptor
+     */
+    int stop_reading;
 };
 
 
@@ -44,11 +50,12 @@ token_gen_ui_i_fill_argv(
  * read fd into buffer
  */
 int
-token_gen_ui_i_read_blocked_fd_into_buffer(
+token_gen_ui_i_read_fd_into_buffer(
     int fd,
     char* tmp_buffer,
     size_t tmp_buffer_size,
-    buffer_char_buffer* buffer);
+    buffer_char_buffer* buffer,
+    const int* stop_reading);
 
 /**
  * call back to read file descriptor.
@@ -56,6 +63,14 @@ token_gen_ui_i_read_blocked_fd_into_buffer(
 static void
 token_gen_ui_i_read_fd_cb(
     token_gen_ui_read_fd_info* info);
+
+
+/**
+ * convert credential response string from buffer
+ */
+static char*
+token_gen_ui_convert_to_credential_response(
+    buffer_char_buffer* buffer);
 
 /**
  * run token generator program
@@ -88,10 +103,12 @@ token_gen_ui_i_run(
         {
             file_desc_get_desc(std_out_fd),
             NULL,
+            0,
         },
         {
             file_desc_get_desc(std_err_fd),
             NULL,
+            0 
         }
     };
 
@@ -158,7 +175,6 @@ token_gen_ui_i_run(
             thread_ids[idx] = _beginthread(
                 (void (__cdecl *)(void*))token_gen_ui_i_read_fd_cb,
                 0, &read_fd_info[idx]);
-
             logging_log(LOG_LEVEL_DEBUG,
                 "token generator run start thread %d", 
                 thread_ids[idx]);
@@ -204,7 +220,11 @@ token_gen_ui_i_run(
 
         logging_log(LOG_LEVEL_DEBUG, "token generator run proc status %d", 
             proc_status);
-
+        for (idx = 0;
+            idx < sizeof(thread_ids) / sizeof(thread_ids[0]); idx++) {
+            read_fd_info[idx].stop_reading = 1;
+        }
+ 
         for (idx = 0;
             idx < sizeof(thread_ids) / sizeof(thread_ids[0]); idx++) {
             if (thread_ids[idx] != -1L) {
@@ -223,16 +243,9 @@ token_gen_ui_i_run(
 
 
         if (proc_status == 0) {
-            out_res = (char*)token_gen_ui_i_alloc(
-                buffer_char_buffer_get_size(
-                    read_fd_info[0].buffer) + 1);
+            out_res = token_gen_ui_convert_to_credential_response(
+                read_fd_info[0].buffer);
             result = out_res ? 0 : -1;
-            if (result == 0) {
-                buffer_char_buffer_copy_to(
-                    read_fd_info[0].buffer, out_res);
-                out_res[buffer_char_buffer_get_size(
-                    read_fd_info[0].buffer)] = '\0'; 
-            }
         } else {
             err_res = (char*)token_gen_ui_i_alloc(
                 buffer_char_buffer_get_size(
@@ -333,7 +346,8 @@ token_gen_ui_i_read_fd_cb(
 
     if (result == 0) {
         result = token_gen_ui_i_read_fd_into_buffer(info->fd,
-            tmp_buffer, tmp_buffer_size, info->buffer);
+            tmp_buffer, tmp_buffer_size, info->buffer,
+            &info->stop_reading);
     }
 
     if (tmp_buffer) {
@@ -350,10 +364,11 @@ token_gen_ui_i_read_fd_into_buffer(
     int fd,
     char* tmp_buffer,
     size_t tmp_buffer_size,
-    buffer_char_buffer* buffer) 
+    buffer_char_buffer* buffer,
+    const int* stop_reading) 
 {
     int result;
-    while (1) {
+    while (!*stop_reading) {
         int do_read;
         if (fd_io_win_is_pipe(fd)) {
             do_read = fd_io_win_pipe_has_data(fd);
@@ -377,11 +392,46 @@ token_gen_ui_i_read_fd_into_buffer(
                 }
                 break;
             }
-        } else {
-            result = 0;
-            break;
         }
+        SwitchToThread();
     }
     return result;
 }
+
+/**
+ * convert credential response string from buffer
+ */
+static char*
+token_gen_ui_convert_to_credential_response(
+    buffer_char_buffer* buffer)
+{
+    /* windows electron stdout always contains newline at first byte.*/
+    /* I have to skip skip white spaces of begining of stdout stream */
+    /* https://github.com/electron/electron/blob/b0590b6ee874fbeac49bb5615525d145835eb64f/shell/app/electron_main_delegate.cc#L250 */
+
+    const char* raw_buffer_ref;
+    char* result;
+    size_t idx;
+    result = NULL;
+    raw_buffer_ref = buffer_char_buffer_get_data(buffer);
+
+    for (idx = 0; idx < buffer_char_buffer_get_size(buffer); idx++) {
+        if (!isspace(raw_buffer_ref[idx])) {
+            break;
+        }
+    }
+    
+    if (idx <= buffer_char_buffer_get_size(buffer)) {
+        size_t buffer_length;
+        buffer_length = buffer_char_buffer_get_size(buffer) - idx;
+        result = (char*)token_gen_ui_i_alloc(buffer_length + 1);
+        if (result) {
+            memcpy(result, &raw_buffer_ref[idx], buffer_length);
+            result[buffer_length] = '\0';
+        }
+
+    }
+    return result;
+}
+
 /* vi: se ts=4 sw=4 et: */

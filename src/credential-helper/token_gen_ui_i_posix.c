@@ -5,7 +5,19 @@
 #include "fd_io.h"
 #include "logging.h"
 
+
 extern char** environ;
+
+/** 
+ * read fd into buffer
+ */
+int
+token_gen_ui_i_read_fd_into_buffer(
+    int fd,
+    char* tmp_buffer,
+    size_t tmp_buffer_size,
+    buffer_char_buffer* buffer);
+
 /**
  * run token generator program
  */

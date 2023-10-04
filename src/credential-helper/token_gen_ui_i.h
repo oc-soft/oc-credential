@@ -76,15 +76,6 @@ token_gen_ui_i_run(
     char** err_str);
 
 
-/** 
- * read fd into buffer
- */
-int
-token_gen_ui_i_read_fd_into_buffer(
-    int fd,
-    char* tmp_buffer,
-    size_t tmp_buffer_size,
-    buffer_char_buffer* buffer); 
 
 _TOKEN_GEN_UI_I_END 
 /* vi: se ts=4 sw=4 et: */
