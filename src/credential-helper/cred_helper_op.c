@@ -311,10 +311,13 @@ get_oauth_token_with_ui(
             credential_desc* desc_res;
             desc_res = credential_desc_decode(
                 desc_encoded_res, desc_encoded_res_size); 
-            logging_log(LOG_LEVEL_DEBUG,
-                "desc_res password: %p", desc_res->password);
+
             result = desc_res ? 0 : -1;
+            logging_log(LOG_LEVEL_DEBUG,
+                "desc_res: %p", desc_res);
             if (result == 0) {
+                logging_log(LOG_LEVEL_DEBUG,
+                    "desc_res password: %p", desc_res->password);
                 result = cred_helper_set_access_token(obj, desc_res->password);
             }
             if (desc_res) {
