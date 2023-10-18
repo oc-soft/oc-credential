@@ -1,7 +1,8 @@
-#include "lmd_google_connections.h"
+#include "lmd_ms_connections.h"
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
 #include <curl/curl.h>
 #include <json-c/json.h>
 
@@ -11,14 +12,15 @@
 /**
  * get hostname for discoverry document.
  */
-static const char*
-lmd_google_connections_get_discovery_doc_url();
+static char*
+lmd_ms_connections_get_discovery_doc_url(
+    const char* tenant);
 
 /**
  * load discovery document json format
  */
 int
-lmd_google_connections_load_discovery_document_with_json(
+lmd_ms_connections_load_discovery_document_with_json(
     lmd* obj,
     json_object* doc_obj);
 
@@ -26,7 +28,7 @@ lmd_google_connections_load_discovery_document_with_json(
  * write data into buffer
  */
 static size_t
-lmd_google_connections_write_to_buffer(
+lmd_ms_connections_write_to_buffer(
     char* ptr,
     size_t size,
     size_t nmemb,
@@ -36,7 +38,7 @@ lmd_google_connections_write_to_buffer(
  * load discovery document
  */
 int
-lmd_google_connections_load_discovery_document(
+lmd_ms_connections_load_discovery_document(
     lmd* obj)
 {
     int result;
@@ -46,6 +48,9 @@ lmd_google_connections_load_discovery_document(
     result = curl ? 0 : -1;
     if (result == 0) {
         buffer_char_buffer* buffer;
+        char* discovery_url;
+        discovery_url = NULL;
+
         buffer = buffer_char_buffer_create_00(
             lmd_i_alloc,
             lmd_i_realloc,
@@ -55,6 +60,11 @@ lmd_google_connections_load_discovery_document(
             100);
         result = buffer ? 0 : -1;
         if (result == 0) {
+            discovery_url = lmd_ms_connections_get_discovery_doc_url(
+                lmd_get_ms_tenant_ref(obj));
+            result = discovery_url ? 0 : -1;
+        }
+        if (result == 0) {
             CURLcode curl_res;
             char* param;
             json_object* json;
@@ -62,14 +72,14 @@ lmd_google_connections_load_discovery_document(
             if (result == 0) {
                 curl_res = curl_easy_setopt(curl,
                     CURLOPT_URL,
-                    lmd_google_connections_get_discovery_doc_url());
+                    discovery_url);
                 result = curl_res == CURLE_OK ? 0 : -1;
             }
 
             if (result == 0) {
                 curl_res = curl_easy_setopt(curl,
                     CURLOPT_WRITEFUNCTION,
-                        lmd_google_connections_write_to_buffer);
+                        lmd_ms_connections_write_to_buffer);
                 result = curl_res == CURLE_OK ? 0 : -1;
             }
             if (result == 0) {
@@ -100,12 +110,15 @@ lmd_google_connections_load_discovery_document(
                 result = json ? 0 : -1;
             } 
             if (result == 0) {
-                result = lmd_google_connections_load_discovery_document_with_json(
+                result = lmd_ms_connections_load_discovery_document_with_json(
                     obj, json);
             }
             if (json) {
                 json_object_put(json);
             }
+        }
+        if (discovery_url) {
+            lmd_i_free(discovery_url);
         }
         if (buffer) {
             buffer_char_buffer_release(buffer);
@@ -121,7 +134,7 @@ lmd_google_connections_load_discovery_document(
  * write data into buffer
  */
 static size_t
-lmd_google_connections_write_to_buffer(
+lmd_ms_connections_write_to_buffer(
     char* ptr,
     size_t size,
     size_t nmemb,
@@ -148,7 +161,7 @@ lmd_google_connections_write_to_buffer(
  * load discovery document json format
  */
 int
-lmd_google_connections_load_discovery_document_with_json(
+lmd_ms_connections_load_discovery_document_with_json(
     lmd* obj,
     json_object* doc_obj)
 {
@@ -194,10 +207,28 @@ lmd_google_connections_load_discovery_document_with_json(
 /**
  * get url for discoverry document.
  */
-static const char*
-lmd_google_connections_get_discovery_doc_url()
+static char*
+lmd_ms_connections_get_discovery_doc_url(
+    const char* tenant)
 {
-    return "https://accounts.google.com/.well-known/openid-configuration";
+    char* result;
+    result = NULL;
+    if (tenant) {
+        const static char* fmt = "https://login.microsoftonline.com/"
+            "%s/v2.0/.well-known/openid-configuration";        
+
+        size_t size;
+        size = strlen(fmt);
+        size += strlen(tenant);
+        result = lmd_i_alloc(size + 1);
+
+        if (result) {
+            snprintf(result, size + 1, fmt, tenant);
+        }
+    } else {
+        errno = EINVAL;
+    }
+    return result;
 }
 
 /* vi: se ts=4 sw=4 et: */

@@ -1,0 +1,131 @@
+%{
+#include "lmd_connections.h"
+
+#include <string.h>
+#include <errno.h>
+
+#include "lmd_google_connections.h"
+#include "lmd_github_connections.h"
+#include "lmd_ms_connections.h"
+
+/**
+ * name service callback
+ */
+typedef struct _service_entry service_entry;
+
+
+static service_entry*
+in_word_set(
+    const char* name,
+    size_t length);
+
+/**
+ * set additional parameter and load discovery document
+ */
+static int
+lmd_google_load_discovery_document(
+    lmd* obj);
+
+/**
+ * set additional parameter and load discovery document
+ */
+static int
+lmd_ms_load_discovery_document(
+    lmd* obj);
+%}
+%struct-type
+%compare-lengths
+/**
+ * name service callback
+ */
+struct _service_entry {
+    /**
+     * name
+     */
+    const char* name;
+    /**
+     * fill endpoint urls for oauth token 
+     */
+    int (*set_endpoint_urls)(lmd*);
+};
+%%
+google,lmd_google_connections_load_discovery_document
+microsoft,lmd_ms_load_discovery_document
+github,lmd_github_connections_load_oauth_endpoint_urls
+%%
+/**
+ * load discovery document
+ */
+int
+lmd_connections_load_discovery_document(
+    lmd* obj,
+    const char* token_service)
+{
+    int result;
+    result = 0;
+    if (obj && token_service) {
+        service_entry* entry;
+        entry = in_word_set(token_service, strlen(token_service));
+        if (entry) {
+            result = entry->set_endpoint_urls(obj);
+        } else {
+            result = -1;
+            errno = EINVAL;
+        }
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * set additional parameter and load discovery document
+ */
+static int
+lmd_ms_load_discovery_document(
+    lmd* obj)
+{
+    int result;
+    result = 0;
+
+    if (obj) {
+        const char* tenant;
+        tenant = lmd_get_ms_tenant_ref(obj);
+        if (!tenant) {
+            result = lmd_set_ms_tenant(obj, "common");
+        }
+        if (result == 0) {
+            result = lmd_ms_connections_load_discovery_document(obj);
+        }
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * set additional parameter and load discovery document
+ */
+static int
+lmd_google_load_discovery_document(
+    lmd* obj)
+{
+    int result;
+    result = 0;
+
+    if (obj) {
+        const char* client_secret;
+        client_secret = lmd_get_client_secret_ref(obj);
+        result = client_secret ? 0 : -1;
+        if (result == 0) {
+            result = lmd_google_connections_load_discovery_document(obj);
+        }
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+/* vi: se ts=4 sw=4 et: */

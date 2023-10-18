@@ -34,6 +34,32 @@ unsigned int
 lmd_release(
     lmd* obj);
 
+/**
+ * get service
+ */
+const char*
+lmd_get_service_ref(
+    const lmd* obj);
+
+
+/**
+ * set service
+ */
+int
+lmd_set_service(
+    lmd* obj,
+    const char* service);
+
+
+/**
+ * set service
+ */
+int
+lmd_set_service_0(
+    lmd* obj,
+    const char* service,
+    size_t service_length);
+
 
 /**
  * get client id
@@ -50,6 +76,8 @@ int
 lmd_set_client_id(
     lmd* obj,
     const char* client_id);
+
+
 
 /**
  * get client secret
@@ -149,6 +177,30 @@ lmd_set_token_endpoint_url_0(
     size_t length);
 
 /**
+ * set token endpoint request header options
+ */
+int
+lmd_set_token_eprqhd_options(
+    lmd* obj,
+    const char** options,
+    size_t options_size);
+
+/**
+ * get token the size of endpoint request post header options
+ */
+size_t
+lmd_get_token_eprqhd_options_size(
+    lmd* obj);
+
+/**
+ * get token endpoint request post header options
+ */
+const char**
+lmd_get_token_eprqhd_options_ref(
+    lmd* obj);
+
+
+/**
  * device code
  */
 const char*
@@ -204,6 +256,32 @@ lmd_set_device_auth_token_endpoint_url_0(
     lmd* obj,
     const char* url,
     size_t length);
+
+
+/**
+ * set options for device oauth token endpoint request header
+ */
+int
+lmd_set_dot_eprqhd_options(
+    lmd* obj,
+    const char** options,
+    size_t options_size);
+
+
+/**
+ * get the size of device oauth token endpoint request header options
+ */
+size_t
+lmd_get_dot_eprqhd_options_size(
+    lmd* obj);
+
+/**
+ * get options of device oauth token endpoint request header
+ */
+const char**
+lmd_get_dot_eprqhd_options_ref(
+    lmd* obj);
+
 
 /**
  * user code
@@ -396,6 +474,32 @@ int
 lmd_set_interval(
     lmd* obj,
     int interval);
+
+/**
+ * set tenant for microsoft oauth token
+ */
+int
+lmd_set_ms_tenant(
+    lmd* obj,
+    const char* tenant);
+
+/**
+ * set tenant for microsoft oauth token
+ */
+int
+lmd_set_ms_tenant_0(
+    lmd* obj,
+    const char* tenant,
+    size_t length);
+
+
+/**
+ * get tenant for microsoft oauth token
+ */
+const char*
+lmd_get_ms_tenant_ref(
+    lmd* obj);
+
 
 /**
  * set test mode to get

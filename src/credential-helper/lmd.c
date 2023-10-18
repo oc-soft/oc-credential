@@ -8,19 +8,34 @@
 
 
 struct _lmd {
-    /* reference count */
+    /**
+     * reference count
+     */
     unsigned int ref_count;
 
-    /* client id */
+    /**
+     * service
+     */
+    char* service;
+
+    /**
+     * client id
+     */
     char* client_id;
 
-    /* client secret */
+    /**
+     * client secret
+     */
     char* client_secret;
 
-    /* verification url */
+    /**
+     * verification url
+     */
     char* verification_url;
 
-    /* token endpoint url */
+    /**
+     * token endpoint url
+     */
     char* token_endpoint_url;
 
     /**
@@ -59,6 +74,31 @@ struct _lmd {
      */
     char* scope;
 
+    /**
+     * options for token endpoint request header
+     */
+    char** token_eprqhd_options;
+
+    /**
+     * the size of token endpoint request header options
+     */
+    size_t token_eprqhd_options_size;
+
+    /**
+     * options for device oauth token endpoint request header
+     */
+    char** dot_eprqhd_options;
+
+    /**
+     * the size of device oauth token endpoint request header options
+     */
+    size_t dot_eprqhd_options_size;
+
+
+    /**
+     * tenant for microsoft oauth token
+     */
+    char* ms_tenant;
 
     /**
      * expires in
@@ -104,6 +144,7 @@ lmd_create()
     if (result) {
         
         result->ref_count = 1;
+        result->service = NULL;
         result->client_id = NULL;
         result->client_secret = NULL;
         result->verification_url = NULL;
@@ -116,6 +157,11 @@ lmd_create()
         result->token_type = NULL;
         result->refresh_token = NULL;
         result->scope = NULL;
+        result->token_eprqhd_options = NULL;
+        result->token_eprqhd_options_size = 0;
+        result->dot_eprqhd_options = NULL;
+        result->dot_eprqhd_options_size = 0;
+        result->ms_tenant = NULL;
         result->polling_expires_in = 0;
         result->interval = 0;
         result->credential_operation = CDT_OP_UNKNOWN;
@@ -153,22 +199,104 @@ lmd_release(
         result = --obj->ref_count;
 
         if (result == 0) {
+            lmd_set_service(obj, NULL);
             lmd_set_client_id(obj, NULL);
             lmd_set_client_secret(obj, NULL);
             lmd_set_device_auth_token_endpoint_url(obj, NULL);
             lmd_set_token_endpoint_url(obj, NULL);
             lmd_set_user_code(obj, NULL);
             lmd_set_device_code(obj, NULL);
-             
+            lmd_set_token_eprqhd_options(obj, NULL, 0);
+            lmd_set_dot_eprqhd_options(obj, NULL, 0);
             lmd_set_access_token(obj, NULL);
             lmd_set_token_type(obj, NULL);
             lmd_set_scope(obj, NULL);
+            lmd_set_ms_tenant(obj, NULL);
             lmd_set_refresh_token(obj, NULL);
             free(obj);
         }
     }
     return result;
 }
+
+/**
+ * get service
+ */
+const char*
+lmd_get_service_ref(
+    const lmd* obj)
+{
+    const char* result;
+    result = NULL;
+    if (obj) {
+        result = obj->service;
+    } else {
+        errno = EINVAL;
+    }
+    return result;
+}
+
+
+/**
+ * set service
+ */
+int
+lmd_set_service(
+    lmd* obj,
+    const char* service)
+{
+    int result;
+    result = 0;
+    if (obj) {
+        size_t len;
+        if (service) {
+            len = strlen(service);
+        } else {
+            len = 0;
+        }
+        result = lmd_set_service_0(obj, service, len);
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * set service
+ */
+int
+lmd_set_service_0(
+    lmd* obj,
+    const char* service,
+    size_t service_length)
+{
+    int result;
+    result = 0;
+    if (obj) {
+        int do_set;
+        do_set = obj->service != service;
+        if (obj->service) {
+            free(obj->service);
+            obj->service = NULL;
+        }
+        if (service) {
+            char* str_obj;
+            str_obj = (char*)malloc(service_length + 1); 
+            if (str_obj) {
+                memcpy(str_obj, service, service_length + 1);
+                obj->service = str_obj;
+            } else {
+                result = -1;
+            }
+        }
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+
 
 
 /**
@@ -811,6 +939,107 @@ lmd_set_token_endpoint_url_0(
 }
 
 /**
+ * set token endpoint request header options
+ */
+int
+lmd_set_token_eprqhd_options(
+    lmd* obj,
+    const char** options,
+    size_t options_size)
+{
+    int result;
+    if (obj) {
+        int do_set;
+        do_set = obj->token_eprqhd_options != (char**)options;
+        if (do_set) {
+            size_t new_option_idx;
+            char** new_options;
+            if (options && options_size) {
+                new_options = (char**) malloc(sizeof(char*) * options_size);
+                if (new_options) {
+                    for (new_option_idx = 0;
+                        new_option_idx < options_size;
+                        new_option_idx++) {
+                        char* option;
+                        size_t option_length;
+                        option_length = strlen(options[new_option_idx]);
+                        option = (char*)malloc(option_length + 1);
+                        if (option) {
+                            memcpy(option,
+                                options[new_option_idx], option_length + 1);
+                            new_options[new_option_idx] = option;
+                        } else {
+                            result = -1;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (result == 0) {
+                if (obj->token_eprqhd_options) {
+                    size_t idx; 
+                    for (idx = 0;
+                        idx < obj->token_eprqhd_options_size; idx++) {
+                        free(obj->token_eprqhd_options[idx]);
+                    }
+                    free(obj->token_eprqhd_options);
+                }
+                obj->token_eprqhd_options = new_options;
+                obj->token_eprqhd_options_size = options_size;
+                new_options = NULL;
+            }
+
+            if (new_options) {
+                size_t idx; 
+                for (idx = 0; idx < new_option_idx; idx++) {
+                    free(new_options[idx]);
+                }
+                free(new_options);
+            }
+        }
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * get the size of token endpoint request header options
+ */
+size_t
+lmd_get_token_eprqhd_options_size(
+    lmd* obj)
+{
+    size_t result;
+    result = 0;
+    if (obj) {
+        result = obj->token_eprqhd_options_size;
+    } else {
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * get options for token endpoint request header
+ */
+const char**
+lmd_get_token_eprqhd_options_ref(
+    lmd* obj)
+{
+    const char** result;
+    result = NULL;
+    if (obj) {
+        result = (const char**)obj->token_eprqhd_options;
+    } else {
+        errno = EINVAL;
+    }    
+    return result;
+}
+
+
+/**
  * get device authorization token endpoint url
  */
 const char*
@@ -893,6 +1122,107 @@ lmd_set_device_auth_token_endpoint_url_0(
     }
     return result;
 }
+
+/**
+ * set device oauth token endpoint request post header
+ */
+int
+lmd_set_dot_eprqhd_options(
+    lmd* obj,
+    const char** options,
+    size_t options_size)
+{
+    int result;
+    if (obj) {
+        int do_set;
+        do_set = obj->dot_eprqhd_options != (char**)options;
+        if (do_set) {
+            size_t new_option_idx;
+            char** new_options;
+            if (options && options_size) {
+                new_options = (char**) malloc(sizeof(char*) * options_size);
+                if (new_options) {
+                    for (new_option_idx = 0;
+                        new_option_idx < options_size;
+                        new_option_idx++) {
+                        char* option;
+                        size_t option_length;
+                        option_length = strlen(options[new_option_idx]);
+                        option = (char*)malloc(option_length + 1);
+                        if (option) {
+                            memcpy(option,
+                                options[new_option_idx], option_length + 1);
+                            new_options[new_option_idx] = option;
+                        } else {
+                            result = -1;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (result == 0) {
+                if (obj->dot_eprqhd_options) {
+                    size_t idx; 
+                    for (idx = 0;
+                        idx < obj->dot_eprqhd_options_size; idx++) {
+                        free(obj->dot_eprqhd_options[idx]);
+                    }
+                    free(obj->dot_eprqhd_options);
+                    obj->dot_eprqhd_options = NULL;
+                }
+                obj->dot_eprqhd_options = new_options;
+                obj->dot_eprqhd_options_size = options_size;
+                new_options = NULL;
+            }
+
+            if (new_options) {
+                size_t idx; 
+                for (idx = 0; idx < new_option_idx; idx++) {
+                    free(new_options[idx]);
+                }
+                free(new_options);
+            }
+        }
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+/**
+ * get the size of device oauth token endpoint request header options
+ */
+size_t
+lmd_get_dot_eprqhd_options_size(
+    lmd* obj)
+{
+    size_t result;
+    result = 0;
+    if (obj) {
+        result = obj->dot_eprqhd_options_size; 
+    } else {
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * get options of device oauth token endpoint request post header
+ */
+const char**
+lmd_get_dot_eprqhd_options_ref(
+    lmd* obj)
+{
+    const char** result;
+    result = NULL;
+    if (obj) {
+        result = (const char**)obj->dot_eprqhd_options;
+    } else {
+        errno = EINVAL;
+    }
+    return result;
+}
+
 
 /**
  * user codde
@@ -1054,6 +1384,88 @@ lmd_set_device_code_0(
     }
     return result;
 }
+
+/**
+ * set tenant for microsoft oauth token
+ */
+int
+lmd_set_ms_tenant(
+    lmd* obj,
+    const char* tenant)
+{
+    int result;
+    result = 0;
+    if (obj) {
+        size_t length;
+        length = 0;
+        if (tenant) {
+            length = strlen(tenant);
+        }
+        lmd_set_ms_tenant_0(obj, tenant, length);
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * set tenant for microsoft oauth token
+ */
+int
+lmd_set_ms_tenant_0(
+    lmd* obj,
+    const char* tenant,
+    size_t length)
+{
+    int result;
+    result = 0;
+    if (obj) {
+        int do_set;
+        do_set = obj->ms_tenant != tenant;
+        if (do_set) {
+            if (obj->ms_tenant) {
+                free(obj->ms_tenant);
+                obj->ms_tenant = NULL;
+            }
+            if (tenant) {
+                char* str_obj;
+                str_obj = NULL;
+                str_obj = (char*)malloc(length + 1); 
+                if (str_obj) {
+                    memcpy(str_obj, tenant, length);
+                    str_obj[length] = '\0';
+                    obj->ms_tenant = str_obj;
+                } else {
+                    result = -1;
+                }
+            }
+        }
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+
+
+/**
+ * get tenant for microsoft oauth token
+ */
+const char*
+lmd_get_ms_tenant_ref(
+    lmd* obj)
+{
+    const char* result;
+    result = NULL;
+    if (obj) {
+        result = obj->ms_tenant;
+    } else {
+        errno = EINVAL;
+    }
+    return result;
+}
+
 
 /**
  * expiration seconds to poll for oath token
