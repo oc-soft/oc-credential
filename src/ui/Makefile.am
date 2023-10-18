@@ -287,6 +287,12 @@ if RUN_WIN
 		fi \
 	fi
 endif
+if RUN_LINUX
+	if [ ! -f $(builddir)/$(electron_extract_dir)/$(TOKEN_GENERATOR_NAME)$(EXEEXT) ]; then \
+		mv $(builddir)/$(electron_extract_dir)/electron$(EXEEXT) \
+			$(builddir)/$(electron_extract_dir)/$(TOKEN_GENERATOR_NAME)$(EXEEXT); \
+	fi
+endif
 	: > $@
 
 rebrand-electron: rebrand-electron-tmstamp

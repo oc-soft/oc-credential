@@ -1,6 +1,7 @@
 #include "token_gen_ui_i.h"
 #include <spawn.h>
 #include <sys/wait.h>
+#include <errno.h>
 #include "buffer/char_buffer.h"
 #include "fd_io.h"
 #include "logging.h"
@@ -59,6 +60,7 @@ token_gen_ui_i_run(
     tmp_buffer_size = 256;
     argv_param = NULL;
     rest_in_data = in_data_size;
+    logging_log(LOG_LEVEL_DEBUG, "token generator run %s", program);
     if (result == 0) {
         for (idx = 0; idx < sizeof(buff) / sizeof(buff[0]); idx++) {
             buff[idx] = buffer_char_buffer_create_00(
@@ -88,7 +90,7 @@ token_gen_ui_i_run(
     }
     if (result == 0) {
         written_size[1] = fd_io_write(
-            file_desc_get_file_desc(std_in_fd),
+            std_in_fd,
             &in_data[written_size[0]], rest_in_data);
         if (written_size[1] != -1) {
             written_size[0] = written_size[1];
@@ -116,7 +118,7 @@ token_gen_ui_i_run(
 
             if (rest_in_data) {
                 written_size[1] = fd_io_write(
-                    file_desc_get_file_desc(std_in_fd),
+                    std_in_fd,
                     &in_data[written_size[0]], rest_in_data);
                 if (written_size[1] != -1) {
                     written_size[0] = written_size[1];
