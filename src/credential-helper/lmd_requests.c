@@ -428,9 +428,11 @@ lmd_requests_load_device_and_user_code(
         result = buffer ? 0 : -1;
         if (result == 0) {
             CURLcode curl_res;
+            struct curl_slist* opt_headers;
             char* param;
             json_object* json;
             json = NULL;
+            opt_headers = NULL;
             param = lmd_requests_create_device_and_user_code_param(obj);
             result = param ? 0 : -1;
             if (result == 0) {
@@ -445,6 +447,35 @@ lmd_requests_load_device_and_user_code(
                 result = curl_res == CURLE_OK ? 0 : -1;
             }
 
+            if (result == 0) {
+                const char** headers;
+                size_t headers_size;
+                size_t idx;
+                headers = lmd_get_dot_eprqhd_options_ref(
+                        obj);
+                headers_size = lmd_get_dot_eprqhd_options_size(
+                    obj);
+                
+                for (idx = 0; idx < headers_size; idx++) {
+                    struct curl_slist* opt_headers_res;
+                    opt_headers_res = curl_slist_append(
+                        opt_headers, headers[idx]);
+                    result = opt_headers_res ? 0 : -1;
+                    if (result == 0) {
+                        opt_headers = opt_headers_res;
+                    }
+                    if (result) {
+                        break;
+                    }
+                }
+            }
+            if (result == 0) {
+                if (opt_headers) {
+                    curl_res = curl_easy_setopt(
+                        curl, CURLOPT_HTTPHEADER, opt_headers);
+                    result = curl_res == CURLE_OK ? 0 : -1;
+                }
+            }
             if (result == 0) {
                 curl_res = curl_easy_setopt(curl,
                     CURLOPT_WRITEFUNCTION,
@@ -484,6 +515,9 @@ lmd_requests_load_device_and_user_code(
             if (json) {
                 json_object_put(json);
             }
+            if (opt_headers) {
+                curl_slist_free_all(opt_headers);
+            }
             if (param) {
                 lmd_i_free(param);
             }
@@ -496,7 +530,7 @@ lmd_requests_load_device_and_user_code(
         curl_easy_cleanup(curl);
     }
 
-    return result;    
+    return result;
 }
 
 /**
@@ -508,19 +542,29 @@ lmd_requests_load_device_and_user_code_with_json(
     json_object* json)
 {
     struct {
-        const char* key;
+        const char* keys[3];
         int (*set_data)(lmd*, const char*, size_t);
     } key_set_str_data[] = {
         {
-            "device_code",
+            {
+                "device_code",
+                NULL
+            },
             lmd_set_device_code_0,
         },
         {
-            "user_code",
+            {
+                "user_code",
+                NULL
+            },
             lmd_set_user_code_0
         },
         {
-            "verification_url",
+            {
+                "verification_url",
+                "verification_uri",
+                NULL
+            },
             lmd_set_verification_url_0
         }
     };
@@ -545,10 +589,22 @@ lmd_requests_load_device_and_user_code_with_json(
         idx++) {
         json_object* str_json;
         json_bool js_state;
+        size_t key_idx;
         str_json = NULL;
-        js_state = json_object_object_get_ex(
-            json, key_set_str_data[idx].key, &str_json);
-        result = js_state ? 0 : -1;
+        
+        {
+            result = -1;
+            key_idx = 0;
+            while (key_set_str_data[idx].keys[key_idx]) {
+                js_state = json_object_object_get_ex(
+                    json, key_set_str_data[idx].keys[key_idx], &str_json);
+                if (js_state) {
+                    result = 0;
+                    break;
+                }
+                key_idx++;
+            }
+        }
         if (result == 0) {
             result = key_set_str_data[idx].set_data(
                 obj,

@@ -14,14 +14,24 @@
 
 _LMD_OP_ITFC_BEGIN 
 
+
+/**
+ * select service
+ */
+int
+lmd_op_select_service(
+    lmd* obj,
+    const char* protocol,
+    const char* host,
+    const char* path);
+
+
 /**
  * get oauth token
  */
 int
-lmd_get_oauth_token_with_client(
-    lmd* limited_acc,
-    const char* client_id,
-    const char* client_secret);
+lmd_op_get_oauth_token_with_client(
+    lmd* limited_acc);
 
 _LMD_OP_ITFC_END 
 

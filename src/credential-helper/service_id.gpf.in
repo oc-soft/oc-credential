@@ -1,0 +1,114 @@
+%{
+#include "service_id.h"
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+
+typedef struct _service_id service_id;
+
+
+/**
+ * find service id entry by name
+ */
+static service_id*
+in_word_set(
+    const char* name,
+    size_t length);
+
+/**
+ * allocate memory
+ */
+static void*
+service_id_alloc(
+    size_t size);
+%}
+%struct-type
+%compare-lengths
+struct _service_id {
+    const char* name;
+    const char* id;
+};
+%%
+!KEY_VALUES!
+%%
+/**
+ * get service names
+ */
+int
+service_id_get_names(
+    size_t* key_size,
+    const char*** service_names)
+{
+    const static char* names[] = {
+!KEYS!
+    };
+    int result;
+    result = 0;
+    if (service_names) {
+        *service_names = names;
+    }
+    if (key_size) {
+        *key_size = sizeof(names) / sizeof(names[0]);
+    }
+    return result;
+}
+
+/**
+ * get service id
+ */
+int
+service_id_get_id(
+    const char* service_name,
+    char** service_id_res,
+    void *(*mem_alloc)(size_t))
+{
+    int result;
+    if (service_name) {
+        service_id *srv_id;
+        srv_id = in_word_set(service_name, strlen(service_name));
+        result = srv_id ? 0 : -1;
+        if (result == 0 && service_id_res) {
+            char* id_ref;
+            size_t id_length;
+            if (!mem_alloc) {
+                mem_alloc = service_id_alloc;
+            }
+            id_length = strlen(srv_id->id);
+            id_ref = (char*)mem_alloc(id_length + 1);
+            if (id_ref) {
+                memcpy(id_ref, srv_id->id, id_length + 1);
+                *service_id_res = id_ref;
+            } else {
+                result = -1;
+            }
+        }
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * allocate memory
+ */
+static void*
+service_id_alloc(
+    size_t size)
+{
+    return malloc(size);
+}
+
+/**
+ * free memory block
+ */
+void
+service_id_free(
+    void* obj)
+{
+    free(obj);
+}
+
+
+/* vi: se ts=4 sw=4 et: */
+

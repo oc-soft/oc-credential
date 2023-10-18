@@ -15,16 +15,6 @@
 #include "buffer/char_buffer.h"
 #include "logging.h"
 
-/**
- * find client id and clietn secret
- */
-static int
-find_client_id_secret(
-    const char* protocol,
-    const char* host,
-    const char* path,
-    const char** client_id,
-    const char** client_secret);
 
 /**
  * get oauth token
@@ -98,14 +88,6 @@ cred_helper_op_get_0(
     cred_helper* obj,
     credential_desc* desc);
 
-/**
- * do credential get operation 
- */
-static int
-cred_helper_op_get_for_test(
-    cred_helper* obj,
-    credential_desc* desc);
-
 
 /**
  * do credential store operation
@@ -170,76 +152,6 @@ cred_helper_op_run(
     }
     if (desc) {
         credential_desc_free(desc);
-    }
-    return result;
-}
-
-/**
- * find client id and clietn secret
- */
-static int
-find_client_id_secret(
-    const char* protocol,
-    const char* host,
-    const char* path,
-    const char** client_id,
-    const char** client_secret)
-{
-    char* path_buffer;
-    size_t path_buffer_len; 
-    int result;
-    const char* client_id_0;
-    const char* client_secret_0;
-    result = 0;
-    path_buffer = NULL;
-    client_id_0 = NULL;
-    client_secret_0 = NULL;
-    path_buffer_len = 0;
-    if (path) {
-        path_buffer_len = strlen(path);
-        path_buffer = (char*)cred_helper_i_alloc(path_buffer_len + 1); 
-        result = path_buffer ? 0 : -1;
-        if (result == 0) {
-            memcpy(path_buffer, path, path_buffer_len + 1);
-        }
-    }
-    if (result == 0) {
-        while (1) {
-            if (!client_id_0) {
-                client_id_0 = client_id_get(protocol, host,
-                    path_buffer);
-            }
-            if (!client_secret_0) {
-                client_secret_0 = client_secret_get(protocol, host,
-                    path_buffer);
-            }
- 
-            if (client_id_0 && client_secret_0) {
-                break;
-            } else {
-                if (path_buffer) {
-                    char* tmp_char;
-                    tmp_char = strrchr(path_buffer, '/');
-                    if (tmp_char) {
-                        *tmp_char = '\0';
-                    } else {
-                        break;
-                    }
-                } else {
-                    break;
-                }
-            }
-        }
-    } 
-    if (client_id) {
-        *client_id = client_id_0;
-    }
-    if (client_secret) {
-        *client_secret = client_secret_0;
-    }
-    result = client_id_0 && client_secret_0 ? 0 : -1;
-    if (path_buffer) {
-        cred_helper_i_free(path_buffer);
     }
     return result;
 }
@@ -347,28 +259,23 @@ get_oauth_token_with_lmd(
     cred_helper* obj,
     credential_desc* desc)
 {
-    const char* client_id;
-    const char* client_secret;
+    lmd* limited_acc;
     int result; 
-    client_id = NULL;
-    client_secret = NULL;
-    result = find_client_id_secret(
-        desc->protocol, desc->host, desc->path, &client_id, &client_secret);
+    limited_acc = cred_helper_get_lmd(obj);  
+    result = limited_acc ? 0 : -1;
     if (result == 0) {
-        lmd* limited_acc;
-        limited_acc = cred_helper_get_lmd(obj);
-        if (limited_acc) {
-            result = lmd_get_oauth_token_with_client(
-                limited_acc, client_id, client_secret);
-            if (result == 0) {
-                result = cred_helper_update_access_token_with_lmd(obj);
-            }
-        } else {
-            result = -1;
-        }
-        if (limited_acc) {
-            lmd_release(limited_acc);
-        }
+        result = lmd_op_select_service(
+            limited_acc, desc->protocol, desc->host, desc->path);
+    }
+    if (result == 0) {
+        result = lmd_op_get_oauth_token_with_client(
+            limited_acc);
+    }
+    if (result == 0) {
+        result = cred_helper_update_access_token_with_lmd(obj);
+    }
+    if (limited_acc) {
+        lmd_release(limited_acc);
     }
     return result;
 }
@@ -489,40 +396,9 @@ cred_helper_op_get(
     credential_desc* desc)
 {
     int result;
-    result = 0;
-    if (cred_helper_is_test_mode_to_get(obj) == 0) {
-        result = cred_helper_op_get_0(obj, desc);
-    } else {
-        result = cred_helper_op_get_for_test(obj, desc); 
-    }
+    result = cred_helper_op_get_0(obj, desc);
     return result;
 }
-
-/**
- * do credential get operation 
- */
-static int
-cred_helper_op_get_for_test(
-    cred_helper* obj,
-    credential_desc* desc)
-{
-    const char* client_id;
-    const char* client_secret;
-    int result;
-
-    client_id = NULL;
-    client_secret = NULL;
-    result = find_client_id_secret(desc->protocol,
-        desc->host, desc->path, &client_id, &client_secret);
-    if (result == 0) {
-        result = credential_desc_set_username(desc, client_id);
-    }  
-    if (result == 0) {
-        result = credential_desc_set_password(desc, client_secret);
-    }
-    return result;
-}
-
 
 
 /**

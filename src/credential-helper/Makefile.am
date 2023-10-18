@@ -37,7 +37,11 @@ noinst_HEADERS= cred_helper_types.h \
 	token_gen_ui_exec.h \
 	token_gen_ui_i.h \
 	path.h \
+	proc_sched.h \
 	time_zone.h \
+	url_path_iterate.h
+	service_url_secret.h \
+	service_url_client.h \
 	url.h
 
 
@@ -51,9 +55,13 @@ credhelper_src = main.c \
 	client_secret.c \
 	client_id.c \
 	lmd_connections.c \
+	lmd_github_connections.c \
+	lmd_google_connections.c \
+	lmd_ms_connections.c \
 	lmd_requests.c \
 	lmd_op.c \
 	lmd_i.c \
+	lmd_ui.c \
 	l10n_i.c \
 	token_gen_ui.c \
 	token_gen_ui_exec.c \
@@ -61,9 +69,23 @@ credhelper_src = main.c \
 	ui_token_gen.c \
 	ui_token_gen_i.c \
 	exec_names.c \
+	url_path_iterate.c \
+	url_services.c \
+	url_id.c \
+	service_id.c \
+	service_secret.c \
+	service_url_secret.c \
+	service_url_client.c \
 	mem_dbg.c
 
-EXTRA_DIST = client_id.gpf.in \
+EXTRA_DIST = \
+	lmd_connections.gpf \
+	service_id.gpf.in \
+	service_secret.gpf.in \
+	service_url_secret.gpf.in \
+	service_url_client.gpf.in \
+	url_services.gpf.in \
+	url_id.gpf.in \
 	credhelper_res.rc.in \
 	t_site_01.sh.in \
 	rt_ui_01.sh.in \
@@ -75,7 +97,6 @@ EXTRA_DIST = client_id.gpf.in \
 	mem_dbg_off.c.in \
 	rt_get_02.sh.in \
 	exec_names.c.in \
-	client_secret.gpf.in  \
 	t_store_01.sh \
 	t_erase_01.sh \
 	t_erase_02.sh \
@@ -112,15 +133,19 @@ credential_ocs_credhelper_SOURCES += token_gen_ui_i_win.c
 credential_ocs_credhelper_SOURCES += path_win.c
 credential_ocs_credhelper_SOURCES += logging_win.c
 credential_ocs_credhelper_SOURCES += time_zone_win.c
+credential_ocs_credhelper_SOURCES += proc_sched_win.c
+credential_ocs_credhelper_SOURCES += lmd_ui_win.c
 endif
 if RUN_LINUX
 credential_ocs_credhelper_SOURCES += exe_info_linux.c
-credential_ocs_credhelper_SOURCES += l10n_user_linux.c
+credential_ocs_credhelper_SOURCES += l10n_user_posix.c
 credential_ocs_credhelper_SOURCES += fd_io.c
 credential_ocs_credhelper_SOURCES += token_gen_ui_i_posix.c
 credential_ocs_credhelper_SOURCES += path.c
 credential_ocs_credhelper_SOURCES += logging.c
 credential_ocs_credhelper_SOURCES += time_zone.c
+credential_ocs_credhelper_SOURCES += proc_sched_posix.c
+credential_ocs_credhelper_SOURCES += lmd_ui_posix.c
 endif
 if RUN_DARWIN
 credential_ocs_credhelper_SOURCES += exe_info_darwin.c
@@ -130,6 +155,8 @@ credential_ocs_credhelper_SOURCES += token_gen_ui_i_posix.c
 credential_ocs_credhelper_SOURCES += path.c
 credential_ocs_credhelper_SOURCES += logging.c
 credential_ocs_credhelper_SOURCES += time_zone.c
+credential_ocs_credhelper_SOURCES += proc_sched_posix.c
+credential_ocs_credhelper_SOURCES += lmd_ui_posix.c
 endif
 
 
@@ -337,7 +364,7 @@ clean-client-dbg:
 
 .PHONY: client-dbg clean-client-dbg
 
-all-local: rt_get_01.sh rt_get_02.sh rt_ui_01.sh 
+all-local: rt_get_01.sh rt_get_02.sh rt_ui_01.sh rt_cli_get_01.sh
 
 t_site_01.sh : t_site_01.sh.in
 	sed -e 's!%CLIENT_ID_PATH%!$(top_srcdir)/src/config/client-id.txt!' \
@@ -353,6 +380,12 @@ rt_get_01.sh : rt_get_01.sh.in
 		-e 's!%AWK%!$(AWK)!' $< >$@
 	chmod u+x $@
 
+rt_cli_get_01.sh : rt_get_01.sh.in
+	sed -e 's!%CLIENT_ID_PATH%!$(abs_top_srcdir)/src/config/client-id.txt!' \
+		-e 's!%CLI%!$(abs_builddir)/credential-ocs/credhelper$(EXEEXT) -e 10 -j off -g on!' \
+		-e 's!%AWK%!$(AWK)!' $< >$@
+	chmod u+x $@
+
 rt_get_02.sh : rt_get_02.sh.in
 	sed -e 's!%CLI%!$(abs_builddir)/credential-ocs/credhelper$(EXEEXT)!' \
 		-e 's!%CLIENT_ID_PATH%!$(abs_top_srcdir)/src/config/client-id.txt!' \
@@ -364,12 +397,17 @@ rt_ui_01.sh : rt_ui_01.sh.in | link-ui
 	sed -e 's!%UI_EXE_RELPATH%!credential-ocs/$(ui_exe_relative_path)!' $< >$@
 	chmod u+x $@
 
+git-credential-data-1.txt: $(srcdir)/../config/client-id.txt \
+	$(srcdir)/create-git-credential-input.sh
+	$(srcdir)/create-git-credential-input.sh <$< >$@			
+
 
 t_site_01.log: t_store_01.log
 
 t_erase_01.log: t_site_01.log
 
 t_erase_02.log: t_erase_01.log
+
 
 client_secret.gpf : client_secret.gpf.in $(srcdir)/../config/client-secret.txt $(builddir)/client-secret-dbg.txt 
 	awk -v in_file=$< -e $(awk_cmd_0) \
@@ -380,6 +418,43 @@ client_id.gpf : client_id.gpf.in $(srcdir)/../config/client-id.txt $(builddir)/c
 	awk -v in_file=$< -e $(awk_cmd_0) \
 		$(srcdir)/../config/client-id.txt \
 		$(builddir)/client-id-dbg.txt >$@
+
+url_id.gpf : url_id.gpf.in \
+	$(srcdir)/../config/url-id.txt \
+	$(srcdir)/key_values_replace.awk
+	awk -f $(srcdir)/key_values_replace.awk -- \
+		-i $(srcdir)/../config/url-id.txt -q 0,1 -d 8 $< >$@
+
+service_id.gpf : service_id.gpf.in \
+	$(srcdir)/../config/service-id.txt \
+	$(srcdir)/key_values_replace.awk
+	awk -f $(srcdir)/key_values_replace.awk -- \
+		-i $(srcdir)/../config/service-id.txt -q 0,1 -d 8 $< >$@
+
+
+url_services.gpf : url_services.gpf.in \
+	$(srcdir)/../config/url-service.txt \
+	$(srcdir)/url_services_gen.awk
+	awk -f $(srcdir)/url_services_gen.awk -- \
+		-i $(srcdir)/../config/url-service.txt $< >$@
+
+service_secret.gpf : service_secret.gpf.in \
+	$(srcdir)/../config/service-secret.txt \
+	$(srcdir)/gpf_names_replace.awk
+	awk -f $(srcdir)/gpf_names_replace.awk -- \
+		-n $(srcdir)/../config/service-secret.txt $< >$@
+
+service_url_secret.gpf : service_url_secret.gpf.in \
+	$(srcdir)/../config/service-url-secret.txt \
+	$(srcdir)/key_values_replace.awk
+	awk -f $(srcdir)/key_values_replace.awk -- \
+		-i $(srcdir)/../config/service-url-secret.txt -q 0,1 -d 8 $< >$@
+
+service_url_client.gpf : service_url_client.gpf.in \
+	$(srcdir)/../config/service-url-client.txt \
+	$(srcdir)/key_values_replace.awk
+	awk -f $(srcdir)/key_values_replace.awk -- \
+		-i $(srcdir)/../config/service-url-client.txt -q 0,1 -d 8 $< >$@
 
 exec_names.c: exec_names.c.in
 	exe_name=`$(ECHO_NO_NEWLINE) '$(ui_exe_name)' | \

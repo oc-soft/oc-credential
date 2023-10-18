@@ -1,0 +1,192 @@
+%{
+#include "url_id.h"
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+
+typedef struct _url_id url_id;
+
+
+/**
+ * find site id entry by name
+ */
+static url_id*
+in_word_set(
+    const char* name,
+    size_t length);
+
+/**
+ * allocate memory
+ */
+static void*
+url_id_alloc(
+    size_t size);
+
+/**
+ * create name
+ */
+int
+url_id_create_name(
+    const char* protocol,
+    const char* host,
+    const char* path,
+    char** name_ref,
+    size_t* name_length);
+%}
+%struct-type
+%compare-lengths
+struct _url_id {
+    const char* name;
+    const char* id;
+};
+%%
+!KEY_VALUES!
+%%
+/**
+ * get service names
+ */
+int
+url_id_get_names(
+    size_t* key_size,
+    const char*** url_names)
+{
+    const static char* names[] = {
+!KEYS!
+    };
+    int result;
+    result = 0;
+    if (url_names) {
+        *url_names = names;
+    }
+    if (key_size) {
+        *key_size = sizeof(names) / sizeof(names[0]);
+    }
+    return result;
+}
+
+/**
+ * get service id
+ */
+int
+url_id_get_id(
+    const char* protocol,
+    const char* host,
+    const char* path,
+    char** id,
+    void *(*mem_alloc)(size_t))
+{
+    int result;
+    char* name;
+    size_t name_length;
+    name = NULL;
+    name_length = 0;
+    result = url_id_create_name(protocol, host, path, &name, &name_length);
+    if (result == 0) {
+        url_id *url_id_ref;
+        url_id_ref = in_word_set(name, name_length);
+        result = url_id_ref ? 0 : -1;
+        if (result == 0 && id) {
+            char* id_ref;
+            size_t id_length;
+            if (!mem_alloc) {
+                mem_alloc = url_id_alloc;
+            }
+            id_length = strlen(url_id_ref->id);
+            id_ref = (char*)mem_alloc(id_length + 1);
+            if (id_ref) {
+                memcpy(id_ref, url_id_ref->id, id_length + 1);
+                *id = id_ref;
+            } else {
+                result = -1;
+            }
+        }
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    if (name) {
+        url_id_free(name);
+    }
+    return result;
+}
+
+/**
+ * create name
+ */
+int
+url_id_create_name(
+    const char* protocol,
+    const char* host,
+    const char* path,
+    char** name_ref,
+    size_t* name_length)
+{
+    int result; 
+    if (protocol && name_ref && name_length) {
+        char* buffer;
+        size_t protocol_len;
+        size_t host_len;
+        size_t path_len;
+        size_t buffer_size;
+        buffer = NULL;
+        protocol_len = strlen(protocol);
+        if (host) {
+            host_len = strlen(host); 
+        } else {
+            host_len = 0; 
+        }
+        buffer_size = protocol_len + 3 + host_len;
+        if (path) {
+            path_len = strlen(path);
+            buffer_size += 1 + path_len;
+        } else {
+            path_len = 0;
+        }
+        buffer = url_id_alloc(buffer_size);
+        if (buffer) {
+            char* ptr;
+            ptr = buffer;
+            memcpy(ptr, protocol, protocol_len);
+            ptr += protocol_len;
+            memcpy(ptr, "://", 3);
+            ptr += 3;
+            memcpy(ptr, host, host_len);
+            ptr += host_len;
+            if (path) {
+                memcpy(ptr, "/", 1);
+                ptr += 1; 
+                memcpy(ptr, path, path_len);
+            }
+            *name_ref = buffer;
+            *name_length = buffer_size;
+            result = 0;
+        } else {
+            result = -1;
+        }
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+ 
+/**
+ * allocate memory
+ */
+static void*
+url_id_alloc(
+    size_t size)
+{
+    return malloc(size);
+}
+
+/**
+ * free memory block
+ */
+void
+url_id_free(
+    void* obj)
+{
+    free(obj);
+}
+/* vi: se ts=4 sw=4 et: */

@@ -1,0 +1,157 @@
+%{
+#include "service_url_client.h"
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+
+typedef struct _service_url_client service_url_client;
+
+
+/**
+ * find id_client_client entry by id 
+ */
+static service_url_client*
+in_word_set(
+    const char* id,
+    size_t length);
+
+/**
+ * allocate memory
+ */
+static void*
+service_url_client_alloc(
+    size_t size);
+
+/**
+ * create key
+ */
+int
+service_url_client_create_key(
+    const char* service_id,
+    const char* url_id,
+    char** key_ref,
+    size_t* key_length);
+%}
+%struct-type
+%compare-lengths
+%define slot-name id
+struct _service_url_client {
+    const char* id;
+    const char* client;
+};
+%%
+!KEY_VALUES!
+%%
+
+/**
+ * get client
+ */
+int
+service_url_client_get_client(
+    const char* service_id,
+    const char* url_id,
+    char** client,
+    void *(*mem_alloc)(size_t))
+{
+    int result;
+    char* key;
+    size_t key_length;
+
+    key = NULL;
+    key_length = 0;
+    result = service_url_client_create_key(
+        service_id, url_id, &key, &key_length);
+
+    if (result == 0) {
+        service_url_client *entry;
+        entry = in_word_set(key, key_length);
+        result = entry ? 0 : -1;
+        if (result == 0 && client) {
+            char* client_ref;
+            size_t client_length;
+            if (!mem_alloc) {
+                mem_alloc = service_url_client_alloc;
+            }
+            client_length = strlen(entry->client);
+            client_ref = (char*)mem_alloc(client_length + 1);
+            if (client_ref) {
+                memcpy(client_ref, entry->client, client_length + 1);
+                *client = client_ref;
+            } else {
+                result = -1;
+            }
+        }
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    if (key) {
+        service_url_client_free(key);
+    }
+    return result;
+}
+
+/**
+ * create key
+ */
+int
+service_url_client_create_key(
+    const char* service_id,
+    const char* url_id,
+    char** key_ref,
+    size_t* key_length)
+{
+    int result;
+    result = 0;
+
+    if (service_id && url_id && key_ref && key_length) {
+        char* buffer;
+        size_t service_id_len;
+        size_t url_id_len;
+        size_t buffer_size;
+        buffer = NULL;
+        service_id_len = strlen(service_id);
+        url_id_len = strlen(url_id); 
+        buffer_size = service_id_len + 1 + url_id_len;
+        buffer = service_url_client_alloc(buffer_size);
+        if (buffer) {
+            char* ptr;
+            ptr = buffer;
+            memcpy(ptr, service_id, service_id_len);
+            ptr += service_id_len;
+            memcpy(ptr, "-", 1);
+            ptr += 1;
+            memcpy(ptr, url_id, url_id_len);
+            *key_ref = buffer;
+            *key_length = buffer_size;
+            result = 0;
+        } else {
+            result = -1;
+        }
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * allocate memory
+ */
+static void*
+service_url_client_alloc(
+    size_t size)
+{
+    return malloc(size);
+}
+
+/**
+ * free memory block
+ */
+void
+service_url_client_free(
+    void* obj)
+{
+    free(obj);
+}
+/* vi: se ts=4 sw=4 et: */

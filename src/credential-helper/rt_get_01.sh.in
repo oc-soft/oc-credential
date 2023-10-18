@@ -1,6 +1,6 @@
 #! /usr/bin/env sh
 client_id_path=%CLIENT_ID_PATH%
-credhelper_cmd=%CLI%
+credhelper_cmd="%CLI%"
 awk_cmd=%AWK%
 
 function client_line_to_desc()
