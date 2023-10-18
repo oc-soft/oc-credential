@@ -80,7 +80,7 @@ AC_DEFINE_UNQUOTED([COMPANY_NAME_W], [L"$oc_company_name"], [Wide char company n
 AC_DEFINE_UNQUOTED([VERSION_W], [L"$VERSION"], [wide char package version])
 AC_DEFINE_UNQUOTED([GETTEXT_DOMAIN], ["$PACKAGE_NAME"], [gettext domain name])
 
-AC_DEFINE([DEFAULT_LOGGING_LEVEL], [10], [application default logging level])
+AC_DEFINE([DEFAULT_LOGGING_LEVEL], [0], [application default logging level])
 
 if test $host_os = "cygwin" ; then
     case $build_cpu in

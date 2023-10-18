@@ -34,7 +34,7 @@ logging_log(
     const char* format,
     ...)
 {
-    if (priority >= logging_level) {
+    if (priority < logging_level) {
         va_list v_arg;
         const static int levels[] = {
             LOG_EMERG,
