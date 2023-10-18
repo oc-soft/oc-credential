@@ -5,7 +5,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <libintl.h>
 #include "logging.h"
+#include "exe_info.h"
 
 /**
  * display usage
@@ -55,6 +57,11 @@ cred_helper_parser_parse_from_commands(
                     .val = 'u'
                 },
                 {
+                    .name = "service",
+                    .has_arg = required_argument,
+                    .val = 's'
+                },
+                {
                     .name = "generator",
                     .has_arg = no_argument,
                     .flag = NULL,
@@ -93,7 +100,7 @@ cred_helper_parser_parse_from_commands(
             int do_parse;
             do_parse = 1;
             switch (getopt_long(argc, argv,
-                "huge:i:j:l:v::", long_opts, NULL)) {
+                "hugs:e:i:j:l:v::", long_opts, NULL)) {
             case 'i':
                 cred_helper_set_client_id(result, optarg); 
                 break;
@@ -102,6 +109,9 @@ cred_helper_parser_parse_from_commands(
                 break;
             case 'g':
                 cred_helper_set_generator_mode(result, 1);
+                break;
+            case 's':
+                cred_helper_set_service(result, optarg);
                 break;
             case 'j':
                 cred_helper_run_gui_generator(result,
@@ -225,17 +235,26 @@ cred_helper_parser_parse_on_off(
 void
 cred_helper_parser_display_usage()
 {
-    puts(
-        "cred_helper [OPTION]\n"
-        "-i, --cid=[CID]                set client id\n"
-        "-u, --auth-url=[URL]           set authentication url\n"
-        "-v, --verbose=[LEVEL?]         set verbose level\n"
-        "-e, --logging-level=[LEVEL]    set logging level.\n"
-        "-g, --generator                run generator only\n"
-        "-j, --gui=[on|off]             run gui generator\n"
-        "-l, --limited=[on|off]         run generator for limited device\n" 
-        "-h, --help                     display this message\n"
-        "[GIT_OPERATION]                get, store, erase");
+    char* exe_name;
+    exe_name = exe_info_get_exe_name();
+    if (exe_name) {
+        printf(gettext(
+"%s [OPTION]\n"
+"-i, --cid=[CID]                set client id\n"
+"-u, --auth-url=[URL]           set authentication url\n"
+"-s, --service=[SERVICE]        set oauth token service provider\n"
+"-v, --verbose=[LEVEL?]         set verbose level\n"
+"-e, --logging-level=[LEVEL]    set logging level.\n"
+"-g, --generator                run generator only\n"
+"-j, --gui=[on|off]             run gui generator\n"
+"-l, --limited=[on|off]         run generator for limited device\n" 
+"-h, --help                     display this message\n"
+"[GIT_OPERATION]                get, store, erase"),
+            exe_name);
+    }
+    if (exe_name) {
+        exe_info_free(exe_name);
+    }
 }
 
 /* vi: se ts=4 sw=4 et: */

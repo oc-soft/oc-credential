@@ -96,6 +96,23 @@ cred_helper_set_access_token(
     cred_helper* obj,
     const char* access_token);
 
+
+/**
+ * set default token generator service
+ */
+int
+cred_helper_set_service(
+    cred_helper* obj,
+    const char* service);
+
+/**
+ * get default token generator service reference
+ */
+const char*
+cred_helper_get_service_ref(
+    cred_helper* obj);
+
+
 /**
  * set test mode to get
  */

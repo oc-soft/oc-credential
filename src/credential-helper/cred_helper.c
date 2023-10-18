@@ -40,6 +40,11 @@ struct _cred_helper {
     char* access_token;
 
     /**
+     * token generator service
+     */
+    char* service;
+
+    /**
      * credential operation from git 
      */
     credential_op credential_operation;
@@ -97,6 +102,7 @@ cred_helper_create()
         result->ui_token_generator = ui_token_generator;
         result->client_id = NULL;
         result->access_token = NULL;
+        result->service = NULL;
         result->credential_operation = CDT_OP_UNKNOWN;
         result->verbose_level = 0;
         result->generator_mode = 0;
@@ -151,6 +157,7 @@ cred_helper_release(
         if (result == 0) {
             cred_helper_set_client_id(obj, NULL);
             cred_helper_set_client_secret(obj, NULL);
+            cred_helper_set_service(obj, NULL);
             ui_token_gen_release(obj->ui_token_generator);
             lmd_release(obj->limited_device);
             cred_helper_i_free(obj);
@@ -276,6 +283,8 @@ cred_helper_set_client_secret(
     return result;
 }
 
+
+
 /**
  * get access token
  */
@@ -313,6 +322,46 @@ cred_helper_set_access_token(
         errno = EINVAL;
     }
     return result;
+}
+
+/**
+ * set default token generator service
+ */
+int
+cred_helper_set_service(
+    cred_helper* obj,
+    const char* service)
+{
+    int result;
+    result = 0;
+    if (obj) {
+        result = lmd_set_service(obj->limited_device, service);
+        if (result == 0) {
+            result = cred_helper_set_str_field(
+                &obj->service, service);
+        }
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * get default token generator service
+ */
+const char*
+cred_helper_get_service_ref(
+    cred_helper* obj)
+{
+    const char* result;
+    result = NULL;
+    if (obj) {
+        result = obj->service;
+    } else {
+        errno = EINVAL;
+    }
+    return result; 
 }
 
 /**
