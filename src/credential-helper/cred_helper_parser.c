@@ -51,12 +51,6 @@ cred_helper_parser_parse_from_commands(
                     .val = 'v'
                 },
                 {
-                    .name = "get-test",
-                    .has_arg = no_argument,
-                    .flag = NULL,
-                    .val = 'u'
-                },
-                {
                     .name = "service",
                     .has_arg = required_argument,
                     .val = 's'
@@ -100,12 +94,9 @@ cred_helper_parser_parse_from_commands(
             int do_parse;
             do_parse = 1;
             switch (getopt_long(argc, argv,
-                "hugs:e:i:j:l:v::", long_opts, NULL)) {
+                "hgs:e:i:j:l:v::", long_opts, NULL)) {
             case 'i':
                 cred_helper_set_client_id(result, optarg); 
-                break;
-            case 'u':
-                cred_helper_set_test_mode_to_get(result, 1);
                 break;
             case 'g':
                 cred_helper_set_generator_mode(result, 1);
@@ -241,7 +232,6 @@ cred_helper_parser_display_usage()
         printf(gettext(
 "%s [OPTION]\n"
 "-i, --cid=[CID]                set client id\n"
-"-u, --auth-url=[URL]           set authentication url\n"
 "-s, --service=[SERVICE]        set oauth token service provider\n"
 "-v, --verbose=[LEVEL?]         set verbose level\n"
 "-e, --logging-level=[LEVEL]    set logging level.\n"

@@ -9,8 +9,6 @@ noinst_HEADERS= cred_helper_types.h \
 	cred_helper_i.h \
 	cred_helper_op.h \
 	cred_helper_parser.h \
-	client_id.h \
-	client_secret.h \
 	credential_op.h \
 	credential_storage_key_id_table.h \
 	exe_info.h \
@@ -52,8 +50,6 @@ credhelper_src = main.c \
 	cred_helper_parser.c \
 	lmd.c \
 	lmd_parser.c \
-	client_secret.c \
-	client_id.c \
 	lmd_connections.c \
 	lmd_github_connections.c \
 	lmd_google_connections.c \
@@ -87,7 +83,6 @@ EXTRA_DIST = \
 	url_services.gpf.in \
 	url_id.gpf.in \
 	credhelper_res.rc.in \
-	t_site_01.sh.in \
 	rt_ui_01.sh.in \
 	mem_dbg_on.c.in \
 	rt_get_01.sh.in \
@@ -183,15 +178,18 @@ endif
 
 credential_ocs_t01_token_gen_ui_exec_SOURCES = t01_token_gen_ui_exec.c \
 	token_gen_ui_exec.c \
-	exec_names.c
+	exec_names.c 
 
 if RUN_WIN
 credential_ocs_t01_token_gen_ui_exec_SOURCES += path_win.c exe_info_win.c
+credential_ocs_t01_token_gen_ui_exec_SOURCES += logging_win.c
 endif
 if RUN_DARWIN
 credential_ocs_t01_token_gen_ui_exec_SOURCES += path.c exe_info_darwin.c
+credential_ocs_t01_token_gen_ui_exec_SOURCES += logging.c 
 else
 credential_ocs_t01_token_gen_ui_exec_SOURCES += path.c exe_info_linux.c
+credential_ocs_t01_token_gen_ui_exec_SOURCES += logging.c 
 endif
 
 credential_ocs_creddef_SOURCES = cred_default.c
@@ -229,7 +227,7 @@ endif
 SH_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/tap-driver.sh
 TEST_EXTENSIONS = .sh
 SH_LOG_COMPILER = $(SHELL)
-TESTS = t_store_01.sh t_site_01.sh t_erase_01.sh t_erase_02.sh t_l10n_01.sh
+TESTS = t_store_01.sh t_erase_01.sh t_erase_02.sh t_l10n_01.sh
 AM_TESTS_ENVIRONMENT = HOME=$(builddir);
 CLIENT_ID_TXT=$(top_srcdir)/src/config/client-id.txt
 CLIENT_SECRET_TXT=$(top_srcdir)/src/config/client-secret.txt
@@ -366,14 +364,7 @@ clean-client-dbg:
 
 all-local: rt_get_01.sh rt_get_02.sh rt_ui_01.sh rt_cli_get_01.sh
 
-t_site_01.sh : t_site_01.sh.in
-	sed -e 's!%CLIENT_ID_PATH%!$(top_srcdir)/src/config/client-id.txt!' \
-		-e 's!%CLIENT_ID_DBG_PATH%!$(builddir)/client-id-dbg.txt!' \
-		-e 's!%CLIENT_SECRET_PATH%!$(top_srcdir)/src/config/client-secret.txt!' \
-		-e 's!%CLIENT_SECRET_DBG_PATH%!$(builddir)/client-secret-dbg.txt!' \
-		-e 's!%CLI%!$(abs_builddir)/credential-ocs/credhelper$(EXEEXT)!' \
-		-e 's!%AWK%!$(AWK)!' $< \
-	> $@
+
 rt_get_01.sh : rt_get_01.sh.in
 	sed -e 's!%CLIENT_ID_PATH%!$(abs_top_srcdir)/src/config/client-id.txt!' \
 		-e 's!%CLI%!$(abs_builddir)/credential-ocs/credhelper$(EXEEXT)!' \
@@ -402,22 +393,10 @@ git-credential-data-1.txt: $(srcdir)/../config/client-id.txt \
 	$(srcdir)/create-git-credential-input.sh <$< >$@			
 
 
-t_site_01.log: t_store_01.log
-
-t_erase_01.log: t_site_01.log
+t_erase_01.log: t_store_01.log
 
 t_erase_02.log: t_erase_01.log
 
-
-client_secret.gpf : client_secret.gpf.in $(srcdir)/../config/client-secret.txt $(builddir)/client-secret-dbg.txt 
-	awk -v in_file=$< -e $(awk_cmd_0) \
-		$(srcdir)/../config/client-secret.txt \
-		$(builddir)/client-secret-dbg.txt >$@
-
-client_id.gpf : client_id.gpf.in $(srcdir)/../config/client-id.txt $(builddir)/client-id-dbg.txt
-	awk -v in_file=$< -e $(awk_cmd_0) \
-		$(srcdir)/../config/client-id.txt \
-		$(builddir)/client-id-dbg.txt >$@
 
 url_id.gpf : url_id.gpf.in \
 	$(srcdir)/../config/url-id.txt \
@@ -597,17 +576,19 @@ uninstall-am: preuninstall uninstall-libexecPROGRAMS
 
 clean-local:
 	rm -f *.rc	
-	rm -f t_site_01.sh rt_ui_01.sh 
-	rm -f rt_get_01.sh rt_get_02.sh
+	rm -f *.gpf
+	rm -f git-credential-data-1.txt
+	rm -f rt_ui_01.sh  rt_cli_get_01.sh
+	rm -f rt_get_01.sh rt_get_02.sh 
 	rm -f mem_dbg_on.c mem_dbg_off.c
 	rm -f exec_names.c
+	rm -f url_id.c url_services.c
+	rm -f service_id.c service_secret.c
+	rm -f service_url_secret.c service_url_client.c
 	rm -f l10n_i.c
+	rm -f logging_win.h
 	rm -f credhelper_const.h
 	rm -f credhelper_res.rc
-	rm -f client_secret.gpf
-	rm -f client_secret.c
-	rm -f client_id.gpf
-	rm -f client_id.c
 	if [ -z "$(CLEAN_FOR_DEBUG)" ]; then \
 		rm -f mem_dbg.c; \
 	fi

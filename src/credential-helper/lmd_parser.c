@@ -69,9 +69,6 @@ lmd_parser_parse_from_commands(
             case 'i':
                 lmd_set_client_id(result, optarg); 
                 break;
-            case 'u':
-                lmd_set_test_mode_to_get(result, 1);
-                break;
             case 'g':
                 lmd_set_generator_mode(result, 1);
                 break;

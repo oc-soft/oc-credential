@@ -8,8 +8,6 @@
 #include "ui_token_gen.h"
 #include "lmd.h"
 #include "lmd_op.h"
-#include "client_secret.h"
-#include "client_id.h"
 #include "credential_desc.h"
 #include "credential_storage.h"
 #include "buffer/char_buffer.h"
@@ -40,15 +38,6 @@ static int
 get_oauth_token_with_lmd(
     cred_helper* obj,
     credential_desc* desc);
-
-/**
- * get oauth token
- */
-static int
-get_oauth_token_with_client(
-    cred_helper* obj,
-    const char* client_id,
-    const char* client_secret);
 
 /**
  * read all data from stdin

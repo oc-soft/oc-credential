@@ -364,43 +364,6 @@ cred_helper_get_service_ref(
     return result; 
 }
 
-/**
- * set test mode to get
- */
-int
-cred_helper_set_test_mode_to_get(
-    cred_helper* obj,
-    int testing_mode)
-{
-    int result;
-    if (obj) {
-        result = 0;
-        obj->test_mode_get = testing_mode;
-    } else {
-        result = -1;
-        errno = EINVAL;
-    }
-    return result;
-}
-
-/**
- * get test mode to get
- */
-int
-cred_helper_is_test_mode_to_get(
-    cred_helper* obj)
-{
-    int result;
-    result = 0;
-    if (obj) {
-        result = obj->test_mode_get;
-    } else {
-        errno = EINVAL;
-    }
-
-    return result;
-}
- 
 
 /**
  * set generator mode

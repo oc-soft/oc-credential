@@ -113,21 +113,6 @@ cred_helper_get_service_ref(
     cred_helper* obj);
 
 
-/**
- * set test mode to get
- */
-int
-cred_helper_set_test_mode_to_get(
-    cred_helper* obj,
-    int testing_mode);
-
-/**
- * get test mode to get
- */
-int
-cred_helper_is_test_mode_to_get(
-    cred_helper* obj);
- 
 
 /**
  * set generator mode
