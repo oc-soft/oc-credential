@@ -6,11 +6,6 @@ EXTRA_DIST = rc/rc.json \
 	win/upgrade-code.txt \
 	url/url.csv
 
-PRIVATE_DISTFILES = src/config/client-id-dbg.txt \
-	src/config/client-secret.txt \
-	src/config/client-secret-dbg.txt \
-	src/config/client-id.txt 
-
 private_distname= private-$(PACKAGE)-$(VERSION)
 
 remove-private-distdir:
@@ -22,10 +17,10 @@ remove-private-distdir:
 
 create-private-distdir:
 	test -d "$(distdir)" || mkdir $(distdir)
-	for dstf in $(PRIVATE_DISTFILES) ; do \
-		dstdir=$(distdir)/`dirname $$dstf`; \
-		test -d $$dstdir || mkdir -p $$dstdir; \
-		cp $(top_srcdir)/$$dstf $$dstdir; \
+	dstdir=$(distdir)/src/config; \
+	test -d $$dstdir || mkdir -p $$dstdir; \
+	for dstf in `$(MAKE) -s -C src/config private-config-files`; do \
+		cp $(top_srcdir)/src/config/$$dstf $$dstdir; \
 	done
 
 .PHONY: create-private-distdir

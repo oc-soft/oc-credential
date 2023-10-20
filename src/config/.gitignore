@@ -1,4 +1,6 @@
-client-id.txt
-client-secret.txt
-client-id-dbg.txt
-client-secret-dbg.txt
+service-id.txt
+service-secret.txt
+service-url-client.txt
+service-url-secret.txt
+url-id.txt
+url-service.txt

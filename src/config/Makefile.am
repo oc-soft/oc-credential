@@ -1,11 +1,19 @@
 
-config_source = client-id-dbg.txt \
-	client-secret.txt \
-	client-secret-dbg.txt \
-	client-id.txt 
+private_config_source = service-id.txt \
+	service-secret.txt \
+	service-url-client.txt \
+	service-url-secret.txt \
+	url-id.txt \
+	url-service.txt
+
 
 if OC_ENABLE_DIST_PRIVATE
-EXTRA_DIST = $(config_source)
+EXTRA_DIST = $(private_config_source)
 endif
+
+private-config-files: $(private_config_source) 
+	@echo $(private_config_source)
+
+.PHONY: private-confi-source
 
 # vi: se ts=4 sw=4 noet:

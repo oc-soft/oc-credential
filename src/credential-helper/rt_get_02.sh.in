@@ -1,6 +1,6 @@
 #! /usr/bin/env sh
 credhelper_cmd=%CLI%
-client_id_path=%CLIENT_ID_PATH%
+url_id_path=%URL_ID_PATH%
 awk_cmd=%AWK%
 credhelper_cmd_path=$credhelper_cmd
 
@@ -8,21 +8,25 @@ function client_line_to_desc()
 {
   echo $1 | $awk_cmd -e '
     BEGIN {
-      FS=",";
+      FS=","
     }
     {
-      if ($1) {
-        print "protocol=" $1;
+      item_count = split($1, proto_host_path, "://")
+      if (item_count > 1) {
+        path_idx = index(proto_host_path[2], "/")
+        if (path_idx) {
+          host = substr(proto_host_path[2], 1, path_idx - 1)
+          path = substr(proto_host_path[2], path_idx + 1)
+        } else {
+          host = proto_host_path[2]
+        }
+        print "protocol=" proto_host_path[1]
+        print "host=" host
+        if (length(path)) {
+          print "path=" path
+        }
+        print ""
       }
-      if ($2) {
-        print "host=" $2;
-      }
-      if ($3) {
-        print "path=" $3;
-      }
-    }
-    END {
-      print "";
     }'
 }
 
@@ -51,7 +55,7 @@ if [ -n $1 ]; then
   credhelper_cmd="$credhelper_cmd $1"
 fi
 
-run_test $client_id_path 1
+run_test $url_id_path 1
 mtrace $credhelper_cmd_path mem_trace_get_02
 
 # vi: se ts=2 sw=2 et:

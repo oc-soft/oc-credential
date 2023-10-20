@@ -229,8 +229,6 @@ TEST_EXTENSIONS = .sh
 SH_LOG_COMPILER = $(SHELL)
 TESTS = t_store_01.sh t_erase_01.sh t_erase_02.sh t_l10n_01.sh
 AM_TESTS_ENVIRONMENT = HOME=$(builddir);
-CLIENT_ID_TXT=$(top_srcdir)/src/config/client-id.txt
-CLIENT_SECRET_TXT=$(top_srcdir)/src/config/client-secret.txt
 CLEAN_FOR_DEBUG =
 pkgdatadir=$(datadir)/$(PACKAGE_NAME)
 
@@ -335,12 +333,6 @@ credential_ocs_credhelper_CPPFLAGS=-I$(top_srcdir)/oclib/buffer/include \
 credential_ocs_creddef_CPPFLAGS= -I$(top_srcdir)/src/core
 
 
-$(builddir)/client-secret-dbg.txt:
-	: > $@
-
-$(builddir)/client-id-dbg.txt:
-	: > $@
-
 
 mem_dbg.c : mem_dbg_off.c.in
 	cp $< $@
@@ -350,36 +342,25 @@ mem_dbg: mem_dbg_on.c.in
 
 .PHONY: mem_dbg
 
-client-dbg:
-	cp $(srcdir)/../config/client-secret-dbg.txt \
-		$(builddir)/client-secret-dbg.txt 
-	cp $(srcdir)/../config/client-id-dbg.txt \
-		$(builddir)/client-id-dbg.txt 
-
-clean-client-dbg:
-	rm $(builddir)/client-secret-dbg.txt
-	rm $(builddir)/client-id-dbg.txt 
-
-.PHONY: client-dbg clean-client-dbg
 
 all-local: rt_get_01.sh rt_get_02.sh rt_ui_01.sh rt_cli_get_01.sh
 
 
 rt_get_01.sh : rt_get_01.sh.in
-	sed -e 's!%CLIENT_ID_PATH%!$(abs_top_srcdir)/src/config/client-id.txt!' \
+	sed -e 's!%URL_ID_PATH%!$(abs_top_srcdir)/src/config/url-id.txt!' \
 		-e 's!%CLI%!$(abs_builddir)/credential-ocs/credhelper$(EXEEXT)!' \
 		-e 's!%AWK%!$(AWK)!' $< >$@
 	chmod u+x $@
 
 rt_cli_get_01.sh : rt_get_01.sh.in
-	sed -e 's!%CLIENT_ID_PATH%!$(abs_top_srcdir)/src/config/client-id.txt!' \
+	sed -e 's!%URL_ID_PATH%!$(abs_top_srcdir)/src/config/url-id.txt!' \
 		-e 's!%CLI%!$(abs_builddir)/credential-ocs/credhelper$(EXEEXT) -e 10 -j off -g on!' \
 		-e 's!%AWK%!$(AWK)!' $< >$@
 	chmod u+x $@
 
 rt_get_02.sh : rt_get_02.sh.in
 	sed -e 's!%CLI%!$(abs_builddir)/credential-ocs/credhelper$(EXEEXT)!' \
-		-e 's!%CLIENT_ID_PATH%!$(abs_top_srcdir)/src/config/client-id.txt!' \
+		-e 's!%URL_ID_PATH%!$(abs_top_srcdir)/src/config/url-id.txt!' \
 		-e 's!%AWK%!$(AWK)!' $< >$@
 	chmod u+x $@
 
@@ -388,9 +369,9 @@ rt_ui_01.sh : rt_ui_01.sh.in | link-ui
 	sed -e 's!%UI_EXE_RELPATH%!credential-ocs/$(ui_exe_relative_path)!' $< >$@
 	chmod u+x $@
 
-git-credential-data-1.txt: $(srcdir)/../config/client-id.txt \
-	$(srcdir)/create-git-credential-input.sh
-	$(srcdir)/create-git-credential-input.sh <$< >$@			
+git-credential-data-1.txt: $(srcdir)/../config/url-id.txt \
+	$(srcdir)/create-git-credential-input.awk
+	$(AWK) -f $(srcdir)/create-git-credential-input.awk <$< >$@
 
 
 t_erase_01.log: t_store_01.log
@@ -592,8 +573,6 @@ clean-local:
 	if [ -z "$(CLEAN_FOR_DEBUG)" ]; then \
 		rm -f mem_dbg.c; \
 	fi
-	rm -f client-id-dbg.txt
-	rm -f client-secret-dbg.txt
 	rm -f mem_trace_erasing
 	rm -f mem_trace_writing
 	if [ -x $(builddir)/credential-ocs/creddef ]; then \
