@@ -14,6 +14,7 @@
 #include "lmd_requests.h"
 #include "lmd_connections.h"
 #include "lmd_ui.h"
+#include "lmd_oauth_token_param_creator.h"
 #include "logging.h"
 #include "proc_sched.h"
 #include "url_path_iterate.h"
@@ -23,6 +24,9 @@
 #include "service_url_client.h"
 #include "service_secret.h"
 #include "service_id.h"
+#include "service_url_device_user_code_param.h"
+#include "service_url_lmd_oauth_token_param.h"
+#include "service_oauth_token_parser.h"
 #include "fd_io.h"
 
 /**
@@ -173,6 +177,28 @@ lmd_op_get_client_from_url(
     const char* service,
     char** client_secret);
 
+/**
+ * create parameter for device and user code from url
+ */
+int
+lmd_op_create_device_user_code_param_from_url(
+    const char* protocol,
+    const char* host,
+    const char* path,
+    const char* service,
+    const char* client_id,
+    char** param);
+
+/**
+ * get oauth token param creator from url
+ */
+int
+lmd_op_get_oauth_token_param_creator_from_url(
+    const char* protocol,
+    const char* host,
+    const char* path,
+    const char* service,
+    lmd_oauth_token_param_creator** param_creator);
 
 /**
  * read number from stdin
@@ -249,10 +275,15 @@ lmd_op_select_service(
         char* service;
         char* client_id;
         char* secret;
+        char* device_user_code_param;
+        lmd_oauth_token_param_creator* oauth_token_param_creator;
+        int (*oauth_token_loader)(lmd*, json_object*);
         client_id = NULL;
         secret = NULL;
         service = NULL;
-
+        device_user_code_param = NULL;
+        oauth_token_param_creator = NULL;
+        oauth_token_loader = NULL;
         result = lmd_op_select_service_if_not(
             obj, protocol, host, path, &service);
         if (result == 0) {
@@ -274,14 +305,44 @@ lmd_op_select_service(
         }
         logging_log(LOG_LEVEL_DEBUG, "client id: %s",
             client_id ? client_id : "null");
+
+        if (result == 0) {
+            result = lmd_op_create_device_user_code_param_from_url(
+                protocol, host, path, service, client_id,
+                &device_user_code_param);
+        }
+        logging_log(LOG_LEVEL_DEBUG, "device user code param: %s",
+            device_user_code_param ?
+            device_user_code_param : "null");
+
+        if (result == 0) {
+            result = lmd_op_get_oauth_token_param_creator_from_url(
+                protocol, host, path, service, &oauth_token_param_creator);
+        }
+        if (result == 0) {
+            result = service_oauth_token_parser_get(service,
+                &oauth_token_loader);
+        }
+
         if (result == 0 && secret) {
             result = lmd_set_client_secret(obj, secret);
+        }
+        if (result == 0) {
+            result = lmd_set_oauth_token_loader(obj, oauth_token_loader);
+        }
+        if (result == 0) {
+            result = lmd_set_oauth_token_param_creator(obj, 
+                oauth_token_param_creator);
         }
         if (result == 0) {
             result = lmd_set_client_id(obj, client_id);
         }
         if (result == 0) {
             result = lmd_set_service(obj, service);
+        }
+        if (result == 0) {
+            result = lmd_set_device_user_code_param(
+                obj, device_user_code_param);
         }
         if (client_id) {
             lmd_i_free(client_id);
@@ -291,6 +352,12 @@ lmd_op_select_service(
         }
         if (service) {
             lmd_i_free(service);
+        }
+        if (oauth_token_param_creator) {
+            lmd_oauth_token_param_creator_release(oauth_token_param_creator);
+        }
+        if (device_user_code_param) {
+            lmd_i_free(device_user_code_param);
         }
     } else {
         result = -1;
@@ -499,6 +566,8 @@ lmd_op_get_oauth_token_with_client(
     int result;
     lmd_progress progress;
     result = 0;
+    logging_log(LOG_LEVEL_DEBUG, "start oauth token");
+
     if (result == 0) {
         memset(&progress, 0, sizeof(progress));
         result = lmd_get_service_ref(limited_acc) ? 0 : -1;
@@ -507,6 +576,12 @@ lmd_op_get_oauth_token_with_client(
         result = lmd_get_client_id_ref(limited_acc) ? 0 : -1;
     }
     if (result == 0) {
+        result = lmd_get_service_ref(limited_acc) ? 0 : -1;
+    }
+    if (result == 0) {
+        logging_log(LOG_LEVEL_DEBUG, "load discovery document for %s",
+            lmd_get_service_ref(limited_acc));
+
         result = lmd_connections_load_discovery_document(
             limited_acc, 
             lmd_get_service_ref(limited_acc));
@@ -814,5 +889,145 @@ lmd_op_get_client_from_url(
     }
     return result;
 }
+
+/**
+ * create parameter for device and user code from url
+ */
+int
+lmd_op_create_device_user_code_param_from_url(
+    const char* protocol,
+    const char* host,
+    const char* path,
+    const char* service,
+    const char* client_id,
+    char** param)
+{
+    char* url_id;
+    char* service_id;
+    int state;
+    int result;
+    url_to_id_iter_info url_iter_info;
+
+    memset(&url_iter_info, 0, sizeof(url_iter_info));
+ 
+    url_id = NULL;
+    service_id = NULL;
+    result = 0;
+    
+    state = url_path_iterate(protocol, host, path, 
+        (int (*)(void*, const char*, const char*, const char*))
+            lmd_op_find_url_id_iter,
+        &url_iter_info);
+    result = state ? 0 : -1;
+    if (result == 0) {
+        url_id = url_iter_info.id;    
+    }
+    if (result == 0) {
+        result = service_id_get_id(service, &service_id, lmd_i_alloc);
+    } else {
+        result = -1;
+    }
+    if (result == 0) {
+        char* param_0;
+        param_0 = NULL;
+        state = service_url_device_user_code_param_create(
+            service_id, url_id, client_id, &param_0, lmd_i_alloc);
+        if  (state == 0) {
+            if (param) {
+                *param = param_0;
+                param_0 = NULL;
+            } else {
+                result = -1;
+            }
+        } else {
+            result = -1;
+        }
+        if (param_0) {
+            lmd_i_free(param_0);
+        }
+    } else {
+        result = -1;
+    }
+
+    if (service_id) {
+        lmd_i_free(service_id);
+    }
+    if (url_id) {
+        lmd_i_free(url_id);
+    }
+    return result;
+}
+
+/**
+ * get oauth token param creator from url
+ */
+int
+lmd_op_get_oauth_token_param_creator_from_url(
+    const char* protocol,
+    const char* host,
+    const char* path,
+    const char* service,
+    lmd_oauth_token_param_creator** param_creator)
+{
+    char* url_id;
+    char* service_id;
+    int state;
+    int result;
+    url_to_id_iter_info url_iter_info;
+
+    memset(&url_iter_info, 0, sizeof(url_iter_info));
+ 
+    url_id = NULL;
+    service_id = NULL;
+    result = 0;
+    
+    state = url_path_iterate(protocol, host, path, 
+        (int (*)(void*, const char*, const char*, const char*))
+            lmd_op_find_url_id_iter,
+        &url_iter_info);
+    result = state ? 0 : -1;
+    if (result == 0) {
+        url_id = url_iter_info.id;    
+    }
+    logging_log(LOG_LEVEL_DEBUG, "url id: %s", url_id ? url_id : "null");
+    if (result == 0) {
+        result = service_id_get_id(service, &service_id, lmd_i_alloc);
+    } else {
+        result = -1;
+    }
+    logging_log(LOG_LEVEL_DEBUG, "service id: %s",
+        service_id ? service_id : "null");
+    if (result == 0) {
+        lmd_oauth_token_param_creator* param_creator_0;
+        param_creator_0 = NULL;
+        state = service_url_lmd_oauth_token_param_get_creator(
+            service_id, url_id, &param_creator_0);
+        logging_log(LOG_LEVEL_DEBUG, "param_creator: %p", param_creator_0);
+     
+        if  (state == 0) {
+            if (param_creator) {
+                *param_creator = param_creator_0;
+                param_creator_0 = NULL;
+            } else {
+                result = -1;
+            }
+        } else {
+            result = -1;
+        }
+        if (param_creator_0) {
+            lmd_oauth_token_param_creator_release(param_creator_0);
+        }
+    } else {
+        result = -1;
+    }
+    if (service_id) {
+        lmd_i_free(service_id);
+    }
+    if (url_id) {
+        lmd_i_free(url_id);
+    }
+    return result;
+}
+
 
 /* vi: se ts=4 sw=4 et: */

@@ -1,0 +1,296 @@
+%{
+#include "service_oauth_token_parser.h"
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+
+/**
+ * oauth token parser entry
+ */
+typedef struct _service_oauth_token_parser_entry
+    service_oauth_token_parser_entry;
+
+
+/**
+ * oauth token parser for google
+ */
+static int
+service_oauth_token_loader_google(
+    lmd* obj,
+    json_object* json);
+
+/**
+ * oauth token parser for microsoft 
+ */
+static int
+service_oauth_token_loader_microsoft(
+    lmd* obj,
+    json_object* json);
+
+/**
+ * oauth token parser for github 
+ */
+static int
+service_oauth_token_loader_github(
+    lmd* obj,
+    json_object* json);
+
+
+
+/**
+ * find id_client_client entry by id 
+ */
+static service_oauth_token_parser_entry*
+in_word_set(
+    const char* id,
+    size_t length);
+
+%}
+%struct-type
+%compare-lengths
+%define slot-name id
+struct _service_oauth_token_parser_entry {
+    const char* id;
+    int (*loader)(lmd*, json_object*);
+};
+%%
+google, service_oauth_token_loader_google
+github, service_oauth_token_loader_github
+microsoft, service_oauth_token_loader_microsoft
+1, service_oauth_token_loader_google
+2, service_oauth_token_loader_github
+3, service_oauth_token_loader_microsoft
+%%
+
+/**
+ 
+
+/**
+ * get oauth token loader
+ */
+int
+service_oauth_token_parser_get(
+    const char* service,
+    int (**loader)(lmd*, json_object* json))
+{
+    int result;
+    result = 0;
+    if (service) {
+        service_oauth_token_parser_entry* entry; 
+        entry = in_word_set(service, strlen(service)); 
+        if (entry) {
+            if (loader) {
+                *loader = entry->loader;
+            }
+        } else {
+            result = -1;
+        }
+    } else {
+        errno = EINVAL;
+        result = -1;
+    }
+    return result; 
+}
+
+/**
+ * oauth token parser for google
+ */
+static int
+service_oauth_token_loader_google(
+    lmd* obj,
+    json_object* json)
+{
+    int result;
+    result = 0;
+    if (obj) {  
+        struct {
+            const char* key;
+            int (*set_value)(lmd*, const char*, size_t);
+        } key_set_str[] = {
+            {
+                "access_token",
+                lmd_set_access_token_0
+            },
+            {
+                "token_type",
+                lmd_set_token_type_0
+            },
+            {
+                "scope",
+                lmd_set_scope_0
+            },
+            {
+                "refresh_token",
+                lmd_set_refresh_token_0
+            }
+        }; 
+
+        struct {
+            const char* key;
+            int (*set_value)(lmd*, int);
+        } key_set_int[] = {
+            {
+                "expires_in",
+                lmd_set_expires_in
+            }
+        };
+        size_t idx;
+        for (idx = 0;
+            idx < sizeof(key_set_str) / sizeof(key_set_str[0]);
+            idx++) {
+            json_object* str_json; 
+            json_bool js_state;
+            str_json = NULL;
+            js_state = json_object_object_get_ex(
+                json, key_set_str[idx].key, &str_json);
+            result = js_state ? 0 : -1;
+            if (result == 0) {
+                result = key_set_str[idx].set_value(
+                    obj,
+                    json_object_get_string(str_json),
+                    json_object_get_string_len(str_json));
+            }
+            if (result) {
+                break;
+            }
+        }
+
+        if (result == 0) {
+            for (idx = 0;
+                idx < sizeof(key_set_int) / sizeof(key_set_int[0]); 
+                idx++) {
+                json_object* int_json;
+                json_bool js_state;
+                int_json = NULL;
+                js_state = json_object_object_get_ex(
+                    json, key_set_int[idx].key, &int_json);
+                result = js_state ? 0 : -1;
+                if (result == 0) {
+                    result = key_set_int[idx].set_value(
+                        obj,
+                        (int)json_object_get_int(int_json));
+                }
+                if (result) {
+                    break;
+                }
+            }
+        }
+    } else {
+        result = -1;
+    }
+    return result;
+}
+
+/**
+ * oauth token parser for microsoft 
+ */
+static int
+service_oauth_token_loader_microsoft(
+    lmd* obj,
+    json_object* json)
+{
+    int result;
+    result = 0;
+    if (obj) {  
+        struct {
+            const char* key;
+            int required;
+            int (*set_value)(lmd*, const char*, size_t);
+        } key_set_str[] = {
+            {
+                "access_token",
+                1,
+                lmd_set_access_token_0
+            },
+            {
+                "token_type",
+                1,
+                lmd_set_token_type_0
+            },
+            {
+                "scope",
+                1,
+                lmd_set_scope_0
+            },
+            {
+                "refresh_token",
+                0,
+                lmd_set_refresh_token_0
+            }
+        }; 
+
+        struct {
+            const char* key;
+            int (*set_value)(lmd*, int);
+        } key_set_int[] = {
+            {
+                "expires_in",
+                lmd_set_expires_in
+            }
+        };
+        size_t idx;
+        for (idx = 0;
+            idx < sizeof(key_set_str) / sizeof(key_set_str[0]);
+            idx++) {
+            json_object* str_json; 
+            json_bool js_state;
+            str_json = NULL;
+            js_state = json_object_object_get_ex(
+                json, key_set_str[idx].key, &str_json);
+            if (key_set_str[idx].required) {
+                result = js_state ? 0 : -1;
+            }
+            if (result == 0) {
+                if (js_state) {
+                    result = key_set_str[idx].set_value(
+                        obj,
+                        json_object_get_string(str_json),
+                        json_object_get_string_len(str_json));
+                }
+            }
+            if (result) {
+                break;
+            }
+        }
+
+        if (result == 0) {
+            for (idx = 0;
+                idx < sizeof(key_set_int) / sizeof(key_set_int[0]); 
+                idx++) {
+                json_object* int_json;
+                json_bool js_state;
+                int_json = NULL;
+                js_state = json_object_object_get_ex(
+                    json, key_set_int[idx].key, &int_json);
+                result = js_state ? 0 : -1;
+                if (result == 0) {
+                    result = key_set_int[idx].set_value(
+                        obj,
+                        (int)json_object_get_int(int_json));
+                }
+                if (result) {
+                    break;
+                }
+            }
+        }
+    } else {
+        result = -1;
+    }
+    return result;
+}
+
+/**
+ * oauth token parser for github 
+ */
+static int
+service_oauth_token_loader_github(
+    lmd* obj,
+    json_object* json)
+{
+    int result;
+    result = 0;
+    result = -1;
+    return result;
+}
+
+/* vi: se ts=4 sw=4 et: */

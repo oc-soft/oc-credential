@@ -1,0 +1,398 @@
+%{
+#include "service_url_lmd_oauth_token_param.h"
+#include <stdio.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+
+/**
+ * service url oauth toke param
+ */
+typedef struct _service_url_lmd_oauth_token_param
+    service_url_lmd_oauth_token_param;
+
+/**
+ * oath token param creator
+ */
+typedef struct _sulot_param_creator sulot_param_creator;
+
+/**
+ * oath token param creator
+ */
+struct _sulot_param_creator {
+    /**
+     * virtual function table
+     */
+    const lmd_oauth_token_param_creator_vtbl* vtbl;
+
+    /**
+     * reference count
+     */
+    unsigned int ref_count;
+    
+    /**
+     * limited device oauth toke parameter entry
+     */
+    const service_url_lmd_oauth_token_param* param_entry;
+};
+
+/**
+ * find user device param format from service and url key
+ */
+static service_url_lmd_oauth_token_param*
+in_word_set(
+    const char* id,
+    size_t length);
+
+/**
+ * allocate memory
+ */
+static void*
+service_url_lmd_oauth_token_param_alloc(
+    size_t size);
+
+/**
+ * get parameter
+ */
+int
+service_url_lmd_oauth_token_param_create(
+    const service_url_lmd_oauth_token_param* entry,
+    const char* client_id,
+    const char* device_code,
+    const char* client_secret,
+    char** param,
+    void* (*mem_alloc)(size_t));
+
+/**
+ * create key
+ */
+int
+service_url_lmd_oauth_token_param_create_key(
+    const char* service_id,
+    const char* url_id,
+    char** key_ref,
+    size_t* key_length);
+
+/**
+ * create param creator
+ */
+lmd_oauth_token_param_creator*
+sulot_param_creator_create(
+    const service_url_lmd_oauth_token_param* param_entry);
+
+/**
+ * increment reference count
+ */
+static unsigned int
+sulot_param_creator_retain(
+    sulot_param_creator* obj);
+
+/**
+ * decrement reference count
+ */
+unsigned int
+sulot_param_creator_release(
+    sulot_param_creator* obj);
+
+/**
+ * create parameter
+ */
+int
+sulot_param_creator_create_param(
+    sulot_param_creator* obj,
+    const char* client_id,
+    const char* device_code,
+    const char* client_secret,
+    char** param,
+    void* (*mem_alloc)(size_t));
+
+/**
+ * virtual function table
+ */
+const static lmd_oauth_token_param_creator_vtbl vtbl = { 
+
+    (unsigned int (*)(lmd_oauth_token_param_creator*))
+        sulot_param_creator_retain,
+    (unsigned int (*)(lmd_oauth_token_param_creator*))
+        sulot_param_creator_release,
+
+    (int (*)(
+        lmd_oauth_token_param_creator*,
+        const char*, const char*, const char*, char**,
+        void* (*)(size_t)))
+        sulot_param_creator_create_param
+};
+
+%}
+%struct-type
+%compare-lengths
+%define slot-name id
+struct _service_url_lmd_oauth_token_param {
+    const char* id;
+    /**
+     * parameter format
+     */
+    const char* format;
+
+    /**
+     * client id allocation count
+     */
+    size_t client_id_alloc_count;
+
+    /**
+     * device code allocation count
+     */
+    size_t device_code_alloc_count;
+
+    /**
+     * client secret allocation count
+     */
+    size_t client_secret_alloc_count;
+};
+%%
+!KEY_VALUES!
+%%
+
+/**
+ * get param creator from service id and url id
+ */
+int
+service_url_lmd_oauth_token_param_get_creator(
+    const char* service_id,
+    const char* url_id,
+    lmd_oauth_token_param_creator** param_creator)
+{
+    int result;
+    char* key;
+    size_t key_length;
+
+    key = NULL;
+    key_length = 0;
+    result = service_url_lmd_oauth_token_param_create_key(
+        service_id, url_id, &key, &key_length);
+    if (result == 0) {
+        service_url_lmd_oauth_token_param* param_entry;
+        param_entry = in_word_set(key, key_length); 
+        if (param_entry) {
+            if (param_creator) {
+                lmd_oauth_token_param_creator* creator_0;
+                creator_0 = sulot_param_creator_create(param_entry);
+                result = creator_0 ? 0 : -1;
+                if (result == 0) {
+                    *param_creator = creator_0;
+                }
+            }
+        }
+    }
+    if (key) {
+        service_url_lmd_oauth_token_param_free(key);
+    } 
+    return result;
+}
+
+
+/**
+ * get parameter
+ */
+int
+service_url_lmd_oauth_token_param_create(
+    const service_url_lmd_oauth_token_param* entry,
+    const char* client_id,
+    const char* device_code,
+    const char* client_secret,
+    char** param,
+    void* (*mem_alloc)(size_t))
+{
+    int result;
+    char* key;
+    size_t key_length;
+    if (client_id && device_code) {
+        result = 0;
+        if (param) {
+            char* param_ref;
+            size_t format_length;
+            size_t id_length;
+            size_t device_code_length;
+            size_t secret_length;
+            size_t buffer_size;
+            if (!client_secret) {
+                client_secret = "";
+            }
+            if (!mem_alloc) {
+                mem_alloc = service_url_lmd_oauth_token_param_alloc;
+            }
+            id_length = strlen(client_id);
+            device_code_length = strlen(device_code);
+            secret_length = strlen(client_secret);
+
+            format_length = strlen(entry->format);                
+            buffer_size = format_length
+                + id_length * entry->client_id_alloc_count
+                + device_code_length * entry->device_code_alloc_count
+                + secret_length * entry->client_secret_alloc_count;
+            param_ref = (char*)mem_alloc(buffer_size + 1);
+            if (param_ref) {
+                snprintf(param_ref, buffer_size + 1,
+                    entry->format, client_id, device_code, 
+                    client_secret);
+                *param = param_ref;
+            } else {
+                result = -1;
+            }
+        }
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    if (key) {
+        service_url_lmd_oauth_token_param_free(key);
+    }
+    return result;
+}
+
+/**
+ * create key
+ */
+int
+service_url_lmd_oauth_token_param_create_key(
+    const char* service_id,
+    const char* url_id,
+    char** key_ref,
+    size_t* key_length)
+{
+    int result;
+    result = 0;
+
+    if (service_id && url_id && key_ref && key_length) {
+        char* buffer;
+        size_t service_id_len;
+        size_t url_id_len;
+        size_t buffer_size;
+        buffer = NULL;
+        service_id_len = strlen(service_id);
+        url_id_len = strlen(url_id); 
+        buffer_size = service_id_len + 1 + url_id_len;
+        buffer = service_url_lmd_oauth_token_param_alloc(buffer_size);
+        if (buffer) {
+            char* ptr;
+            ptr = buffer;
+            memcpy(ptr, service_id, service_id_len);
+            ptr += service_id_len;
+            memcpy(ptr, "-", 1);
+            ptr += 1;
+            memcpy(ptr, url_id, url_id_len);
+            *key_ref = buffer;
+            *key_length = buffer_size;
+            result = 0;
+        } else {
+            result = -1;
+        }
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+
+
+/**
+ * allocate memory
+ */
+static void*
+service_url_lmd_oauth_token_param_alloc(
+    size_t size)
+{
+    return malloc(size);
+}
+
+/**
+ * free memory
+ */
+void
+service_url_lmd_oauth_token_param_free(
+    void* mem)
+{
+    free(mem);
+}
+
+/**
+ * create param creator
+ */
+lmd_oauth_token_param_creator*
+sulot_param_creator_create(
+    const service_url_lmd_oauth_token_param* param_entry)
+{
+    sulot_param_creator* result;
+    result = (sulot_param_creator*)service_url_lmd_oauth_token_param_alloc(
+        sizeof(sulot_param_creator));
+    if (result) {
+        result->vtbl = &vtbl;
+        result->ref_count = 1;
+        result->param_entry = param_entry;
+    }
+    return (lmd_oauth_token_param_creator*)result;
+}
+
+/**
+ * increment reference count
+ */
+static unsigned int
+sulot_param_creator_retain(
+    sulot_param_creator* obj)
+{
+    unsigned int result;
+    result = 0;
+    if (obj) {
+        result = ++obj->ref_count;
+    } else {
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * decrement reference count
+ */
+unsigned int
+sulot_param_creator_release(
+    sulot_param_creator* obj)
+{
+    unsigned int result;
+    result = 0;
+    if (obj) {
+        result = --obj->ref_count;
+        if (result == 0) {
+            service_url_lmd_oauth_token_param_free(obj);
+        }
+    } else {
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * create parameter
+ */
+int
+sulot_param_creator_create_param(
+    sulot_param_creator* obj,
+    const char* client_id,
+    const char* device_code,
+    const char* client_secret,
+    char** param,
+    void* (*mem_alloc)(size_t))
+{
+    int result;
+    result = 0;
+    if (obj) {
+        result = service_url_lmd_oauth_token_param_create(
+            obj->param_entry, client_id, device_code, client_secret,
+            param, mem_alloc);
+    } else {
+        errno = EINVAL;
+    }
+
+    return result;
+}
+
+/* vi: se ts=4 sw=4 et: */

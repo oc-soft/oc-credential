@@ -27,10 +27,21 @@ BEGIN {
       }
       delete ARGV[i]
     }
+    if (ARGV[i] == "-a") {
+      if (i + 1 < ARGC) {
+        delete ARGV[i]
+        i++
+        amp_escape_mark_str = ARGV[i]
+      }
+      delete ARGV[i]
+    }
   }
-
   if (quote_mark_str) {
     quote_mark_size = split(quote_mark_str, quote_mark, ",")
+  }
+
+  if (amp_escape_mark_str) {
+    amp_escape_mark_size = split(amp_escape_mark_str, amp_escape_mark, ",")
   }
 
   if (key_file) {
@@ -56,15 +67,19 @@ function get_key_lines()
     items_count = split(key_lines[i], items, ","); 
     line = ""
     for (j = 1; j <= items_count; j++) {
+      item0 = items[j]
+      if (amp_escape_mark[j]) {
+        item0 = amp_escape(item0)
+      }
       if (quote_mark[j]) {
-        item0 = "\"" items[j] "\""
+        item1 = "\"" item0 "\""
       } else {
-        item0 = items[j]
+        item1 = item0
       }
       if (j == 1) {
-        line = item0
+        line = item1
       } else {
-        line = line ", " item0
+        line = line ", " item1
       }
     }
     if (i > 0) {
@@ -92,6 +107,24 @@ function get_keys(indent_sp) {
     }
   }
   return result
+}
+
+
+function amp_escape(str_item) {
+  
+  amp_pos_len = 0 
+  for (idx = 1; idx <= length(str_item); idx++) {
+    if ("&" == substr(str_item, idx, 1)) {
+      amp_pos[amp_pos_len] = idx
+      amp_pos_len++
+    }
+  }
+  for (idx = amp_pos_len - 1; idx >= 0; idx--) {
+    str_item_0 = substr(str_item, 1, amp_pos[idx] - 1) 
+    str_item_1 = substr(str_item, amp_pos[idx])
+    str_item = str_item_0 "\\" str_item_1
+  }
+  return str_item
 }
 
 # vi: se ts=2 sw=2 et:

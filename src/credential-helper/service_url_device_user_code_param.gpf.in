@@ -1,0 +1,169 @@
+%{
+#include "service_url_device_user_code_param.h"
+#include <stdio.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct _service_url_device_user_code_param
+    service_url_device_user_code_param;
+
+/**
+ * find user device param format from service and url key
+ */
+static service_url_device_user_code_param*
+in_word_set(
+    const char* id,
+    size_t length);
+
+/**
+ * allocate memory
+ */
+static void*
+service_url_device_user_code_param_alloc(
+    size_t size);
+
+/**
+ * create key
+ */
+int
+service_url_device_user_code_param_create_key(
+    const char* service_id,
+    const char* url_id,
+    char** key_ref,
+    size_t* key_length);
+
+%}
+%struct-type
+%compare-lengths
+%define slot-name id
+struct _service_url_device_user_code_param {
+    const char* id;
+    const char* format;
+    size_t client_id_alloc_count;
+};
+%%
+!KEY_VALUES!
+%%
+
+/**
+ * get parameter
+ */
+int
+service_url_device_user_code_param_create(
+    const char* service_id,
+    const char* url_id,
+    const char* client_id,
+    char** param,
+    void *(*mem_alloc)(size_t))
+{
+    int result;
+    char* key;
+    size_t key_length;
+    if (client_id) {
+        key = NULL;
+        key_length = 0;
+        result = service_url_device_user_code_param_create_key(
+            service_id, url_id, &key, &key_length);
+        if (result == 0) {
+            service_url_device_user_code_param *entry;
+            entry = in_word_set(key, key_length);
+            result = entry ? 0 : -1;
+            if (result == 0 && param) {
+                char* param_ref;
+                size_t format_length;
+                size_t id_length;
+                size_t buffer_size;
+                if (!mem_alloc) {
+                    mem_alloc = service_url_device_user_code_param_alloc;
+                }
+                id_length = strlen(client_id);
+                format_length = strlen(entry->format);
+                buffer_size = format_length
+                    + id_length * entry->client_id_alloc_count;
+                param_ref = (char*)mem_alloc(buffer_size + 1);
+                if (param_ref) {
+                    snprintf(param_ref, buffer_size + 1,
+                        entry->format, client_id);
+                    *param = param_ref;
+                } else {
+                    result = -1;
+                }
+            }
+        }
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    if (key) {
+        service_url_device_user_code_param_free(key);
+    }
+    return result;
+}
+
+/**
+ * create key
+ */
+int
+service_url_device_user_code_param_create_key(
+    const char* service_id,
+    const char* url_id,
+    char** key_ref,
+    size_t* key_length)
+{
+    int result;
+    result = 0;
+
+    if (service_id && url_id && key_ref && key_length) {
+        char* buffer;
+        size_t service_id_len;
+        size_t url_id_len;
+        size_t buffer_size;
+        buffer = NULL;
+        service_id_len = strlen(service_id);
+        url_id_len = strlen(url_id); 
+        buffer_size = service_id_len + 1 + url_id_len;
+        buffer = service_url_device_user_code_param_alloc(buffer_size);
+        if (buffer) {
+            char* ptr;
+            ptr = buffer;
+            memcpy(ptr, service_id, service_id_len);
+            ptr += service_id_len;
+            memcpy(ptr, "-", 1);
+            ptr += 1;
+            memcpy(ptr, url_id, url_id_len);
+            *key_ref = buffer;
+            *key_length = buffer_size;
+            result = 0;
+        } else {
+            result = -1;
+        }
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+
+
+/**
+ * allocate memory
+ */
+static void*
+service_url_device_user_code_param_alloc(
+    size_t size)
+{
+    return malloc(size);
+}
+
+/**
+ * free memory
+ */
+void
+service_url_device_user_code_param_free(
+    void* mem)
+{
+    free(mem);
+}
+
+/* vi: se ts=4 sw=4 et: */

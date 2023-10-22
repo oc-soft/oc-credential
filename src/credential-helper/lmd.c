@@ -24,6 +24,11 @@ struct _lmd {
     char* client_id;
 
     /**
+     * device user code param
+     */
+    char* device_user_code_param;
+
+    /**
      * client secret
      */
     char* client_secret;
@@ -47,6 +52,17 @@ struct _lmd {
      * device code
      */
     char* device_code;
+
+    /**
+     * ouath token url parameter creator
+     */
+    lmd_oauth_token_param_creator* oauth_token_param_creator;
+
+
+    /**
+     * oauth token loader
+     */
+    int (*oauth_token_loader)(lmd*, json_object* json);
 
     /**
      * user code
@@ -144,11 +160,14 @@ lmd_create()
         result->service = NULL;
         result->client_id = NULL;
         result->client_secret = NULL;
+        result->device_user_code_param = NULL;
         result->verification_url = NULL;
         result->token_endpoint_url = NULL;
         result->device_auth_token_endpoint_url = NULL;
         result->device_code = NULL;
         result->user_code = NULL;
+        result->oauth_token_param_creator = NULL;
+        result->oauth_token_loader = NULL;
         result->expires_in = 0;
         result->access_token = NULL;
         result->token_type = NULL;
@@ -198,10 +217,12 @@ lmd_release(
             lmd_set_service(obj, NULL);
             lmd_set_client_id(obj, NULL);
             lmd_set_client_secret(obj, NULL);
+            lmd_set_device_user_code_param(obj, NULL);
             lmd_set_device_auth_token_endpoint_url(obj, NULL);
             lmd_set_token_endpoint_url(obj, NULL);
             lmd_set_user_code(obj, NULL);
             lmd_set_device_code(obj, NULL);
+            lmd_set_oauth_token_param_creator(obj, NULL);
             lmd_set_token_eprqhd_options(obj, NULL, 0);
             lmd_set_dot_eprqhd_options(obj, NULL, 0);
             lmd_set_access_token(obj, NULL);
@@ -349,6 +370,135 @@ lmd_set_client_id(
     }
     return result;
 }
+
+
+/**
+ * set oauth token url param creator
+ */
+int
+lmd_set_oauth_token_param_creator(
+    lmd* obj,
+    lmd_oauth_token_param_creator* creator)
+{
+    int result;
+    result = 0;
+    if (obj) {
+        int do_set;
+        do_set = obj->oauth_token_param_creator != creator;
+        if (do_set) {
+            if (creator) {
+                lmd_oauth_token_param_creator_retain(creator);
+            }
+            if (obj->oauth_token_param_creator) {
+                lmd_oauth_token_param_creator_release(
+                    obj->oauth_token_param_creator);
+            }
+            obj->oauth_token_param_creator = creator;
+        }
+    } else {
+        errno = EINVAL;
+        result = -1;
+    }
+    return result;
+}
+
+/**
+ * get oauth token url param creator
+ */
+int
+lmd_get_oauth_token_param_creator(
+    lmd* obj,
+    lmd_oauth_token_param_creator** creator)
+{
+    int result;
+    result = 0;
+    if (obj && creator) {
+        if (obj->oauth_token_param_creator) {
+            lmd_oauth_token_param_creator_retain(
+                obj->oauth_token_param_creator);
+        }
+        *creator = obj->oauth_token_param_creator;
+    } else {
+        errno = EINVAL;
+        result = -1;
+    }
+    return result;
+}
+
+
+/**
+ * get oauth token url param creator reference
+ */
+lmd_oauth_token_param_creator*
+lmd_get_oauth_token_param_creator_ref(
+    lmd* obj)
+{
+    lmd_oauth_token_param_creator* result;
+    result = NULL;
+    if (obj) {
+        result = obj->oauth_token_param_creator;
+    } else {
+        errno = EINVAL;
+    }
+    return result;
+}
+
+
+/**
+ * get device user code param
+ */
+const char*
+lmd_get_device_user_code_param_ref(
+    const lmd* obj)
+{
+    const char* result;
+    result = NULL;
+    if (obj) {
+        result = obj->device_user_code_param;
+    } else {
+        errno = EINVAL;
+    }
+    return result;
+}
+
+
+/**
+ * set device user code param
+ */
+int
+lmd_set_device_user_code_param(
+    lmd* obj,
+    const char* device_user_code_param)
+{
+    int result;
+    result = 0;
+    if (obj) {
+        int do_set;
+        do_set = obj->device_user_code_param != device_user_code_param;
+        if (obj->device_user_code_param) {
+            free(obj->device_user_code_param);
+            obj->device_user_code_param = NULL;
+        }
+        if (device_user_code_param) {
+            char* str_obj;
+            size_t len;
+            str_obj = NULL;
+            len = strlen(device_user_code_param);
+            str_obj = (char*)malloc(len + 1); 
+            if (str_obj) {
+                memcpy(str_obj, device_user_code_param, len + 1);
+                obj->device_user_code_param = str_obj;
+            } else {
+                result = -1;
+            }
+        }
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+
 
 /**
  * get client secret
@@ -1528,6 +1678,46 @@ lmd_set_interval(
     if (obj) {
         obj->interval = interval;
         result = 0;
+    } else {
+        errno = EINVAL;
+        result = -1;
+    }
+    return result;
+}
+
+/**
+ * set oauth loader 
+ */
+int
+lmd_set_oauth_token_loader(
+    lmd* obj,
+    int (*loader)(lmd*, json_object*))
+{
+    int result;
+    result = 0;
+    if (obj) {
+        obj->oauth_token_loader = loader; 
+    } else {
+        errno = EINVAL;
+        result = -1;
+    }
+    return result;
+}
+
+/**
+ * set oauth loader 
+ */
+int
+lmd_get_oauth_token_loader(
+    lmd* obj,
+    int (**loader)(lmd*, json_object*))
+{
+    int result;
+    result = 0;
+    if (obj) {
+        if (loader) {
+            *loader = obj->oauth_token_loader;
+        }
     } else {
         errno = EINVAL;
         result = -1;

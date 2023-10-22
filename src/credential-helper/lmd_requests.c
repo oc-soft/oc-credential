@@ -9,7 +9,7 @@
 #include <math.h>
 #include "buffer/char_buffer.h"
 #include "lmd_i.h"
-
+#include "logging.h"
 
 /**
  * write data into buffer
@@ -20,14 +20,6 @@ lmd_requests_write_to_buffer(
     size_t size,
     size_t nmemb,
     buffer_char_buffer* buffer);
-
-/**
- * create parameter for device and user code request 
- */
-char*
-lmd_requests_create_device_and_user_code_param(
-    lmd* obj);
-
 
 /**
  * create parameter for oauth_token
@@ -117,7 +109,10 @@ lmd_requests_poll_oauth_token(
         if (result == 0) {
             param = lmd_requests_create_param_for_oauth_token(obj);
         }
-        
+        logging_log(LOG_LEVEL_DEBUG,
+            "request param for oauth token: %s",
+            param ? param : "null");
+ 
         if (result == 0 && lmd_get_verbose_level(obj) >= 5) {
             puts(param);
         }
@@ -194,6 +189,11 @@ lmd_requests_try_load_oauth(
         char null_char = '\0';
         result = buffer_char_buffer_append(buffer, &null_char, 1);
     }
+    if (result == 0) {
+        logging_log(LOG_LEVEL_DEBUG,
+            "ouath token response: %s",
+            buffer_char_buffer_get_data(buffer));
+    }
     if (result == 0 && lmd_get_verbose_level(obj) >= 5) {
         puts(buffer_char_buffer_get_data(buffer));
     }
@@ -228,79 +228,21 @@ lmd_requests_load_oauth_token(
     int result;
     result = 0;
     if (!lmd_request_has_error_about_oauth_token(obj, json)) {
-        struct {
-            const char* key;
-            int (*set_value)(lmd*, const char*, size_t);
-        } key_set_str[] = {
-            {
-                "access_token",
-                lmd_set_access_token_0
-            },
-            {
-                "token_type",
-                lmd_set_token_type_0
-            },
-            {
-                "scope",
-                lmd_set_scope_0
-            },
-            {
-                "refresh_token",
-                lmd_set_refresh_token_0
-            }
-        }; 
 
-        struct {
-            const char* key;
-            int (*set_value)(lmd*, int);
-        } key_set_int[] = {
-            {
-                "expires_in",
-                lmd_set_expires_in
-            }
-        };
-        size_t idx;
-        for (idx = 0;
-            idx < sizeof(key_set_str) / sizeof(key_set_str[0]);
-            idx++) {
-            json_object* str_json; 
-            json_bool js_state;
-            str_json = NULL;
-            js_state = json_object_object_get_ex(
-                json, key_set_str[idx].key, &str_json);
-            result = js_state ? 0 : -1;
-            if (result == 0) {
-                result = key_set_str[idx].set_value(
-                    obj,
-                    json_object_get_string(str_json),
-                    json_object_get_string_len(str_json));
-            }
-            if (result) {
-                break;
-            }
-        }
+        int (*oauth_token_loader)(lmd*, json_object*);  
+        oauth_token_loader = NULL;
 
+        result = lmd_get_oauth_token_loader(obj, &oauth_token_loader);
         if (result == 0) {
-            for (idx = 0;
-                idx < sizeof(key_set_int) / sizeof(key_set_int[0]); 
-                idx++) {
-                json_object* int_json;
-                json_bool js_state;
-                int_json = NULL;
-                js_state = json_object_object_get_ex(
-                    json, key_set_int[idx].key, &int_json);
-                result = js_state ? 0 : -1;
-                if (result == 0) {
-                    result = key_set_int[idx].set_value(
-                        obj,
-                        (int)json_object_get_int(int_json));
-                }
-                if (result) {
-                    break;
-                }
+            if (oauth_token_loader) {
+                result = oauth_token_loader(obj, json);
+                *has_oauth = result == 0;
+            } else {
+                *has_oauth = 0;
             }
+        } else {
+            *has_oauth = 0;
         }
-        *has_oauth = result == 0;
     } else {
         *has_oauth = 0;
     }
@@ -413,7 +355,10 @@ lmd_requests_load_device_and_user_code(
     int result;
     CURL* curl;
     result = 0;
-
+    logging_log(LOG_LEVEL_DEBUG, "load device and user code");
+    logging_log(LOG_LEVEL_DEBUG, "token endpoint url: %s",
+        lmd_get_device_auth_token_endpoint_url_ref(obj) ? 
+        lmd_get_device_auth_token_endpoint_url_ref(obj) : "none");
     curl = curl_easy_init();
     result = curl ? 0 : -1;
     if (result == 0) {
@@ -429,13 +374,15 @@ lmd_requests_load_device_and_user_code(
         if (result == 0) {
             CURLcode curl_res;
             struct curl_slist* opt_headers;
-            char* param;
+            const char* param;
             json_object* json;
             json = NULL;
             opt_headers = NULL;
-            param = lmd_requests_create_device_and_user_code_param(obj);
+            param = lmd_get_device_user_code_param_ref(obj);  
             result = param ? 0 : -1;
             if (result == 0) {
+                logging_log(LOG_LEVEL_DEBUG,
+                    "device user code param: %s", param);
                 curl_res = curl_easy_setopt(curl,
                     CURLOPT_POSTFIELDS, param);
                 result = curl_res == CURLE_OK ? 0 : -1;
@@ -482,6 +429,7 @@ lmd_requests_load_device_and_user_code(
                         lmd_requests_write_to_buffer);
                 result = curl_res == CURLE_OK ? 0 : -1;
             }
+
             if (result == 0) {
                 curl_res = curl_easy_setopt(curl,
                     CURLOPT_WRITEDATA, buffer);
@@ -501,6 +449,12 @@ lmd_requests_load_device_and_user_code(
                 char null_char = '\0';
                 result = buffer_char_buffer_append(buffer, &null_char, 1);
             }
+            
+            if (result == 0) {
+                logging_log(LOG_LEVEL_DEBUG, 
+                    "response: %s",
+                    buffer_char_buffer_get_data(buffer));
+            }
             if (result == 0 && lmd_get_verbose_level(obj) >= 5) {
                 puts(buffer_char_buffer_get_data(buffer));
             }
@@ -517,9 +471,6 @@ lmd_requests_load_device_and_user_code(
             }
             if (opt_headers) {
                 curl_slist_free_all(opt_headers);
-            }
-            if (param) {
-                lmd_i_free(param);
             }
         }
         if (buffer) {
@@ -640,34 +591,6 @@ lmd_requests_load_device_and_user_code_with_json(
     return result;
 }
 
-/**
- * create parameter for device and user code request 
- */
-char*
-lmd_requests_create_device_and_user_code_param(
-    lmd* obj)
-{
-    const static char* fmt = "client_id=%s&scope=email";
-    const char* client_id;
-    size_t str_size;
-    char* result;
-    int state;
-    result = NULL;
-    state = 0;
-    str_size = 0;
-    client_id = lmd_get_client_id_ref(obj);
-    state = client_id ? 0 : -1;
-    
-    if (state == 0) { 
-        str_size = strlen(fmt) + strlen(client_id) + 1;  
-        result = (char*)lmd_i_alloc(str_size);
-        state = result ? 0 : -1;
-    }
-    if (state == 0) {
-        snprintf(result, str_size, fmt, client_id);
-    }
-    return result; 
-}
 
 /**
  * create parameter for oauth_token
@@ -676,25 +599,21 @@ char*
 lmd_requests_create_param_for_oauth_token(
     lmd* obj)
 {
-    const static char* fmt = "client_id=%s&"
-        "client_secret=%s&"
-        "device_code=%s&"
-        "grant_type=urn:ietf:params:oauth:grant-type:device_code";
-
     const char* client_secret;
     const char* device_code;
     const char* client_id;
+    lmd_oauth_token_param_creator* param_creator;
     size_t str_size;
     char* result;
     int state;
     result = NULL;
     client_id = NULL;
     device_code = NULL;
+    param_creator = NULL;
     state = 0;
     str_size = 0;
     client_secret = lmd_get_client_secret_ref(obj);
 
-    state = client_secret ? 0 : -1;
     if (state == 0) {
         client_id = lmd_get_client_id_ref(obj);
         state = client_id ? 0 : -1;
@@ -703,16 +622,23 @@ lmd_requests_create_param_for_oauth_token(
         device_code = lmd_get_device_code_ref(obj);
         state = device_code ? 0 : -1;
     }
-    if (state == 0) { 
-        str_size = strlen(fmt)
-            + strlen(client_id)
-            + strlen(client_secret)
-            + strlen(device_code) + 1;  
-        result = (char*)lmd_i_alloc(str_size);
-        state = result ? 0 : -1;
-    }
     if (state == 0) {
-        snprintf(result, str_size, fmt, client_id, client_secret, device_code);
+        state = lmd_get_oauth_token_param_creator(obj, &param_creator);
+    }
+    logging_log(LOG_LEVEL_DEBUG, "param creator: %p", param_creator);
+ 
+    if (state == 0) { 
+        char* param;
+        param = NULL;
+        state = lmd_oauth_token_param_creator_create_param(
+            param_creator,
+            client_id, device_code, client_secret, &param, lmd_i_alloc);
+        if (state == 0) {
+            result = param;
+        }
+    }
+    if (param_creator) {
+        lmd_oauth_token_param_creator_release(param_creator);
     }
     return result; 
 }

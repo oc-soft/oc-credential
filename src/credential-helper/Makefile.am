@@ -24,6 +24,7 @@ noinst_HEADERS= cred_helper_types.h \
 	lmd_parser.h \
 	lmd_requests.h \
 	lmd_types.h \
+	lmd_oauth_token_param_creator.h \
 	mem_dbg.h \
 	option.h \
 	logging.h \
@@ -40,6 +41,8 @@ noinst_HEADERS= cred_helper_types.h \
 	url_path_iterate.h
 	service_url_secret.h \
 	service_url_client.h \
+	service_url_device_user_code_param.h \
+	service_url_lmd_oauth_token_param.h \
 	url.h
 
 
@@ -58,6 +61,7 @@ credhelper_src = main.c \
 	lmd_op.c \
 	lmd_i.c \
 	lmd_ui.c \
+	lmd_oauth_token_param_creator.c \
 	l10n_i.c \
 	token_gen_ui.c \
 	token_gen_ui_exec.c \
@@ -70,16 +74,22 @@ credhelper_src = main.c \
 	url_id.c \
 	service_id.c \
 	service_secret.c \
-	service_url_secret.c \
 	service_url_client.c \
+	service_url_secret.c \
+	service_url_device_user_code_param.c \
+	service_url_lmd_oauth_token_param.c \
+	service_oauth_token_parser.c \
 	mem_dbg.c
 
 EXTRA_DIST = \
 	lmd_connections.gpf \
+	service_oauth_token_parser.gpf \
 	service_id.gpf.in \
 	service_secret.gpf.in \
 	service_url_secret.gpf.in \
 	service_url_client.gpf.in \
+	service_url_device_user_code_param.gpf.in \
+	service_url_lmd_oauth_token_param.gpf.in \
 	url_services.gpf.in \
 	url_id.gpf.in \
 	credhelper_res.rc.in \
@@ -415,6 +425,22 @@ service_url_client.gpf : service_url_client.gpf.in \
 	$(srcdir)/key_values_replace.awk
 	awk -f $(srcdir)/key_values_replace.awk -- \
 		-i $(srcdir)/../config/service-url-client.txt -q 0,1 -d 8 $< >$@
+
+service_url_device_user_code_param.gpf : \
+	service_url_device_user_code_param.gpf.in \
+	$(srcdir)/../config/service-url-device-user-code-param.txt \
+	$(srcdir)/key_values_replace.awk
+	awk -f $(srcdir)/key_values_replace.awk -- \
+		-i $(srcdir)/../config/service-url-device-user-code-param.txt \
+		-q 0,1,0 -a 0,1,0 -d 8 $< >$@
+
+service_url_lmd_oauth_token_param.gpf : \
+	service_url_lmd_oauth_token_param.gpf.in \
+	$(srcdir)/../config/service-url-lmd-oauth-token-param.txt \
+	$(srcdir)/key_values_replace.awk
+	awk -f $(srcdir)/key_values_replace.awk -- \
+		-i $(srcdir)/../config/service-url-lmd-oauth-token-param.txt \
+		-q 0,1,0,0,0 -a 0,1,0,0,0 -d 8 $< >$@
 
 exec_names.c: exec_names.c.in
 	exe_name=`$(ECHO_NO_NEWLINE) '$(ui_exe_name)' | \

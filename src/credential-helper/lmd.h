@@ -2,8 +2,11 @@
 #define __LMD_H__
 
 #include <stddef.h>
+#include <json-c/json.h>
 #include "lmd_types.h"
 #include "credential_op.h"
+#include "lmd_oauth_token_param_creator.h"
+
 #ifdef __cplusplus
 #define _LMD_ITFC_BEGIN extern "C" {
 #define _LMD_ITFC_END }
@@ -93,6 +96,23 @@ int
 lmd_set_client_secret(
     lmd* obj,
     const char* client_secret);
+
+
+/**
+ * get device user code param
+ */
+const char*
+lmd_get_device_user_code_param_ref(
+    const lmd* obj);
+
+
+/**
+ * set device user code param
+ */
+int
+lmd_set_device_user_code_param(
+    lmd* obj,
+    const char* device_user_code_param);
 
 
 /**
@@ -223,6 +243,31 @@ lmd_set_devide_code_0(
     lmd* obj,
     const char* device_code,
     size_t length);
+
+/**
+ * set oauth token url param creator
+ */
+int
+lmd_set_oauth_token_param_creator(
+    lmd* obj,
+    lmd_oauth_token_param_creator* creator);
+
+/**
+ * get oauth token url param creator
+ */
+int
+lmd_get_oauth_token_param_creator(
+    lmd* obj,
+    lmd_oauth_token_param_creator** creator);
+
+
+/**
+ * get oauth token url param creator reference
+ */
+lmd_oauth_token_param_creator*
+lmd_get_oauth_token_param_creator_ref(
+    lmd* obj);
+
 
 /**
  * expiration seconds to poll for oath token
@@ -531,6 +576,23 @@ int
 lmd_is_generator_mode(
     lmd* obj);
     
+
+/**
+ * set oauth loader 
+ */
+int
+lmd_set_oauth_token_loader(
+    lmd* obj,
+    int (*loader)(lmd*, json_object*));
+
+/**
+ * set oauth loader 
+ */
+int
+lmd_get_oauth_token_loader(
+    lmd* obj,
+    int (**loader)(lmd*, json_object*));
+
 
 
 /**
