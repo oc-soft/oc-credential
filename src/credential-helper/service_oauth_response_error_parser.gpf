@@ -1,0 +1,165 @@
+%{
+#include "service_oauth_response_error_parser.h"
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <json-c/json.h>
+
+/**
+ * oauth token response error parser entry
+ */
+typedef struct _service_oauth_error_parser_entry
+    service_oauth_error_parser_entry;
+
+
+/**
+ * oauth token response error parser for google
+ */
+static int
+service_oauth_response_error_parser_google(
+    json_object* json,
+    int* has_error);
+
+/**
+ * oauth token response error parser for microsoft 
+ */
+static int
+service_oauth_response_error_parser_microsoft(
+    json_object* json,
+    int* has_error);
+
+/**
+ * oauth token parser for github 
+ */
+static int
+service_oauth_response_error_parser_github(
+    json_object* json,
+    int* has_error);
+
+/**
+ * find id_client_client entry by id 
+ */
+static service_oauth_error_parser_entry*
+in_word_set(
+    const char* id,
+    size_t length);
+
+%}
+%struct-type
+%compare-lengths
+%define slot-name id
+struct _service_oauth_error_parser_entry {
+    const char* id;
+    int (*parser)(json_object*, int*);
+};
+%%
+google, service_oauth_response_error_parser_google
+github, service_oauth_response_error_parser_github
+microsoft, service_oauth_response_error_parser_microsoft
+1, service_oauth_response_error_parser_google
+2, service_oauth_response_error_parser_github
+3, service_oauth_response_error_parser_microsoft
+%%
+
+/**
+ 
+
+/**
+ * get oauth token loader
+ */
+int
+service_oauth_response_error_parser_get(
+    const char* service,
+    int (**error_parser)(json_object*, int*))
+{
+    int result;
+    result = 0;
+    if (service) {
+        service_oauth_error_parser_entry* entry; 
+        entry = in_word_set(service, strlen(service)); 
+        if (entry) {
+            if (error_parser) {
+                *error_parser = entry->parser;
+            }
+        } else {
+            result = -1;
+        }
+    } else {
+        errno = EINVAL;
+        result = -1;
+    }
+    return result; 
+}
+
+/**
+ * oauth token response error parser for google
+ */
+static int
+service_oauth_response_error_parser_google(
+    json_object* json,
+    int* has_error)
+{
+    int result;
+    result = 0;
+    if (json && has_error) { 
+        json_object* err_obj;
+        json_bool state;
+        int result;
+        err_obj = NULL;
+        state = json_object_object_get_ex(json, "error", &err_obj); 
+    
+        *has_error = err_obj != NULL;
+    } else {
+        result = -1;
+    }
+    return result;
+}
+
+/**
+ * oauth token response error parser for microsoft 
+ */
+static int
+service_oauth_response_error_parser_microsoft(
+    json_object* json,
+    int* has_error)
+{
+    int result;
+    result = 0;
+    if (json && has_error) {  
+        json_object* err_obj;
+        json_bool state;
+        int result;
+        err_obj = NULL;
+        state = json_object_object_get_ex(json, "error", &err_obj); 
+        *has_error = err_obj != NULL;
+    } else {
+        result = -1;
+    }
+    return result;
+}
+
+/**
+ * oauth token response error parser for github 
+ */
+static int
+service_oauth_response_error_parser_github(
+    json_object* json,
+    int* has_error)
+{
+    int result;
+    result = 0;
+    if (json && has_error) {  
+        json_object* err_obj;
+        json_bool state;
+        int result;
+        err_obj = NULL;
+        state = json_object_object_get_ex(json, "error", &err_obj); 
+        *has_error = err_obj != NULL;
+    } else {
+        result = -1;
+    }
+    return result;
+}
+
+/* vi: se ts=4 sw=4 et: */
+

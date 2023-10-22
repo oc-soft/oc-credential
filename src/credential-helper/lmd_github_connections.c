@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <curl/curl.h>
+#include "logging.h"
 
 
 /**
@@ -27,6 +28,7 @@ lmd_github_connections_load_oauth_endpoint_urls(
     int result;
     result = lmd_set_token_endpoint_url(obj,
         lmd_github_connections_get_token_endpoint_url());
+
 
     if (result == 0) {
         const char* options[] = {

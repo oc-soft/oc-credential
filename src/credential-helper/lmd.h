@@ -594,6 +594,22 @@ lmd_get_oauth_token_loader(
     int (**loader)(lmd*, json_object*));
 
 
+/**
+ * set oauth response error parser 
+ */
+int
+lmd_set_oauth_response_error_parser(
+    lmd* obj,
+    int (*error_parser)(json_object*, int*));
+
+/**
+ * set oauth response error parser
+ */
+int
+lmd_get_oauth_response_error_parser(
+    lmd* obj,
+    int (**error_parser)(json_object*, int*));
+
 
 /**
  * get string representation

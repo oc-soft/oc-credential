@@ -27,6 +27,7 @@
 #include "service_url_device_user_code_param.h"
 #include "service_url_lmd_oauth_token_param.h"
 #include "service_oauth_token_parser.h"
+#include "service_oauth_response_error_parser.h"
 #include "fd_io.h"
 
 /**
@@ -278,12 +279,14 @@ lmd_op_select_service(
         char* device_user_code_param;
         lmd_oauth_token_param_creator* oauth_token_param_creator;
         int (*oauth_token_loader)(lmd*, json_object*);
+        int (*oauth_res_error_parser)(json_object*, int*);
         client_id = NULL;
         secret = NULL;
         service = NULL;
         device_user_code_param = NULL;
         oauth_token_param_creator = NULL;
         oauth_token_loader = NULL;
+        oauth_res_error_parser = NULL;
         result = lmd_op_select_service_if_not(
             obj, protocol, host, path, &service);
         if (result == 0) {
@@ -323,9 +326,17 @@ lmd_op_select_service(
             result = service_oauth_token_parser_get(service,
                 &oauth_token_loader);
         }
+        if (result == 0) {
+            result = service_oauth_response_error_parser_get(service,
+                &oauth_res_error_parser);
+        }
 
         if (result == 0 && secret) {
             result = lmd_set_client_secret(obj, secret);
+        }
+        if (result == 0) {
+            result = lmd_set_oauth_response_error_parser(
+                obj, oauth_res_error_parser);
         }
         if (result == 0) {
             result = lmd_set_oauth_token_loader(obj, oauth_token_loader);

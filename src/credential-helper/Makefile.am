@@ -79,11 +79,13 @@ credhelper_src = main.c \
 	service_url_device_user_code_param.c \
 	service_url_lmd_oauth_token_param.c \
 	service_oauth_token_parser.c \
+	service_oauth_response_error_parser.c \
 	mem_dbg.c
 
 EXTRA_DIST = \
 	lmd_connections.gpf \
 	service_oauth_token_parser.gpf \
+	service_oauth_response_error_parser.gpf \
 	service_id.gpf.in \
 	service_secret.gpf.in \
 	service_url_secret.gpf.in \
@@ -353,7 +355,7 @@ mem_dbg: mem_dbg_on.c.in
 .PHONY: mem_dbg
 
 
-all-local: rt_get_01.sh rt_get_02.sh rt_ui_01.sh rt_cli_get_01.sh
+all-local: rt_get_01.sh rt_get_02.sh rt_ui_01.sh rt_cli_get_01.sh rt_cli_get_02.sh 
 
 
 rt_get_01.sh : rt_get_01.sh.in
@@ -370,6 +372,12 @@ rt_cli_get_01.sh : rt_get_01.sh.in
 
 rt_get_02.sh : rt_get_02.sh.in
 	sed -e 's!%CLI%!$(abs_builddir)/credential-ocs/credhelper$(EXEEXT)!' \
+		-e 's!%URL_ID_PATH%!$(abs_top_srcdir)/src/config/url-id.txt!' \
+		-e 's!%AWK%!$(AWK)!' $< >$@
+	chmod u+x $@
+
+rt_cli_get_02.sh : rt_get_02.sh.in
+	sed -e 's!%CLI%!$(abs_builddir)/credential-ocs/credhelper$(EXEEXT) -j off -g on!' \
 		-e 's!%URL_ID_PATH%!$(abs_top_srcdir)/src/config/url-id.txt!' \
 		-e 's!%AWK%!$(AWK)!' $< >$@
 	chmod u+x $@
@@ -586,7 +594,7 @@ clean-local:
 	rm -f *.gpf
 	rm -f git-credential-data-1.txt
 	rm -f rt_ui_01.sh  rt_cli_get_01.sh
-	rm -f rt_get_01.sh rt_get_02.sh 
+	rm -f rt_get_01.sh rt_get_02.sh  rt_cli_get_02.sh
 	rm -f mem_dbg_on.c mem_dbg_off.c
 	rm -f exec_names.c
 	rm -f url_id.c url_services.c

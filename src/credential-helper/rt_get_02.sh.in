@@ -1,8 +1,10 @@
-#! /usr/bin/env sh
-credhelper_cmd=%CLI%
+#! /usr/bin/env bash
+credhelper_cmd="%CLI%"
 url_id_path=%URL_ID_PATH%
 awk_cmd=%AWK%
-credhelper_cmd_path=$credhelper_cmd
+declare -a credhelper_path_arg=( $credhelper_cmd )
+credhelper_cmd_path=${credhelper_path_arg[0]}
+
 
 function client_line_to_desc()
 {
@@ -54,6 +56,7 @@ function run_test()
 if [ -n $1 ]; then 
   credhelper_cmd="$credhelper_cmd $1"
 fi
+
 
 run_test $url_id_path 1
 mtrace $credhelper_cmd_path mem_trace_get_02

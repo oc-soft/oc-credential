@@ -3,6 +3,8 @@ private_config_source = service-id.txt \
 	service-secret.txt \
 	service-url-client.txt \
 	service-url-secret.txt \
+	service-url-device-user-code-param.txt \
+	service-url-lmd-oauth-token-param.txt \
 	url-id.txt \
 	url-service.txt
 

@@ -91,8 +91,10 @@ lmd_requests_poll_oauth_token(
     result = curl ? 0 : -1;
     if (result == 0) {
         CURLcode curl_res;
+        struct curl_slist* opt_headers;
         char* param;
         param = NULL;
+        opt_headers = NULL;
         if (result == 0) {
             curl_res = curl_easy_setopt(curl,
                 CURLOPT_URL,
@@ -105,6 +107,35 @@ lmd_requests_poll_oauth_token(
                 CURLOPT_WRITEFUNCTION,
                     lmd_requests_write_to_buffer);
             result = curl_res == CURLE_OK ? 0 : -1;
+        }
+        if (result == 0) {
+            const char** headers;
+            size_t headers_size;
+            size_t idx;
+            headers = lmd_get_token_eprqhd_options_ref(
+                    obj);
+            headers_size = lmd_get_token_eprqhd_options_size(
+                obj);
+            
+            for (idx = 0; idx < headers_size; idx++) {
+                struct curl_slist* opt_headers_res;
+                opt_headers_res = curl_slist_append(
+                    opt_headers, headers[idx]);
+                result = opt_headers_res ? 0 : -1;
+                if (result == 0) {
+                    opt_headers = opt_headers_res;
+                }
+                if (result) {
+                    break;
+                }
+            }
+        }
+        if (result == 0) {
+            if (opt_headers) {
+                curl_res = curl_easy_setopt(
+                    curl, CURLOPT_HTTPHEADER, opt_headers);
+                result = curl_res == CURLE_OK ? 0 : -1;
+            }
         }
         if (result == 0) {
             param = lmd_requests_create_param_for_oauth_token(obj);
@@ -135,6 +166,9 @@ lmd_requests_poll_oauth_token(
         
         if (param) {
             lmd_i_free(param); 
+        }
+        if (opt_headers) {
+            curl_slist_free_all(opt_headers);
         }
     }
     if (curl) {
@@ -257,13 +291,23 @@ lmd_request_has_error_about_oauth_token(
     lmd* obj,
     json_object* json)
 {
-    json_object* err_obj;
-    json_bool state;
     int result;
-    err_obj = NULL;
-    state = json_object_object_get_ex(json, "error", &err_obj); 
-    
-    result = err_obj != NULL;
+    result = 1;
+    if (obj) {
+        int state;
+        int (*error_parser)(json_object*, int*);
+        error_parser = NULL;
+        lmd_get_oauth_response_error_parser(obj, &error_parser);
+        if (error_parser) {
+            int has_error;
+            int state;
+            has_error = 0;
+            state = error_parser(json, &has_error);
+            if (state == 0) {
+                result = has_error;
+            }
+        } 
+    } 
     return result;
 }
 

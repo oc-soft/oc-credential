@@ -62,8 +62,13 @@ struct _lmd {
     /**
      * oauth token loader
      */
-    int (*oauth_token_loader)(lmd*, json_object* json);
+    int (*oauth_token_loader)(lmd*, json_object*);
 
+
+    /**
+     * oauth response error parser
+     */
+    int (*oauth_response_error_parser)(json_object*, int*);
     /**
      * user code
      */
@@ -168,6 +173,7 @@ lmd_create()
         result->user_code = NULL;
         result->oauth_token_param_creator = NULL;
         result->oauth_token_loader = NULL;
+        result->oauth_response_error_parser = NULL;
         result->expires_in = 0;
         result->access_token = NULL;
         result->token_type = NULL;
@@ -1096,6 +1102,7 @@ lmd_set_token_eprqhd_options(
     int result;
     if (obj) {
         int do_set;
+        result = 0;
         do_set = obj->token_eprqhd_options != (char**)options;
         if (do_set) {
             size_t new_option_idx;
@@ -1281,6 +1288,7 @@ lmd_set_dot_eprqhd_options(
     int result;
     if (obj) {
         int do_set;
+        result = 0;
         do_set = obj->dot_eprqhd_options != (char**)options;
         if (do_set) {
             size_t new_option_idx;
@@ -1717,6 +1725,47 @@ lmd_get_oauth_token_loader(
     if (obj) {
         if (loader) {
             *loader = obj->oauth_token_loader;
+        }
+    } else {
+        errno = EINVAL;
+        result = -1;
+    }
+    return result;
+}
+
+
+/**
+ * set oauth response error parser 
+ */
+int
+lmd_set_oauth_response_error_parser(
+    lmd* obj,
+    int (*error_parser)(json_object*, int*))
+{
+    int result;
+    result = 0;
+    if (obj) {
+        obj->oauth_response_error_parser = error_parser; 
+    } else {
+        errno = EINVAL;
+        result = -1;
+    }
+    return result;
+}
+
+/**
+ * set oauth response error parser
+ */
+int
+lmd_get_oauth_response_error_parser(
+    lmd* obj,
+    int (**error_parser)(json_object*, int*))
+{
+    int result;
+    result = 0;
+    if (obj) {
+        if (error_parser) {
+            *error_parser = obj->oauth_response_error_parser;
         }
     } else {
         errno = EINVAL;

@@ -289,7 +289,47 @@ service_oauth_token_loader_github(
 {
     int result;
     result = 0;
-    result = -1;
+    if (obj) {  
+        struct {
+            const char* key;
+            int (*set_value)(lmd*, const char*, size_t);
+        } key_set_str[] = {
+            {
+                "access_token",
+                lmd_set_access_token_0
+            },
+            {
+                "token_type",
+                lmd_set_token_type_0
+            },
+            {
+                "scope",
+                lmd_set_scope_0
+            }
+        }; 
+        size_t idx;
+        for (idx = 0;
+            idx < sizeof(key_set_str) / sizeof(key_set_str[0]);
+            idx++) {
+            json_object* str_json; 
+            json_bool js_state;
+            str_json = NULL;
+            js_state = json_object_object_get_ex(
+                json, key_set_str[idx].key, &str_json);
+            result = js_state ? 0 : -1;
+            if (result == 0) {
+                result = key_set_str[idx].set_value(
+                    obj,
+                    json_object_get_string(str_json),
+                    json_object_get_string_len(str_json));
+            }
+            if (result) {
+                break;
+            }
+        }
+    } else {
+        result = -1;
+    }
     return result;
 }
 
