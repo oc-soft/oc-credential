@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include "std_io_ex.h"
 
 typedef struct _service_url_device_user_code_param
     service_url_device_user_code_param;
@@ -83,7 +84,7 @@ service_url_device_user_code_param_create(
                     + id_length * entry->client_id_alloc_count;
                 param_ref = (char*)mem_alloc(buffer_size + 1);
                 if (param_ref) {
-                    snprintf(param_ref, buffer_size + 1,
+                    std_io_ex_snprintf(param_ref, buffer_size + 1,
                         entry->format, client_id);
                     *param = param_ref;
                 } else {

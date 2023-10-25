@@ -87,7 +87,7 @@ logging_log(
     const char* format,
     ...)
 {
-    if (priority >= logging_level) {
+    if (priority < logging_level) {
         va_list v_arg;
 
         if (priority > LOG_LEVEL_DEBUG) {
@@ -164,7 +164,7 @@ logging_log_v(
         }
         if (state == 0) {
             strftime(time_str_buffer, time_str_buffer_size,
-                "%F%T%z", &tm_now);
+                "%F %T%z", &tm_now);
         }
     }
     if (state == 0) {

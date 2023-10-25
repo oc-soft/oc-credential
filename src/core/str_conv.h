@@ -32,6 +32,17 @@ str_conv_utf16_to_utf8(
     void* (*alloc_mem)(size_t),
     void (*free_mem)(void*));
 
+/**
+ * convert utf8 str to code page string 
+ * windows only.
+ */
+char*
+str_conv_utf8_to_cp_str(
+    const char* utf8_str,
+    size_t size,
+    unsigned int code_page,
+    void* (*alloc_mem)(size_t),
+    void (*free_mem)(void*));
 
 /**
  * free heap object

@@ -8,6 +8,9 @@
 #include <libintl.h>
 #include "logging.h"
 #include "exe_info.h"
+#include "std_io_ex.h"
+#include "dbg.h"
+
 
 /**
  * display usage
@@ -79,6 +82,11 @@ cred_helper_parser_parse_from_commands(
                     .val = 'e',
                 },
                 {
+                    .name = "dbg-sleep",
+                    .has_arg = required_argument,
+                    .val = 'd'
+                },
+                {
                     .name = "help",
                     .has_arg = no_argument,
                     .flag = NULL,
@@ -94,7 +102,7 @@ cred_helper_parser_parse_from_commands(
             int do_parse;
             do_parse = 1;
             switch (getopt_long(argc, argv,
-                "hgs:e:i:j:l:v::", long_opts, NULL)) {
+                "hgd:s:e:i:j:l:v::", long_opts, NULL)) {
             case 'i':
                 cred_helper_set_client_id(result, optarg); 
                 break;
@@ -123,6 +131,17 @@ cred_helper_parser_parse_from_commands(
                     }
                 }
                 break;
+            case 'd':
+                {
+                    char* endptr;
+                    long dbg_sleep;
+                    endptr = NULL;
+                    dbg_sleep = strtol(optarg, &endptr, 0);
+                    if (optarg != endptr) {
+                        dbg_set_sleep((int)dbg_sleep);
+                    }
+                 }
+                 break;
             case 'v':
                 if (optarg) {
                     char* endptr;
@@ -229,8 +248,11 @@ cred_helper_parser_display_usage()
     char* exe_name;
     exe_name = exe_info_get_exe_name();
     if (exe_name) {
-        printf(gettext(
-"%s [OPTION]\n"
+        char* exe_name_out;
+        exe_name_out = std_io_ex_convert_for_out_str(stdout, exe_name);
+
+        std_io_ex_fprintf(stdout, gettext(
+"%s [OPTION] [GIT_OPERATION]\n"
 "-i, --cid=[CID]                set client id\n"
 "-s, --service=[SERVICE]        set oauth token service provider\n"
 "-v, --verbose=[LEVEL?]         set verbose level\n"
@@ -240,7 +262,9 @@ cred_helper_parser_display_usage()
 "-l, --limited=[on|off]         run generator for limited device\n" 
 "-h, --help                     display this message\n"
 "[GIT_OPERATION]                get, store, erase"),
-            exe_name);
+            exe_name_out);
+        std_io_ex_free_converted_str(exe_name_out);
+
     }
     if (exe_name) {
         exe_info_free(exe_name);

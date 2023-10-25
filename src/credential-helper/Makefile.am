@@ -11,6 +11,7 @@ noinst_HEADERS= cred_helper_types.h \
 	cred_helper_parser.h \
 	credential_op.h \
 	credential_storage_key_id_table.h \
+	dbg.h \
 	exe_info.h \
 	exec_names.h \
 	fd_io.h \
@@ -51,6 +52,7 @@ credhelper_src = main.c \
 	cred_helper_i.c \
 	cred_helper_op.c \
 	cred_helper_parser.c \
+	dbg.c \
 	lmd.c \
 	lmd_parser.c \
 	lmd_connections.c \

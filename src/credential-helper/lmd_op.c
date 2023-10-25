@@ -1,11 +1,11 @@
 #include "lmd_op.h"
 
-#include <stdlib.h>
-#include <libintl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <ctype.h>
+#include <libintl.h>
 
 #include "buffer/char_buffer.h"
 
@@ -29,6 +29,7 @@
 #include "service_oauth_token_parser.h"
 #include "service_oauth_response_error_parser.h"
 #include "fd_io.h"
+#include "std_io_ex.h"
 
 /**
  * progress
@@ -395,6 +396,7 @@ lmd_op_select_service_if_not(
     valid_service = 0;
     service_org = lmd_get_service_ref(obj);
 
+
     if (service_org) {
 
         url_to_services_iter_info info;
@@ -460,18 +462,32 @@ lmd_op_select_service_0(
 
     memset(&info, 0, sizeof(info));
 
+    logging_log(LOG_LEVEL_DEBUG,
+        "start url path iteration in service selection: "
+        "%s://%s/%s",
+            protocol ? protocol : "none",
+            host ? host : "none",
+            path ? path : "");
+
     state = url_path_iterate(protocol, host, path, 
         (int (*)(void*, const char*, const char*, const char*))
             lmd_op_find_services, &info);
     result = state ? 0 : -1;
+    logging_log(LOG_LEVEL_DEBUG,
+        "iteration response: %d", state);
+ 
     if (result == 0) {
         item_lines = lmd_op_create_item_selection_lines(
             info.services, info.services_size);
         result = item_lines ? 0 : -1;
     }
+    logging_log(LOG_LEVEL_DEBUG,
+        "selection items: \n%s", item_lines ? item_lines : "none");
     if (result == 0) {
         const char* select_message;
+        char* item_lines_out;
         if (fd_io_isatty(fd_io_fileno(stderr))) {
+
             select_message = gettext(
                 "Select \x1b[1ma number\x1b[0m for Oauth token service "
                 "or enter \x1b[1mEsc\x1b[0m if you cancel.\n");
@@ -480,8 +496,10 @@ lmd_op_select_service_0(
                 "Select a number for Oauth token service "
                 "or enter Esc if you cancel.\n");
         }
-        fprintf(stderr, item_lines);
-        fprintf(stderr, select_message);
+
+        item_lines_out = std_io_ex_convert_for_out_str(stderr, item_lines);
+        std_io_ex_fprintf(stderr, item_lines_out);
+        std_io_ex_fprintf(stderr, select_message);
         
         {
             lmd_ui* ui;
@@ -508,6 +526,7 @@ lmd_op_select_service_0(
                 lmd_ui_release(ui);
             }
         }
+        std_io_ex_free_converted_str(item_lines_out);
     } 
     
     logging_log(LOG_LEVEL_DEBUG, "service selection : %d", service_selection);
@@ -632,11 +651,23 @@ print_progress_to_notty_for_oauth_token(
     if (!progress->last_sec_updating) {
         const char* verification_url;
         const char* user_code;
+        char* verification_url_out;
+        char* user_code_out;
         int expires_in;
         verification_url = lmd_get_verification_url_ref(lmd_obj);
         user_code = lmd_get_user_code_ref(lmd_obj);
         expires_in = lmd_get_polling_expires_in(lmd_obj);
-        fprintf(stderr,
+
+        verification_url_out = std_io_ex_convert_for_out_str(
+            stderr,  verification_url);
+
+        user_code_out = std_io_ex_convert_for_out_str(stderr, user_code);
+
+        logging_log(LOG_LEVEL_DEBUG, "verification url: %s", verification_url);
+
+        logging_log(LOG_LEVEL_DEBUG, "user code: %s", user_code);
+
+        std_io_ex_fprintf(stderr,
             gettext(
                 "Open browser, visit the url and input the code "
                 "in %d seconds\n"
@@ -644,7 +675,10 @@ print_progress_to_notty_for_oauth_token(
                 "%s\n"
                 "Code:\n"
                 "%s\n"),
-            expires_in, verification_url, user_code); 
+            expires_in, verification_url_out, user_code_out); 
+
+        std_io_ex_free_converted_str(verification_url_out);
+        std_io_ex_free_converted_str(user_code_out);
         progress->last_sec_updating = elapse + 1; 
     }
     return result;
@@ -665,21 +699,39 @@ print_progress_to_tty_for_oauth_token(
             const char* verification_url;
             const char* user_code;
             int expires_in;
+
             verification_url = lmd_get_verification_url_ref(lmd_obj);
             user_code = lmd_get_user_code_ref(lmd_obj);
             expires_in = lmd_get_polling_expires_in(lmd_obj);
 
+
             if (!progress->last_sec_updating) {
-                fprintf(stderr,
+                char* verification_url_out;
+                char* user_code_out;
+                verification_url_out = std_io_ex_convert_for_out_str(
+                    stderr,  verification_url);
+
+                user_code_out = std_io_ex_convert_for_out_str(
+                    stderr, user_code);
+                logging_log(LOG_LEVEL_DEBUG,
+                    "verification url: %s", verification_url);
+
+                logging_log(LOG_LEVEL_DEBUG, "user code: %s", user_code);
+
+
+                std_io_ex_fprintf(stderr,
                     gettext(
                         "URL:\n"
                         "\x1b[1m%s\x1b[0m\n"
                         "Code:\n"
                         "\x1b[1m%s\x1b[0m\n"), 
-                    verification_url, user_code); 
+                    verification_url_out, user_code_out); 
+
+                std_io_ex_free_converted_str(verification_url_out);
+                std_io_ex_free_converted_str(user_code_out);
             }
             fputs("\r", stderr);
-            fprintf(stderr,
+            std_io_ex_fprintf(stderr,
                 gettext(
                     "Open browser, visit the url and input the code as above" 
                     " in %d seconds."),
@@ -718,7 +770,7 @@ read_number_from_ui(
                         buffer_char_buffer_get_size(buffer) - 1,
                         buffer_char_buffer_get_size(buffer));
                 }
-            } else if (a_char == '\n') {
+            } else if (a_char == '\n' || a_char == '\r') {
                 break;
             } else if (a_char == 0x1b) {
                 /* esc */

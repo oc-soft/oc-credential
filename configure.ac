@@ -82,6 +82,8 @@ AC_DEFINE_UNQUOTED([GETTEXT_DOMAIN], ["$PACKAGE_NAME"], [gettext domain name])
 
 AC_DEFINE([DEFAULT_LOGGING_LEVEL], [0], [application default logging level])
 
+AC_DEFINE([_UCRT], [1], [Use windows universal runtime.])
+
 if test $host_os = "cygwin" ; then
     case $build_cpu in
         x86_64*)

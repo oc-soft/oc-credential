@@ -122,3 +122,6 @@
 
 /* wide char package version */
 #undef VERSION_W
+
+/* Use windows universal runtime. */
+#undef _UCRT

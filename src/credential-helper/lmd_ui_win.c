@@ -52,7 +52,7 @@ lmd_ui_win_get_char(
 const static lmd_ui_vtbl vtbl = {
     (unsigned int (*)(lmd_ui*))lmd_ui_win_retain,
     (unsigned int (*)(lmd_ui*))lmd_ui_win_release,
-    (int  (*)(lmd_ui))lmd_ui_win_get_char,
+    (int  (*)(lmd_ui*))lmd_ui_win_get_char,
 };
  
 lmd_ui*
@@ -103,7 +103,7 @@ lmd_ui_win_release(
     unsigned int result;
     result = 0;
     if (obj) {
-        result = --obj->ref_count
+        result = --obj->ref_count;
         if (result == 0) {
             lmd_i_free(obj);
         }
@@ -119,12 +119,19 @@ lmd_ui_win_release(
  */
 static int 
 lmd_ui_win_get_char(
-    lmd_ui* obj);
+    lmd_ui* obj)
 {
     int result;
     result = EOF;
     if (obj) {
-        result = _getche(obj->term_in);
+        int out_char;
+        result = _getch();
+        out_char = result;
+        _putch(out_char);
+        if (out_char == '\r') {
+            _putch('\n');
+        }
+         
     } else {
         errno = EINVAL;
     }

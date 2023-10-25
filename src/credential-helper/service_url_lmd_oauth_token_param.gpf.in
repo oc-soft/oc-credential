@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include "std_io_ex.h"
 
 /**
  * service url oauth toke param
@@ -232,7 +233,7 @@ service_url_lmd_oauth_token_param_create(
                 + secret_length * entry->client_secret_alloc_count;
             param_ref = (char*)mem_alloc(buffer_size + 1);
             if (param_ref) {
-                snprintf(param_ref, buffer_size + 1,
+                std_io_ex_snprintf(param_ref, buffer_size + 1,
                     entry->format, client_id, device_code, 
                     client_secret);
                 *param = param_ref;

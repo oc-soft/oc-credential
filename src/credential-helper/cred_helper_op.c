@@ -13,7 +13,6 @@
 #include "buffer/char_buffer.h"
 #include "logging.h"
 
-
 /**
  * get oauth token
  */
@@ -118,7 +117,6 @@ cred_helper_op_run(
                 result = desc ? 0 : -1; 
             }
             if (!result) {
-
                 switch (cred_helper_get_credential_op(obj)) {
                 case CDT_OP_GET:
                     result = cred_helper_op_get(obj, desc);
@@ -252,6 +250,7 @@ get_oauth_token_with_lmd(
     int result; 
     limited_acc = cred_helper_get_lmd(obj);  
     result = limited_acc ? 0 : -1;
+    logging_log(LOG_LEVEL_DEBUG, "get oauth token with limited device");
     if (result == 0) {
         result = lmd_op_select_service(
             limited_acc, desc->protocol, desc->host, desc->path);
@@ -405,6 +404,7 @@ cred_helper_op_get_0(
     password = NULL;
     logging_log(LOG_LEVEL_DEBUG, "operation get credential");
     if (!lmd_is_generator_mode(0)) {
+        
         result = credential_storage_find_password(desc->protocol, desc->host,
             desc->path, desc->username, &password);
     }
