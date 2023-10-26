@@ -1,10 +1,15 @@
 noinst_LTLIBRARIES = liboccredcore.la
 
-noinst_PROGRAMS = t0_credential_desc
+check_PROGRAMS = t0_credential_desc 
+
+if RUN_WIN
+check_PROGRAMS += t0_str_conv_win
+endif
 
 if TARGET_WASM
 bin_PROGRAMS = occredcore
 endif
+
 
 noinst_HEADERS = user_resource.h \
 	app_config.h \
@@ -17,6 +22,7 @@ noinst_HEADERS = user_resource.h \
 	user_resource_i.h \
 	wasm_i.h \
 	str_conv.h \
+	std_io_ex.h \
 	uuid_i.h
 
 EXTRA_DIST = t0_credential_desc.sh.in \
@@ -42,6 +48,12 @@ t0_credential_desc_SOURCES = t0_credential_desc.c
 occredcore_DEPENDENCIES = liboccredcore.la
 t0_credential_desc_DEPENDENCIES = liboccredcore.la
 
+if RUN_WIN
+t0_str_conv_win_DEPENDENCIES = liboccredcore.la
+endif
+
+
+
 deploy_dir = @DEPLOY_DIR@
 pkg_bindir = @pkg_bindir@
 OC_XLINKER_OPTION = @OC_XLINKER_OPTION@
@@ -49,15 +61,17 @@ OC_XLINKER_OPTION = @OC_XLINKER_OPTION@
 deploy_dir_def = $(abs_top_builddir)/pkg-img
 JS_OC_CREDCORE_MOD_NAME = createCredCore
 JS_MODEXT=.mjs
-TESTS=t0_credential_desc.sh
+TESTS = t0_credential_desc.sh
 
 if RUN_WIN
 liboccredcore_la_SOURCES += user_resource_win.c \
 	uuid_i_win.c \
-	str_conv_win.c
+	str_conv_win.c \
+	std_io_ex_win.c
 else
 liboccredcore_la_SOURCES += user_resource_posix.c \
-	uuid_i_posix.c
+	uuid_i_posix.c \
+	std_io_ex_posix.c
 endif
 
 
@@ -79,6 +93,11 @@ liboccredcore_la_LDFLAGS= -g \
 	$(liboccredcore_lib_flags)
 
 t0_credential_desc_LDADD = liboccredcore.la 
+
+if RUN_WIN
+t0_str_conv_win_LDADD =  liboccredcore.la 
+t0_str_conv_win_LDFLAGS = -static -municode -specs=$(srcdir)/ucrt.specs
+endif
 
 if TARGET_WASM
 occredcore_LDADD = liboccredcore.la
