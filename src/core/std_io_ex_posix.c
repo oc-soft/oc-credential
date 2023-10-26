@@ -1,4 +1,5 @@
 #include "std_io_ex.h"
+#include <stdio.h>
 
 /**
  * vsnpintf
@@ -11,8 +12,7 @@ std_io_ex_vsnprintf(
     va_list arg) 
 {
     int result;
-    result = 0;
-    result = snprintf(buffer, buffer_size, format, arg);
+    result = vsnprintf(buffer, buffer_size, format, arg);
     return result;
 }
 
@@ -47,7 +47,7 @@ std_io_ex_vfprintf(
     const char* format,
     va_list arg)
 {
-    return vfprinf(fs, format, arg);
+    return vfprintf(fs, format, arg);
 }
 
 /**
@@ -63,7 +63,7 @@ std_io_ex_fprintf(
     va_list arg;
     int result;
     va_start(arg, format);
-    result = std_io_ex_vfprintf(arg);
+    result = std_io_ex_vfprintf(fs, format, arg);
     va_end(arg);
     return result;
 }
