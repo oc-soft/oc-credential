@@ -112,6 +112,10 @@ service_oauth_token_loader_google(
                 lmd_set_access_token_0
             },
             {
+                "id_token",
+                lmd_set_id_token_0
+            },
+            {
                 "token_type",
                 lmd_set_token_type_0
             },
@@ -201,6 +205,11 @@ service_oauth_token_loader_microsoft(
                 "access_token",
                 1,
                 lmd_set_access_token_0
+            },
+            {
+                "id_token",
+                0,
+                lmd_set_id_token_0
             },
             {
                 "token_type",

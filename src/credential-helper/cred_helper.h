@@ -96,6 +96,21 @@ cred_helper_set_access_token(
     cred_helper* obj,
     const char* access_token);
 
+/**
+ * get id token
+ */
+const char*
+cred_helper_get_id_token_ref(
+    const cred_helper* obj);
+
+/**
+ * set id token
+ */
+int
+cred_helper_set_id_token(
+    cred_helper* obj,
+    const char* id_token);
+
 
 /**
  * set default token generator service

@@ -401,6 +401,31 @@ lmd_set_access_token_0(
     size_t length);
 
 /**
+ * id token 
+ */
+const char*
+lmd_get_id_token_ref(
+    lmd* obj);
+
+/**
+ * id token
+ */
+int
+lmd_set_id_token(
+    lmd* obj,
+    const char* token);
+
+/**
+ * id token
+ */
+int
+lmd_set_id_token_0(
+    lmd* obj,
+    const char* token,
+    size_t length);
+
+
+/**
  * token type
  */
 const char*

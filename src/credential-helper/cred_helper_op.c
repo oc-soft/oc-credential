@@ -260,6 +260,9 @@ get_oauth_token_with_lmd(
             limited_acc);
     }
     if (result == 0) {
+        result = cred_helper_update_id_token_with_lmd(obj);
+    }
+    if (result == 0) {
         result = cred_helper_update_access_token_with_lmd(obj);
     }
     if (limited_acc) {
@@ -411,12 +414,20 @@ cred_helper_op_get_0(
     if (!password) {
         result = get_oauth_token(obj, desc);
         if (result == 0) {
-            const char* acc_token;
-            acc_token = cred_helper_get_access_token_ref(obj);
-            if (acc_token) {
+            const char* token;
+            token = cred_helper_get_id_token_ref(obj);
+
+            logging_log(LOG_LEVEL_DEBUG, "id_token: %s",
+                token ? token : "null");
+
+
+            if (!token) {
+                token = cred_helper_get_access_token_ref(obj);
+            }
+            if (token) {
                 result = credential_desc_set_username(desc, "bearer");
                 if (result == 0) {
-                    result = credential_desc_set_password(desc, acc_token);
+                    result = credential_desc_set_password(desc, token);
                 }
             }
         }

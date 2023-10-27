@@ -40,6 +40,11 @@ struct _cred_helper {
     char* access_token;
 
     /**
+     * id token
+     */
+    char* id_token;
+
+    /**
      * token generator service
      */
     char* service;
@@ -102,6 +107,7 @@ cred_helper_create()
         result->ui_token_generator = ui_token_generator;
         result->client_id = NULL;
         result->access_token = NULL;
+        result->id_token = NULL;
         result->service = NULL;
         result->credential_operation = CDT_OP_UNKNOWN;
         result->verbose_level = 0;
@@ -158,6 +164,8 @@ cred_helper_release(
             cred_helper_set_client_id(obj, NULL);
             cred_helper_set_client_secret(obj, NULL);
             cred_helper_set_service(obj, NULL);
+            cred_helper_set_str_field(&obj->access_token, NULL);
+            cred_helper_set_str_field(&obj->id_token, NULL);
             ui_token_gen_release(obj->ui_token_generator);
             lmd_release(obj->limited_device);
             cred_helper_i_free(obj);
@@ -316,6 +324,45 @@ cred_helper_set_access_token(
         if (result == 0) {
             result = cred_helper_set_str_field(
                 &obj->access_token, access_token);
+        }
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * get id token
+ */
+const char*
+cred_helper_get_id_token_ref(
+    const cred_helper* obj)
+{
+    const char* result;
+    result = NULL;
+    if (obj) {
+        result = obj->id_token;
+    } else {
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * set id token
+ */
+int
+cred_helper_set_id_token(
+    cred_helper* obj,
+    const char* id_token)
+{
+    int result;
+    if (obj) {
+        result = lmd_set_id_token(obj->limited_device, id_token);
+        if (result == 0) {
+            result = cred_helper_set_str_field(
+                &obj->id_token, id_token);
         }
     } else {
         result = -1;
@@ -608,6 +655,25 @@ cred_helper_update_access_token_with_lmd(
     }
     return result;
 }
+
+/**
+ * update id token with embeded lmd object
+ */
+int
+cred_helper_update_id_token_with_lmd(
+    cred_helper* obj)
+{
+    int result;
+    if (obj) {
+        result = cred_helper_set_str_field(
+            &obj->id_token,
+            lmd_get_id_token_ref(obj->limited_device));
+    } else {
+        errno = EINVAL;
+    }
+    return result;
+}
+
 
 /**
  * set new_value into string field

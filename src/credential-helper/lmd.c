@@ -74,11 +74,16 @@ struct _lmd {
      */
     char* user_code;
 
-
     /**
      * access token
      */
     char* access_token;
+
+    /**
+     * id token
+     */
+    char* id_token;
+
 
     /**
      * token type
@@ -176,6 +181,7 @@ lmd_create()
         result->oauth_response_error_parser = NULL;
         result->expires_in = 0;
         result->access_token = NULL;
+        result->id_token = NULL;
         result->token_type = NULL;
         result->refresh_token = NULL;
         result->scope = NULL;
@@ -232,6 +238,7 @@ lmd_release(
             lmd_set_token_eprqhd_options(obj, NULL, 0);
             lmd_set_dot_eprqhd_options(obj, NULL, 0);
             lmd_set_access_token(obj, NULL);
+            lmd_set_id_token(obj, NULL);
             lmd_set_token_type(obj, NULL);
             lmd_set_scope(obj, NULL);
             lmd_set_ms_tenant(obj, NULL);
@@ -720,6 +727,87 @@ lmd_set_access_token_0(
     }
     return result;
 }
+
+/**
+ * id token 
+ */
+const char*
+lmd_get_id_token_ref(
+    lmd* obj)
+{
+    const char* result;
+    result = NULL;
+    if (obj) {
+        result = obj->id_token;
+    } else {
+        result = NULL;
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * id token
+ */
+int
+lmd_set_id_token(
+    lmd* obj,
+    const char* token)
+{
+    int result;
+    result = 0;
+    if (obj) {
+        size_t length;
+        length = 0;
+        if (token) {
+            length = strlen(token);
+        }
+        lmd_set_id_token_0(obj, token, length);
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+
+/**
+ * id token
+ */
+int
+lmd_set_id_token_0(
+    lmd* obj,
+    const char* token,
+    size_t length)
+{
+    int result;
+    result = 0;
+    if (obj) {
+        int do_set;
+        do_set = obj->id_token != token;
+        if (obj->id_token) {
+            free(obj->id_token);
+            obj->id_token = NULL;
+        }
+        if (token) {
+            char* str_obj;
+            str_obj = NULL;
+            if (length) {
+                str_obj = (char*)malloc(length + 1); 
+            }
+            if (str_obj) {
+                memcpy(str_obj, token, length + 1);
+                obj->id_token = str_obj;
+            } else {
+                result = -1;
+            }
+        }
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+
 
 /**
  * token type
