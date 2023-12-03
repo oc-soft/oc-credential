@@ -2,7 +2,10 @@ import typescript from '@rollup/plugin-typescript'
 import json from '@rollup/plugin-json'
 const external = [
   'electron',
-  'path'
+  'node:path',
+  'node:buffer',
+  'node:fs',
+  'node:url'
 ]
 const output = {
   dir: 'dist',
@@ -13,9 +16,20 @@ const plugins = [
     tsconfig: './tsconfig.electron.json',
     compilerOptions: {
       paths: {
-        occredcore: ["./core"]
+        occredcore: ["./core"],
+        'oc-soft/*': [
+          './common/src/*',
+          './electron/src/*',
+          './*'
+        ]
       }
-    }
+    },
+    include: [
+      "electron/src/**/*",
+      "common/src/**/*",
+      "config/**/*",
+      "core/*.d.ts"
+    ]
   }),
   json()
 ]

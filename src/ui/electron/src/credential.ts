@@ -1,18 +1,20 @@
+import { BrowserWindow } from 'electron'
+import {
+  Descriptor,
+  encode as descToStr
+} from 'oc-soft/common'
 import { 
-  Descriptor, 
   readDescriptor, 
   writeDescriptor,
-  encode as descToStr,
-  decode as strToDesc 
 } from './desc'
 import { createWindow } from './credential-ui'
-import config from './config/app.json'
+import config from 'oc-soft/config/app.json'
+
 
 /**
  * credential application 
  */
 export class Credential {
-
 
   /**
    * version
@@ -27,30 +29,43 @@ export class Credential {
   constructor() {
   }
 
+
+
   /**
    * generate token
    */
-  generateToken(): Promise<string | undefined> {
+  generateToken(
+    descriptor: string | undefined,
+    service: string | undefined): Promise<string | undefined> {
+    const self = this
     return new Promise<string | undefined> (
       (resolve, reject) => {
         function tokenHdlr(token0: string){
           resolve(token0)
           win.off('close', closeHdlr)
         }
+        function handleCloseRequest(win: BrowserWindow) {
+          win.close() 
+        }
         function closeHdlr(event: Event) {
           resolve(undefined)
         }
-        const win = createWindow(tokenHdlr) 
+        const win = createWindow(descriptor, service, 
+          tokenHdlr, handleCloseRequest) 
         win.on('close', closeHdlr)
     })
   }
   /**
    * generate git credential token
    */
-  async generateCredential(): Promise<number> {
+  async generateCredential(service: string | undefined): Promise<number> {
     let result = 0
     let descOut: string | undefined
-    const token = await this.generateToken()
+
+    let descIn: string | undefined
+    descIn = await readDescriptor() 
+
+    const token = await this.generateToken(descIn, service)
     if (token) {
       const desc = {
         password: token

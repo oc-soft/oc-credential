@@ -1,24 +1,46 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { resolve, join } from 'path'
+import typescript from '@rollup/plugin-typescript'
+import json from '@rollup/plugin-json'
+import { resolve, join } from 'node:path'
 
 // https://vitejs.dev/config/
 export default defineConfig(({command, mode, ssrBuild})=> {
   const config = {
-    resolve: {
-      alias: {
-        'oc-soft': resolve(__dirname, 'client/src')
-      }
-    },
-    plugins: [vue()]
   }
   
   config.root = './client'
   config.base = './'
 
+  config.resolve = {
+    alias: {
+      'oc-soft/option' : resolve(__dirname, 'common/src/option')
+      'oc-soft/io': resolve(__dirname, 'client/src/io')
+    }
+  }
+
+  config.plugins = [
+    vue(),
+    typescript({
+      compilerOptions: {
+        paths: {
+          'oc-soft/*': [
+            './common/src/*',
+            './*'
+          ]
+        }
+      },
+      include: [
+        'common/src/**/*',
+        'config/**/*'
+      ]
+    }),
+    json()
+  ]
   config.build = {
     outDir: '../dist',
     emptyOutDir: true,
+    minify: false,
     rollupOptions: {
       input: {
         main: 'client/index.html'

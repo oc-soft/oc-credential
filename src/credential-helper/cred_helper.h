@@ -215,6 +215,14 @@ cred_helper_update_access_token_with_lmd(
     cred_helper* obj);
 
 /**
+ * update id token with embeded lmd object
+ */
+int
+cred_helper_update_id_token_with_lmd(
+    cred_helper* obj);
+
+
+/**
  * you get no zero if user request to get usage
  */
 int

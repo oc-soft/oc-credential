@@ -20,9 +20,18 @@ export default {
 }
 </script>
 <script setup lang="ts">
-import { ref } from 'vue'
 
-const msg = ref('')
+import { ref } from 'vue'
+import { getService, getDescriptor } from 'oc-soft/option'
+
+
+let service = getService()
+
+if (typeof service == void 0) {
+  service = ''
+}
+
+const msg = ref(service)
 
 /**
  * handle selected event.

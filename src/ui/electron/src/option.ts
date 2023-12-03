@@ -1,5 +1,5 @@
 import { Credential as App } from './credential'
-import config from './config/app.json'
+import config from 'oc-soft/config/app.json'
 
 /**
  * electron option
@@ -62,10 +62,16 @@ export class Option {
   run: (app: App) => Promise<number>
 
   /**
+   * initial service selection
+   */
+  service: string | undefined
+
+  /**
    * constructor
    */
   constructor() {
     this.run = this.generate
+    this.service = undefined
   }
 
   /**
@@ -90,7 +96,7 @@ export class Option {
    * generate credential token
    */
   async generate(app: App): Promise<number> {
-    return await app.generateCredential()
+    return await app.generateCredential(this.service)
   }
 
   /**
@@ -160,6 +166,13 @@ get           do run credential get
         case '--version':
           self.run = self.version
           break
+        case '-s':
+        case '--service':
+          if (idx + 1 < args.length) {
+            idx++
+            self.service = args[idx]  
+          }
+          break 
         case 'get':
           self.run = self.generate
           break

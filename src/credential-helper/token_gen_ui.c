@@ -16,6 +16,7 @@ int
 token_gen_ui_run(
     const char* in_data,
     size_t in_data_size,
+    const char* service,
     char** token)
 {
     size_t idx;
@@ -113,8 +114,18 @@ token_gen_ui_run(
      
     if (result == 0) {
         const char* args[] = {
-            exec_path
+            exec_path,
+            NULL,
+            NULL,
+            NULL,
         };
+        size_t argc;
+        argc = 1;
+        if (service) {
+            args[1] = "-s";
+            args[2] = service;
+            argc += 2;
+        }
         result = token_gen_ui_i_run(
             in_data, in_data_size,
             exec_path, 1, args,

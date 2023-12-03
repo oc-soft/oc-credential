@@ -413,10 +413,10 @@ service_id.gpf : service_id.gpf.in \
 
 
 url_services.gpf : url_services.gpf.in \
-	$(srcdir)/../config/url-service.txt \
+	$(srcdir)/../config/url-service-lmd.txt \
 	$(srcdir)/url_services_gen.awk
 	awk -f $(srcdir)/url_services_gen.awk -- \
-		-i $(srcdir)/../config/url-service.txt $< >$@
+		-i $(srcdir)/../config/url-service-lmd.txt $< >$@
 
 service_secret.gpf : service_secret.gpf.in \
 	$(srcdir)/../config/service-secret.txt \
@@ -425,16 +425,16 @@ service_secret.gpf : service_secret.gpf.in \
 		-n $(srcdir)/../config/service-secret.txt $< >$@
 
 service_url_secret.gpf : service_url_secret.gpf.in \
-	$(srcdir)/../config/service-url-secret.txt \
+	$(srcdir)/../config/service-url-secret-lmd.txt \
 	$(srcdir)/key_values_replace.awk
 	awk -f $(srcdir)/key_values_replace.awk -- \
-		-i $(srcdir)/../config/service-url-secret.txt -q 0,1 -d 8 $< >$@
+		-i $(srcdir)/../config/service-url-secret-lmd.txt -q 0,1 -d 8 $< >$@
 
 service_url_client.gpf : service_url_client.gpf.in \
-	$(srcdir)/../config/service-url-client.txt \
+	$(srcdir)/../config/service-url-client-lmd.txt \
 	$(srcdir)/key_values_replace.awk
 	awk -f $(srcdir)/key_values_replace.awk -- \
-		-i $(srcdir)/../config/service-url-client.txt -q 0,1 -d 8 $< >$@
+		-i $(srcdir)/../config/service-url-client-lmd.txt -q 0,1 -d 8 $< >$@
 
 service_url_device_user_code_param.gpf : \
 	service_url_device_user_code_param.gpf.in \

@@ -18,6 +18,12 @@ struct _ui_token_gen
      * reference count
      */
     unsigned int ref_count;
+
+
+    /**
+     * service
+     */
+    char* service;
 };
 
 /**

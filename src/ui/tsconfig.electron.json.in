@@ -11,14 +11,8 @@
     "esModuleInterop": true,
     "lib": ["ESNext"],
     "skipLibCheck": true,
-    "rootDirs": [
-      "electron/src",
-      "./"
-    ],
     "typeRoots": [
-      "node_modules/@types",
-      "./core"
+      "node_modules/@types"
     ]
-  },
-  "include": ["electron/src/**/*", "config/**/*", "core/*.d.ts" ]
+  }
 }

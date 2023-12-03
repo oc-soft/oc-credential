@@ -19,6 +19,7 @@ int
 token_gen_ui_run(
     const char* in_data,
     size_t in_data_size,
+    const char* service,
     char** token);
 
 /**

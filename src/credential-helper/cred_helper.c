@@ -384,6 +384,9 @@ cred_helper_set_service(
     if (obj) {
         result = lmd_set_service(obj->limited_device, service);
         if (result == 0) {
+            result = ui_token_gen_set_service(obj->ui_token_generator, service);
+        }
+        if (result == 0) {
             result = cred_helper_set_str_field(
                 &obj->service, service);
         }

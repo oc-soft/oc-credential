@@ -2,13 +2,15 @@
 CORE_MODULE_DIR=@CORE_MODULE_DIR@
 
 client_src = \
-	client/index.html \
+	client/src/option.ts \
 	client/src/App.vue \
 	client/src/components/Message.vue \
 	client/src/components/Oauth.vue \
 	client/src/io/oauth.ts \
+	client/src/io/codec.ts \
 	client/src/io/index.ts \
-	client/src/main.ts
+	client/src/main.ts \
+	client/index.html 
 
 electron_src = \
 	electron/src/option.ts \
@@ -19,7 +21,8 @@ electron_src = \
 	electron/src/credential-ui.ts \
 	electron/src/main.ts 
 
-src_dirs = client electron
+src_dirs = client electron common
+
 
 EXTRA_DIST = $(client_src) $(electron_src) \
 	tsconfig.node.json.in \
@@ -56,6 +59,7 @@ else
 TOKEN_GENERATOR_ICON=
 endif
 
+AWK = @AWK@
 
 if TARGET_MACOS
 electron_resource_dir = Electron.app/Contents/Resources
@@ -160,8 +164,11 @@ ui_const.h: ui_const.h.in
 ' $< >$@
 
 
-if !COPY_JS_SRC_FOR_BUILD
+
+
+
 mksrc-tree:
+if !COPY_JS_SRC_FOR_BUILD
 	if [ "$(srcdir)" != "." ] ; then \
 		for item in $(src_dirs) ; do \
 			if [ ! -h $$item ] ; then \
@@ -170,7 +177,6 @@ mksrc-tree:
 		done; \
 	fi
 else
-mksrc-tree:
 	if [ "$(srcdir)" != "." ] ; then \
 		for item in $(src_dirs) ; do \
 			cp -r $(srcdir)/$$item $(builddir); \
@@ -329,7 +335,11 @@ dist/main.js: mksrc-tree $(electron_src) \
 	package-lock.json tsconfig.electron.json rollup.config.electron.js
 	$(NPM) run build-electron
 
-build-app: package-lock.json dist/index.html dist/main.js
+dist/config.json: mksrc-tree
+	mkdir -p dist		
+	cp $(srcdir)/electron/src/config.json $@
+
+build-app: package-lock.json dist/index.html dist/main.js dist/config.json
 
 .PHONY: build-app
 
@@ -341,6 +351,24 @@ config/app.json: config/app.json.in | mkdir-tree
 			gsub(/!VERSION!/, version); \
 			print $$0; \
 		}' $< >$@	
+
+config/service-id.json: ../config/service-id.txt \
+	key-values-to-json-1.awk | mkdir-tree
+	$(AWK) -f $(srcdir)/key-values-to-json-1.awk -- -i 2 -k 1 <$< >$@
+
+config/service-url-client.json: ../config/service-url-client-web.txt \
+	key-values-to-json-1.awk | mkdir-tree
+	$(AWK) -f $(srcdir)/key-values-to-json-1.awk -- -i 2 -k 1 <$< >$@
+
+config/url-id.json: ../config/url-id.txt \
+	key-values-to-json-1.awk | mkdir-tree
+	$(AWK) -f $(srcdir)/key-values-to-json-1.awk -- -i 2 -k 1 <$< >$@
+
+
+config/url-services.json: ../config/url-service-web.txt \
+	url-service-json.awk  | mkdir-tree
+	$(AWK) -f $(srcdir)/url-service-json.awk -- -i 2 <$< >$@
+
 
 
 all-local: package-lock.json \
@@ -365,6 +393,10 @@ clean-local:
 	rm -f rebrand-electron-contents-tmstamp
 	rm -f rebrand-electron-tmstamp
 	rm -f config/app.json
+	rm -f config/service-id.json
+	rm -f config/service-url-client.json
+	rm -f config/url-id.json
+	rm -f config/url-service.json
 	if [ -z "$(CLEAN_FOR_DEBUG)" ]; then \
 		rm $(electron_zip); \
 		rm -r -f $(electron_app_dir); \

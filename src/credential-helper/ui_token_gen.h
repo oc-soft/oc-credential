@@ -36,6 +36,22 @@ ui_token_gen_release(
 
 
 /**
+ * set initial service for user interface
+ */
+int
+ui_token_gen_set_service(
+    ui_token_gen* obj,
+    const char* service);
+
+
+/**
+ * get initial service for user inteface
+ */
+const char*
+ui_token_gen_get_service_ref(
+    ui_token_gen* obj);
+
+/**
  * create token
  */
 int
