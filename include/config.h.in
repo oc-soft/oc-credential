@@ -43,13 +43,13 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
-/* Define to 1 if you have the `curl' library (-lcurl). */
+/* Define to 1 if you have the 'curl' library (-lcurl). */
 #undef HAVE_LIBCURL
 
-/* Define to 1 if you have the `json-c' library (-ljson-c). */
+/* Define to 1 if you have the 'json-c' library (-ljson-c). */
 #undef HAVE_LIBJSON_C
 
-/* Define to 1 if you have the `sqlite3' library (-lsqlite3). */
+/* Define to 1 if you have the 'sqlite3' library (-lsqlite3). */
 #undef HAVE_LIBSQLITE3
 
 /* Define to 1 if you have the <mcheck.h> header file. */
@@ -103,7 +103,7 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* Define to 1 if all of the C90 standard headers exist (not just the ones
+/* Define to 1 if all of the C89 standard headers exist (not just the ones
    required in a freestanding environment). This macro is provided for
    backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
