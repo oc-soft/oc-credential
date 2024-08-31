@@ -25,7 +25,6 @@ exe_info_get_exe_name()
         size_t size;
         size = readlink("/proc/self/exe", path_buff, PATH_MAX);
         if (size) {
-
             char* name_ptr;
             size_t i;
             name_ptr = NULL;
@@ -36,9 +35,9 @@ exe_info_get_exe_name()
                 }
             }
             if (name_ptr) {
-                result = (char*)exe_info_alloc(size - i);
+                result = (char*)exe_info_alloc(size - i + 1);
                 if (result) {
-                    memcpy(result, name_ptr, size - i - 1);
+                    memcpy(result, name_ptr, size - i);
                     result[size - i] = '\0';
                 }
             }
