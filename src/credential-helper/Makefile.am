@@ -559,7 +559,7 @@ install-exec-hook:
 	$(MKDIR_P) $(DESTDIR)$(bindir)
 	rm -f $(DESTDIR)$(bindir)/credential-ocs$(EXEEXT)
 	pushd $(DESTDIR)/$(bindir); \
-		$(LN_S_R) ../$(libexecdir)/credhelper$(EXEEXT) credential-ocs$(EXEEXT)
+		$(LN_S_R) $(DESTDIR)/$(libexecdir)/credential-ocs/credhelper$(EXEEXT) credential-ocs$(EXEEXT)
 	if [ -z "$(SKIP_LOCPATH_INSTALL)" ]; then \
 		echo $(DESTDIR)$(localedir) \
 			>$(DESTDIR)$(libexecdir)/credential-ocs/$(LOCPATH_NAME) ; \
