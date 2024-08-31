@@ -261,7 +261,7 @@ cred_helper_parser_display_usage()
 "-j, --gui=[on|off]             run gui generator\n"
 "-l, --limited=[on|off]         run generator for limited device\n" 
 "-h, --help                     display this message\n"
-"[GIT_OPERATION]                get, store, erase"),
+"[GIT_OPERATION]                get, store, erase\n"),
             exe_name_out);
         std_io_ex_free_converted_str(exe_name_out);
 
