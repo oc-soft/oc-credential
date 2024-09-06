@@ -1,0 +1,1114 @@
+#include "lmd_oauth_mail_github.h"
+
+#include <stddef.h>
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+#include <math.h>
+#include <curl/curl.h>
+#include <json-c/json.h>
+#include <libintl.h>
+
+
+#include "col/list.h"
+#include "col/array_list.h"
+#include "buffer/char_buffer.h"
+#include "cstr.h"
+#include "lmd_ui.h"
+#include "lmd_ui_reader.h"
+#include "lmd_i.h"
+#include "std_io_ex.h"
+#include "fd_io.h"
+#include "std_io_ex.h"
+#include "logging.h"
+#include "exe_info.h"
+
+/**
+ * get emails from github
+ */
+static int
+lmd_oauth_mail_github_get_emails(
+    lmd* obj,
+    col_list** emails);
+
+/**
+ * get emails from github
+ */
+static int
+lmd_oauth_mail_github_get_emails_with_token(
+    const char* token,
+    col_list** emails);
+
+ 
+/**
+ * calculate string hash
+ */
+static int
+lmd_oauth_mail_github_str_hash(
+    const char* str);
+
+/**
+ * string copy
+ */
+static int
+lmd_oauth_mail_github_str_copy(
+    const char* str_a,
+    char** str_b);
+
+/**
+ * write data into buffer
+ */
+static size_t
+lmd_oauth_mail_github_write_to_buffer(
+    char* ptr,
+    size_t size,
+    size_t nmemb,
+    buffer_char_buffer* buffer);
+
+/**
+ * setup github request headers for emails
+ */
+static int
+lmd_oauth_mail_github_setup_headers_for_emails(
+    struct curl_slist* slist,
+    struct curl_slist** res);
+
+
+/**
+ * setup headers for bind email
+ */
+int
+lmd_oauth_mail_github_setup_headers_for_bind(
+    struct curl_slist* slist,
+    struct curl_slist** res);
+
+/**
+ * read emails from json response by github 
+ */
+static int
+lmd_oauth_mail_github_read_emails_from_json(
+    json_object* json,
+    col_list** emails);
+
+/**
+ * sort mail item
+ */
+static int
+lmd_oauth_mail_github_sort_mail_item_0(
+    const json_object* obj_a,
+    const json_object* obj_b);
+/**
+ * select an email by user
+ */
+static int
+lmd_oauth_mail_github_select_email(
+    lmd* obj,
+    col_list* emails,
+    char** email);
+
+/**
+ * bind github token and email
+ */
+static int
+lmd_oauth_mail_github_bind_email(
+    lmd* obj,
+    const char* email);
+
+/**
+ * is mail valid to authenticate
+ */
+int
+lmd_oauth_mail_github_is_mail_vaild(
+    const char* mail);
+
+/**
+ * github emails url
+ */
+static const char*
+lmd_oauth_mail_github_get_emails_url();
+
+/**
+ * url to bind email and github token
+ */
+static const char*
+lmd_oauth_mail_github_get_bind_url();
+
+/**
+ * read bind status
+ */
+static int
+lmd_oauth_mail_github_read_status_for_bind(
+    const json_object* obj);
+
+
+/**
+ * create html body for bind token and email
+ */
+static int
+lmd_oauth_mail_github_create_body_for_bind(
+    CURL* curl,
+    const char* token,
+    const char* email,
+    char** body);
+
+/**
+ * read number from stdin
+ */
+static int
+read_number_from_ui(
+    lmd_ui* ui,
+    int* number);
+
+/**
+ * bind oauth token and email
+ */
+int
+lmd_oauth_mail_github_bind(
+    lmd* obj)
+{
+    int result;
+    col_list* emails;
+    char* email;
+    emails = NULL;
+    email = NULL;
+    logging_log(LOG_LEVEL_DEBUG, "start github oauth mail bind");
+    result = lmd_oauth_mail_github_get_emails(obj, &emails);
+
+    if (result == 0) {
+        if (col_list_size(emails) > 1) {
+            result = lmd_oauth_mail_github_select_email(obj, emails, &email);
+        } else if (col_list_size(emails) > 0) {
+            result = col_list_get(emails, 0, (void**)&email);
+        } else {
+            result = -1;
+        }  
+    }
+    if (result == 0) {
+        result = lmd_oauth_mail_github_bind_email(obj, email); 
+    }
+    if (email) {
+        lmd_i_free(email);
+    }
+    if (emails) {
+        col_list_free(emails);
+    }
+    return result;
+}
+
+/**
+ * get emails from github
+ */
+static int
+lmd_oauth_mail_github_get_emails(
+    lmd* obj,
+    col_list** emails)
+{
+    int result;
+    if (obj) {
+        result = lmd_oauth_mail_github_get_emails_with_token(
+            lmd_get_access_token_ref(obj), emails);
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result; 
+}
+
+/**
+ * get emails from github
+ */
+static int
+lmd_oauth_mail_github_get_emails_with_token(
+    const char* token,
+    col_list** emails)
+{
+    int result;
+    col_list* emails_0;
+    CURL* curl;
+    char* exe_name;
+    result = 0;
+    exe_name = NULL;
+    emails_0 = NULL;
+    curl = curl_easy_init();
+    logging_log(LOG_LEVEL_DEBUG, "get emails with %s", token);
+    result = curl ? 0 : -1;
+    if (result == 0) {
+        exe_name = exe_info_get_exe_name();
+        result = exe_name ? 0 : -1;
+    }
+    if (result == 0) {
+        buffer_char_buffer* buffer;
+        buffer = buffer_char_buffer_create_00(
+            lmd_i_alloc,
+            lmd_i_realloc,
+            lmd_i_free,
+            lmd_i_mem_copy,
+            lmd_i_mem_move,
+            100);
+        result = buffer ? 0 : -1;
+        if (result == 0) {
+            CURLcode curl_res;
+            char* param;
+            json_object* json;
+            struct curl_slist* hdr_list;
+            const char* git_request_url;
+            hdr_list = NULL;
+            json = NULL;
+            git_request_url = lmd_oauth_mail_github_get_emails_url();
+            if (result == 0) {
+                curl_res = curl_easy_setopt(curl,
+                    CURLOPT_URL,
+                    git_request_url);
+                result = curl_res == CURLE_OK ? 0 : -1;
+            }
+            if (result == 0) {
+                curl_res = curl_easy_setopt(curl,
+                    CURLOPT_USERAGENT, exe_name);
+                result = curl_res == CURLE_OK ? 0 : -1;
+            }
+
+            if (result == 0) {
+                curl_res = curl_easy_setopt(curl,
+                    CURLOPT_WRITEFUNCTION,
+                    lmd_oauth_mail_github_write_to_buffer);
+                result = curl_res == CURLE_OK ? 0 : -1;
+            }
+            if (result == 0) {
+                curl_res = curl_easy_setopt(curl,
+                    CURLOPT_WRITEDATA, buffer);
+                result = curl_res == CURLE_OK ? 0 : -1;
+            }
+
+            if (result == 0) {
+                curl_res = curl_easy_setopt(curl,
+                    CURLOPT_SSL_OPTIONS,
+                    CURLSSLOPT_NATIVE_CA);
+                result = curl_res == CURLE_OK ? 0 : -1;
+            }
+            if (result == 0) {
+                curl_res = curl_easy_setopt(curl,
+                    CURLOPT_HTTPGET, 1);
+                result = curl_res == CURLE_OK ? 0 : -1;
+            }
+
+            if (result == 0) {
+                curl_res = curl_easy_setopt(curl,
+                    CURLOPT_HTTPAUTH, CURLAUTH_BEARER);
+                result = curl_res == CURLE_OK ? 0 : -1;
+            }
+            if (result == 0) {
+                curl_res = curl_easy_setopt(curl,
+                    CURLOPT_XOAUTH2_BEARER, token);
+                result = curl_res == CURLE_OK ? 0 : -1;
+            }
+            if (result == 0) {
+                result = lmd_oauth_mail_github_setup_headers_for_emails(
+                    hdr_list, &hdr_list); 
+            }
+            if (result == 0) {
+                curl_res = curl_easy_setopt(curl,
+                    CURLOPT_HTTPHEADER, hdr_list);
+                result = curl_res == CURLE_OK ? 0 : -1;
+ 
+            }
+            if (result == 0) {
+                curl_res = curl_easy_perform(curl);
+                result = curl_res == CURLE_OK ? 0 : -1;
+            }
+            if (result == 0) {
+                char null_char = '\0';
+                result = buffer_char_buffer_append(buffer, &null_char, 1);
+            }
+            if (result == 0) {
+                const char* response;
+                response = buffer_char_buffer_get_data(buffer);
+                logging_log(LOG_LEVEL_DEBUG, "git api (%s):\n%s",
+                    git_request_url, response);
+                json = json_tokener_parse(response);
+                result = json ? 0 : -1;
+            } 
+            if (result == 0) {
+                logging_log(LOG_LEVEL_DEBUG,
+                    "start to read emails from json");
+                result = lmd_oauth_mail_github_read_emails_from_json(
+                    json, &emails_0);
+            }
+            if (hdr_list) {
+                curl_slist_free_all(hdr_list);
+            }
+            if (json) {
+                json_object_put(json);
+            }
+        }
+
+        if (buffer) {
+            buffer_char_buffer_release(buffer);
+        }
+    }
+    if (exe_name) {
+        exe_info_free(exe_name);
+    }
+    if (curl) {
+        curl_easy_cleanup(curl);
+    }
+    if (result == 0) {
+        *emails = emails_0;
+    } else {
+        if (emails_0) {
+            col_list_free(emails_0);
+        } 
+    }
+    
+    return result;    
+}
+
+/**
+ * setup github request headers for emails
+ */
+static int
+lmd_oauth_mail_github_setup_headers_for_emails(
+    struct curl_slist* slist,
+    struct curl_slist** res)
+{
+    int result;
+    struct curl_slist* tmp_slist[] = { NULL, NULL };
+    result = 0;
+    
+    if (result == 0) {
+        tmp_slist[1] = curl_slist_append(tmp_slist[0], 
+            "Accept: application/vnd.github+json");
+        result = tmp_slist[1] ? 0 : -1;
+        if  (result == 0)  {
+            tmp_slist[0] = tmp_slist[1];
+        }
+    }
+    if (result == 0) {
+        tmp_slist[1] = curl_slist_append(tmp_slist[0], 
+            "X-GitHub-Api-Version: 2022-11-28");
+        result = tmp_slist[1] ? 0 : -1;
+        if  (result == 0)  {
+            tmp_slist[0] = tmp_slist[1];
+        }
+    }
+
+    if (result == 0) {
+        *res = tmp_slist[0];
+    } else {
+        curl_slist_free_all(tmp_slist[0]);
+    }
+
+    return result;
+}
+
+/**
+ * setup headers for bind email
+ */
+int
+lmd_oauth_mail_github_setup_headers_for_bind(
+    struct curl_slist* slist,
+    struct curl_slist** res)
+{
+    int result;
+    struct curl_slist* tmp_slist[] = { NULL, NULL };
+    result = 0;
+    
+    if (result == 0) {
+        tmp_slist[1] = curl_slist_append(tmp_slist[0], 
+            "Accept: application/json");
+        result = tmp_slist[1] ? 0 : -1;
+        if  (result == 0)  {
+            tmp_slist[0] = tmp_slist[1];
+        }
+    }
+
+    if (result == 0) {
+        *res = tmp_slist[0];
+    } else {
+        curl_slist_free_all(tmp_slist[0]);
+    }
+
+    return result;
+}
+
+
+/**
+ * create html body for bind token and email
+ */
+static int
+lmd_oauth_mail_github_create_body_for_bind(
+    CURL* curl,
+    const char* token,
+    const char* email,
+    char** body)
+{
+    const char* body_format = "token=%s&email=%s";
+    int result;
+    size_t idx;
+    size_t total_param_length;
+    size_t buf_size;
+    char* body_buf;
+    struct {
+        const char* param;
+        char* escape_param;
+    } params[] = {
+        {
+            token,
+            NULL,
+        },
+        {
+            email,
+            NULL
+        }
+    };
+    
+    result = 0;
+    total_param_length = 0;
+    buf_size = 0;
+    body_buf = NULL;
+    for (idx = 0; idx < sizeof(params) / sizeof(params[0]); idx++) {
+        params[idx].escape_param = curl_easy_escape(
+            curl, params[idx].param, 0); 
+        result = params[idx].escape_param ? 0 : -1;
+        if (result) {
+            break;
+        }
+        total_param_length += strlen(params[idx].escape_param);
+    }
+    if (result == 0) {
+        buf_size = strlen(body_format) + total_param_length + 1;
+        body_buf = (char*)lmd_i_alloc(buf_size);
+        result = body_buf ? 0 : -1;    
+    }
+    if (result == 0) {
+        int print_size;
+        print_size = std_io_ex_snprintf(
+            body_buf, buf_size, body_format,
+            params[0].escape_param, params[1].escape_param);
+        result = buf_size >= print_size ? 0 : -1;
+    }
+    if (result == 0) {
+        *body = body_buf;
+    } else {
+        lmd_i_free(body_buf);
+    }
+    for (idx = 0; idx < sizeof(params) / sizeof(params[0]); idx++) {
+        curl_free(params[idx].escape_param); 
+    }
+    return result;
+}
+
+
+/**
+ * write data into buffer
+ */
+static size_t
+lmd_oauth_mail_github_write_to_buffer(
+    char* ptr,
+    size_t size,
+    size_t nmemb,
+    buffer_char_buffer* buffer)
+{
+    size_t result;
+    if (size > 0 && nmemb > 0) {
+        int state;
+        size_t data_size;
+        data_size = size * nmemb;
+        state = buffer_char_buffer_append(buffer, ptr, data_size);
+        if (state == 0) {
+            result = data_size;
+        } else {
+            result = 0;
+        }
+    } else {
+        result = 0;
+    }
+    return result;
+}
+
+/**
+ * read emails from json response by github 
+ */
+static int
+lmd_oauth_mail_github_read_emails_from_json(
+    json_object* json,
+    col_list** emails)
+{
+    int result;
+    col_list* emails_0;
+    emails_0 = NULL;
+    result = json ? 0 : -1;
+    if (result == 0) {
+        logging_log(LOG_LEVEL_DEBUG, "verify json type is array.");
+        result = json_object_is_type(json, json_type_array) ? 0 : -1;
+    }
+    
+    if (result == 0) {
+        logging_log(LOG_LEVEL_DEBUG, "create array list to save emails.");
+        emails_0 = col_array_list_create(0x7, 0x7,
+            (int (*)(void*))lmd_oauth_mail_github_str_hash,
+            (int (*)(const void*, void**))lmd_oauth_mail_github_str_copy,
+            lmd_i_free);
+        result = emails_0 ? 0 : -1;
+    }
+    if (result == 0) {
+        size_t idx;
+        logging_log(LOG_LEVEL_DEBUG,
+            "verify each array(%d) element is object.",
+            json_object_array_length(json));
+        for (idx = 0; idx < json_object_array_length(json); idx++) {
+            json_object *item;
+            item = json_object_array_get_idx(json, idx);  
+            logging_log(LOG_LEVEL_DEBUG,
+                "verify an element(%p) is object.", item);
+            result = json_object_is_type(item, json_type_object) ? 0 : -1;
+            if (result) {
+                break;
+            }
+        }
+    }
+    if (result == 0) {
+        size_t idx;
+        logging_log(LOG_LEVEL_DEBUG, "sort array elements order by primary.");
+        json_object_array_sort(json,
+            (int (*)(const void*, const void*))
+                lmd_oauth_mail_github_sort_mail_item_0);
+        for (idx = 0; idx < json_object_array_length(json); idx++) {
+            json_object* item;
+            json_object* value; 
+            json_object* email_json;
+            json_bool state;
+            value = NULL;
+            email_json = NULL;
+            item = json_object_array_get_idx(json, idx);  
+            logging_log(LOG_LEVEL_DEBUG,
+                "get verified from an email item.");
+            state = json_object_object_get_ex(item, "verified", &value);
+            if (state) {
+                state = json_object_is_type(value, json_type_boolean);
+            }
+            if (state) {
+                if (json_object_get_boolean(value)) {
+                    logging_log(LOG_LEVEL_DEBUG,
+                        "get email from an email item.");
+ 
+                    state = json_object_object_get_ex(
+                        item, "email", &email_json); 
+                    if (!state) {
+                        email_json = NULL;
+                    }
+                }
+            }
+            if (email_json) {
+                logging_log(LOG_LEVEL_DEBUG,
+                    "verify email object type is string.");
+                state = json_object_is_type(email_json, json_type_string);
+                if (state) {
+                    int len;
+                    len = json_object_get_string_len(email_json);
+                    if (len) {
+                        char* tmp_str;
+                        tmp_str = (char*)lmd_i_alloc(len + 1);
+                        if (tmp_str) {
+                            memcpy(tmp_str,
+                                json_object_get_string(email_json),
+                                len);
+                            tmp_str[len] = '\0';
+                        } else {
+                            result = -1;
+                        }
+                        if (result == 0) {
+                            logging_log(LOG_LEVEL_DEBUG,
+                                "got email: %s",
+                                tmp_str);
+                            if (lmd_oauth_mail_github_is_mail_vaild(tmp_str)) {
+                                logging_log(LOG_LEVEL_DEBUG,
+                                    "add %s into email list",
+                                    tmp_str);
+                                result = col_list_append(emails_0, tmp_str);
+                            }
+                        }
+                        if (tmp_str) {
+                            lmd_i_free(tmp_str);
+                        }
+                    }
+                }
+            }
+            if (result) {
+                break;
+            }
+        }
+    }
+    
+    if (result == 0) {
+        *emails = emails_0;
+    } else {
+        col_list_free(emails_0);
+    }
+    return result;    
+}
+
+/**
+ * is mail valid to authenticate
+ */
+int
+lmd_oauth_mail_github_is_mail_vaild(
+    const char* mail)
+{
+    const static char* priv_mail = "users.noreply.github.com";
+    static size_t priv_mail_len = 0;
+    size_t mail_len;
+    int result;
+    if (!priv_mail_len) {
+        priv_mail_len = strlen(priv_mail);
+    }
+    result = 0;
+    if (mail) {
+        mail_len = strlen(mail); 
+        result = mail_len < priv_mail_len;
+        if (!result) {
+            result = memcmp(
+                &mail[mail_len - priv_mail_len],
+                priv_mail, priv_mail_len) != 0;
+        }
+    }
+    return result;
+}
+
+/**
+ * sort mail item
+ */
+static int
+lmd_oauth_mail_github_sort_mail_item_0(
+    const json_object* obj_a,
+    const json_object* obj_b)
+{
+    json_object* value_a;
+    json_object* value_b;
+    json_bool state[] = { 0, 0 };
+    int result; 
+    value_a = NULL;
+    value_b = NULL;
+    state[0] = json_object_object_get_ex(
+        obj_a, "primary", &value_a);
+    state[1] = json_object_object_get_ex(
+        obj_b, "primary", &value_b);
+
+    if (state[0] && state[1]) {
+        state[0] = json_object_is_type(value_a, json_type_boolean);
+        state[1] = json_object_is_type(value_b, json_type_boolean);
+        if (state[0] && state[1]) {
+            result = -(json_object_get_boolean(value_a)
+                - json_object_get_boolean(value_b));
+        } else if (state[0]) {
+            result = -1;
+        } else if (state[1]) {
+            result = 1;
+        } else {
+            result = 0;
+        }
+    } else if (state[0]) {
+        result = -1;
+    } else if (state[1]) {
+        result = 1;
+    } else {
+        result = 0;
+    }
+    return result; 
+}
+
+/**
+ * read bind status
+ */
+static int
+lmd_oauth_mail_github_read_status_for_bind(
+    const struct json_object* obj)
+{
+    int result;
+    result = 0;
+    if (obj) {
+        json_bool state;
+        struct json_object* value;
+        value = NULL;
+        state = json_object_is_type(obj, json_type_object);
+        result = state ? 0 : -1;
+        if (result == 0) {
+            state = json_object_object_get_ex(obj, "status", &value);
+            result = state ? 0 : -1;
+        }
+        if (result == 0) {
+            state = json_object_is_type(value, json_type_string);
+            result = state ? 0 : -1;
+        }
+        if (result == 0) {
+            size_t cmp_len;
+            cmp_len = json_object_get_string_len(value);
+            result = cmp_len > 1 ? 0 : -1;
+            if (result == 0) {
+                result = memcmp("ok", json_object_get_string(value), cmp_len);
+            }
+        }
+    } else {
+        result = -1;
+        errno = EINVAL;
+    }
+    return result;
+}
+
+
+/**
+ * create email selection lines
+ */
+static int
+lmd_oauth_mail_github_create_email_selections(
+    lmd* obj,
+    col_list* emails,
+    char** selection_lines)
+{
+    int result;
+    size_t idx;
+    result = 0;
+    cstr* buffer;
+    buffer = cstr_create_11();
+    result = buffer ? 0 : -1;
+    if (result == 0) {
+        size_t email_count;
+        const static char* format = "%*d.%s\n";
+        int max_width;
+        size_t format_length;
+        format_length = strlen(format);
+        email_count = col_list_size(emails);
+        max_width = (int)log10(email_count) + 1;
+        
+        for (idx = 0; idx < email_count; idx++) {
+            size_t tmp_buffer_size;
+            char* tmp_buffer;
+            char* email;
+            email = NULL;
+            tmp_buffer = NULL;
+            result = col_list_get(emails, idx, (void**)&email);
+            if (result == 0) {
+                result = email ? 0 : -1;
+            }
+            if (result == 0) {
+                tmp_buffer_size = format_length + max_width + strlen(email) + 1;
+                tmp_buffer = (char*)lmd_i_alloc(tmp_buffer_size);
+                result = tmp_buffer ? 0 : -1;
+            }
+            if (result == 0) {
+                int print_length;
+                print_length = std_io_ex_snprintf(
+                    tmp_buffer, tmp_buffer_size, format,
+                    max_width, idx + 1, email); 
+                logging_log(LOG_LEVEL_DEBUG, "selection line: %s", tmp_buffer);
+                result = cstr_append_1(buffer, tmp_buffer, print_length);
+            }
+            if (tmp_buffer) {
+                lmd_i_free(tmp_buffer);
+            }
+            if (email) {
+                lmd_i_free(email);
+            }
+            if (result) {
+                break;
+            }
+        }
+    }
+    if (result == 0) {
+        char* tmp_res;
+        tmp_res = cstr_to_flat_str_0(buffer, lmd_i_alloc_1);
+        result = tmp_res ? 0 : -1;
+        if (result == 0) {
+            *selection_lines = tmp_res;    
+        }
+    }
+
+    if (buffer) {
+        cstr_release(buffer);
+    }
+    return result;
+}
+
+/**
+ * select an email by user
+ */
+static int
+lmd_oauth_mail_github_select_email(
+    lmd* obj,
+    col_list* emails,
+    char** email)
+{
+    int result;
+    char* selection_lines;
+    int email_selection;
+    email_selection = -1;
+    selection_lines = NULL;
+    logging_log(LOG_LEVEL_DEBUG, "start select email");
+
+    result = lmd_oauth_mail_github_create_email_selections(
+        obj, emails, &selection_lines);
+
+    if (result == 0) {
+        lmd_ui* ui;
+        char* select_message;
+        logging_log(LOG_LEVEL_DEBUG, "selection lines: \n%s", selection_lines);
+        ui = NULL;
+        select_message = NULL;
+        if (fd_io_isatty(fd_io_fileno(stderr))) {
+            select_message = gettext(
+                "Select \x1b[1ma number\x1b[0m to oauth token "
+                "or enter \x1b[1mEsc\x1b[0m if you cancel.\n");
+        } else {
+            select_message = gettext(
+                "Select a number to relate to oauth token "
+                "or enter Esc if you cancel.\n");
+        }
+        fputs("\n", stderr);
+        fputs(selection_lines, stderr);
+        fputs(select_message, stderr);
+
+        ui = lmd_ui_create();
+        if (ui) {
+            while (1) {
+                int state;
+                int number;
+                number = 0;
+                state = read_number_from_ui(ui, &number); 
+                if (state == -1) {
+                    result = -1;
+                    break;
+                }
+                if (state == 0) {
+                    if (0 < number && number <= col_list_size(emails)) {
+                        email_selection = number;
+                        break;
+                    }
+                }
+            }
+        }
+        if (ui) {
+            lmd_ui_release(ui);
+        }
+    }
+    if (result == 0) {
+        logging_log(LOG_LEVEL_DEBUG, "get email(%d) from list",
+            email_selection - 1);
+        result = col_list_get(emails, email_selection - 1, (void**)email);
+    }
+
+    if (selection_lines) {
+        lmd_i_free(selection_lines);
+    }
+    return result;
+}
+
+/**
+ * bind github token and email
+ */
+static int
+lmd_oauth_mail_github_bind_email(
+    lmd* obj,
+    const char* email)
+{
+    int result;
+    CURL* curl;
+    char* body;
+    result = 0;
+    body = NULL;
+    curl = curl_easy_init();
+    result = curl ? 0 : -1;
+
+    logging_log(LOG_LEVEL_DEBUG, "start github bind email(%s)", email);
+
+    if (result == 0) {
+        result = lmd_oauth_mail_github_create_body_for_bind(curl,
+            lmd_get_access_token_ref(obj), email, &body);
+    }
+    if (result == 0) {
+        buffer_char_buffer* buffer;
+        buffer = buffer_char_buffer_create_00(
+            lmd_i_alloc,
+            lmd_i_realloc,
+            lmd_i_free,
+            lmd_i_mem_copy,
+            lmd_i_mem_move,
+            100);
+        result = buffer ? 0 : -1;
+        if (result == 0) {
+            CURLcode curl_res;
+            char* param;
+            json_object* json;
+            struct curl_slist* hdr_list;
+            hdr_list = NULL;
+            json = NULL;
+            if (result == 0) {
+                curl_res = curl_easy_setopt(curl,
+                    CURLOPT_URL,
+                    lmd_oauth_mail_github_get_bind_url());
+                result = curl_res == CURLE_OK ? 0 : -1;
+            }
+
+            if (result == 0) {
+                curl_res = curl_easy_setopt(curl,
+                    CURLOPT_WRITEFUNCTION,
+                    lmd_oauth_mail_github_write_to_buffer);
+                result = curl_res == CURLE_OK ? 0 : -1;
+            }
+            if (result == 0) {
+                curl_res = curl_easy_setopt(curl,
+                    CURLOPT_WRITEDATA, buffer);
+                result = curl_res == CURLE_OK ? 0 : -1;
+            }
+
+            if (result == 0) {
+                curl_res = curl_easy_setopt(curl,
+                    CURLOPT_SSL_OPTIONS,
+                    CURLSSLOPT_NATIVE_CA);
+                result = curl_res == CURLE_OK ? 0 : -1;
+            }
+            if (result == 0) {
+                curl_res = curl_easy_setopt(curl,
+                    CURLOPT_POST, 1);
+                result = curl_res == CURLE_OK ? 0 : -1;
+            }
+            if (result == 0) {
+                curl_res = curl_easy_setopt(curl,
+                    CURLOPT_POSTFIELDS, body);
+                result = curl_res == CURLE_OK ? 0 : -1;
+            }
+
+
+            if (result == 0) {
+                result = lmd_oauth_mail_github_setup_headers_for_bind(
+                    hdr_list, &hdr_list); 
+            }
+            if (result == 0) {
+                curl_res = curl_easy_setopt(curl,
+                    CURLOPT_HTTPHEADER, hdr_list);
+                result = curl_res == CURLE_OK ? 0 : -1;
+ 
+            }
+            if (result == 0) {
+                curl_res = curl_easy_perform(curl);
+                result = curl_res == CURLE_OK ? 0 : -1;
+            }
+            if (result == 0) {
+                char null_char = '\0';
+                result = buffer_char_buffer_append(buffer, &null_char, 1);
+            }
+            if (result == 0) {
+                logging_log(LOG_LEVEL_DEBUG,
+                    "response from %s\n"
+                    "%s",
+                    lmd_oauth_mail_github_get_bind_url(),
+                    buffer_char_buffer_get_data(buffer));
+                json = json_tokener_parse(buffer_char_buffer_get_data(buffer));
+                result = json ? 0 : -1;
+            } 
+            if (result == 0) {
+                result = lmd_oauth_mail_github_read_status_for_bind(json);
+            }
+            if (hdr_list) {
+                curl_slist_free_all(hdr_list);
+            }
+            if (json) {
+                json_object_put(json);
+            }
+        }
+
+        if (buffer) {
+            buffer_char_buffer_release(buffer);
+        }
+    }
+    if (body) {
+        lmd_i_free(body);
+    }
+    if (curl) {
+        curl_easy_cleanup(curl);
+    }
+    
+    return result;    
+}
+
+/**
+ * url to bind email and github token
+ */
+static const char*
+lmd_oauth_mail_github_get_bind_url()
+{
+    return "@GITHUB_BIND_URL@";
+}
+
+
+/**
+ * github emails url
+ */
+static const char*
+lmd_oauth_mail_github_get_emails_url()
+{
+    return "https://api.github.com/user/emails";
+}
+
+/**
+ * calculate string hash
+ */
+static int
+lmd_oauth_mail_github_str_hash(
+    const char* str)
+{
+    int result;
+    result = 0;
+    if (str) {
+        size_t len;
+        size_t i;
+        len = strlen(str);
+        for (i = 0; i < len; i++) {
+            result ^= str[i];
+        } 
+    }
+    return result;
+}
+
+/**
+ * string copy
+ */
+static int
+lmd_oauth_mail_github_str_copy(
+    const char* str_a,
+    char** str_b)
+{
+    int result;
+    result = 0;
+    if (str_b) {
+        char* dup_a;
+        if (str_a) {
+            size_t a_len;
+            a_len = strlen(str_a);
+            dup_a = (char*)lmd_i_alloc(a_len + 1);
+            if (!dup_a) {
+                result = 0;
+            }
+            if (result == 0) {
+                lmd_i_mem_copy(dup_a, str_a, a_len + 1);
+            }
+        } else {
+            dup_a = NULL;
+        }
+        if (result == 0) {
+            *str_b = dup_a; 
+        }     
+    }
+    return result;
+}
+
+/**
+ * read number from stdin
+ */
+static int
+read_number_from_ui(
+    lmd_ui* ui,
+    int* number)
+{
+    return lmd_ui_reader_get_number_from_ui(ui, number);
+}
+
+

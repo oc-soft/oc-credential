@@ -15,16 +15,24 @@ noinst_HEADERS= cred_helper_types.h \
 	exe_info.h \
 	exec_names.h \
 	fd_io.h \
+	fd_io_win.h \
 	http.h \
 	l10n.h \
 	l10n_i.h \
 	lmd_connections.h \
+	lmd_github_connections.h \
+	lmd_google_connections.h \
+	lmd_ms_connections.h \
 	lmd_op.h \
 	lmd.h \
 	lmd_i.h \
+	lmd_ui.h  \
+	lmd_ui_reader.h \
 	lmd_parser.h \
 	lmd_requests.h \
 	lmd_types.h \
+	lmd_oauth_mail.h \
+	lmd_oauth_mail_github.h \
 	lmd_oauth_token_param_creator.h \
 	mem_dbg.h \
 	option.h \
@@ -61,8 +69,11 @@ credhelper_src = main.c \
 	lmd_ms_connections.c \
 	lmd_requests.c \
 	lmd_op.c \
+	lmd_oauth_mail.c \
+	lmd_oauth_mail_github.c \
 	lmd_i.c \
 	lmd_ui.c \
+	lmd_ui_reader.c \
 	lmd_oauth_token_param_creator.c \
 	l10n_i.c \
 	token_gen_ui.c \
@@ -86,6 +97,7 @@ credhelper_src = main.c \
 
 EXTRA_DIST = \
 	lmd_connections.gpf \
+	lmd_oauth_mail.gpf \
 	service_oauth_token_parser.gpf \
 	service_oauth_response_error_parser.gpf \
 	service_id.gpf.in \
@@ -99,6 +111,7 @@ EXTRA_DIST = \
 	credhelper_res.rc.in \
 	rt_ui_01.sh.in \
 	mem_dbg_on.c.in \
+	lmd_oauth_mail_github.c.in \
 	rt_get_01.sh.in \
 	l10n_i.c.in \
 	logging_win.h.in \
@@ -228,6 +241,7 @@ endif
 credential_ocs_credhelper_LDADD= \
 	$(top_builddir)/oclib/buffer/src/libocbuffer.la \
 	$(top_builddir)/oclib/cstr/src/liboccstr.la \
+	$(top_builddir)/oclib/col/src/liboccol.la \
 	$(top_builddir)/src/core/liboccredcore.la \
 	$(credhelper_lib_flags)
 
@@ -342,6 +356,7 @@ awk_cmd_3 = 'BEGIN { \
 
 credential_ocs_credhelper_CPPFLAGS=-I$(top_srcdir)/oclib/buffer/include \
 	-I$(top_srcdir)/oclib/cstr/include \
+	-I$(top_srcdir)/oclib/col/include \
 	-I$(top_srcdir)/src/core
 
 credential_ocs_creddef_CPPFLAGS= -I$(top_srcdir)/src/core
@@ -504,6 +519,11 @@ exec_names.c: exec_names.c.in
 l10n_i.c : l10n_i.c.in
 	sed -e 's/!LOCPATH_NAME!/$(LOCPATH_NAME)/' $< >$@
 
+lmd_oauth_mail_github.c : lmd_oauth_mail_github.c.in\
+	$(srcdir)/../config/github-mail-bind-url.txt
+	read ln <$(srcdir)/../config/github-mail-bind-url.txt; \
+		sed -e s%@GITHUB_BIND_URL@%$$ln% $< >$@
+
 credhelper_const.h : credhelper_const.h.in $(srcdir)/Makefile.am
 	awk $(awk_cmd_1) $< >$@
 
@@ -599,9 +619,19 @@ clean-local:
 	rm -f rt_get_01.sh rt_get_02.sh  rt_cli_get_02.sh
 	rm -f mem_dbg_on.c mem_dbg_off.c
 	rm -f exec_names.c
-	rm -f url_id.c url_services.c
-	rm -f service_id.c service_secret.c
-	rm -f service_url_secret.c service_url_client.c
+	rm -f url_id.c
+	rm -f url_services.c
+	rm -f service_id.c
+	rm -f service_secret.c
+	rm -f service_url_secret.c
+	rm -f service_url_client.c
+	rm -f service_url_lmd_oauth_token_param.c
+	rm -f service_url_device_user_code_param.c
+	rm -f service_url_oauth_token_param.c
+	rm -r service_oauth_response_error_parser.c
+	rm -r service_oauth_token_parser.c
+	rm -f lmd_oauth_mail.c
+	rm -f lmd_oauth_mail_github.c 
 	rm -f l10n_i.c
 	rm -f logging_win.h
 	rm -f credhelper_const.h

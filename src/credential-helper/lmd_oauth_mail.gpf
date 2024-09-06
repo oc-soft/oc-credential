@@ -1,0 +1,113 @@
+%{
+#include "lmd_oauth_mail.h"
+
+#include <errno.h>
+#include <string.h>
+#include "lmd_oauth_mail_github.h"
+#include "logging.h"
+
+/**
+ * name service callback
+ */
+typedef struct _service_entry service_entry;
+
+
+static service_entry*
+in_word_set(
+    const char* name,
+    size_t length);
+
+/**
+ * this function do nothing because token bound email already
+ */
+static int
+lmd_oauth_mail_bound_already(
+    lmd* obj);
+
+/**
+ * bind github token and an email
+ */
+static int
+lmd_oauth_mail_bind_github(
+    lmd* obj);
+
+%}
+%struct-type
+%compare-lengths
+/**
+ * name service callback
+ */
+struct _service_entry {
+    /**
+     * name
+     */
+    const char* name;
+    /**
+     * fill endpoint urls for oauth token 
+     */
+    int (*bind_mail)(lmd*);
+};
+%%
+google,lmd_oauth_mail_bound_already
+microsoft,lmd_oauth_mail_bound_already
+github,lmd_oauth_mail_bind_github
+%%
+/**
+ * poll to bind oauth token and email
+ */
+int
+lmd_oauth_mail_bind(
+    lmd* obj)
+{
+    int result;
+    const char* service;
+    service = NULL;
+    if (obj) {
+        result =0;
+
+    } else {
+        errno = EINVAL;
+        result = -1;
+    } 
+    if (result == 0) {
+        service = lmd_get_service_ref(obj); 
+        if (!service) {
+            errno = EINVAL;
+            result = -1;
+        }
+    }
+    if (result == 0) {
+        service_entry* entry;
+        entry = in_word_set(service, strlen(service));
+        if (entry) {
+            result = entry->bind_mail(obj);
+        } else {
+            result = -1;
+            errno = EINVAL;
+        }
+    }
+    return result;
+}
+
+/**
+ * this function do nothing because token bound email already
+ */
+static int
+lmd_oauth_mail_bound_already(
+    lmd* obj)
+{
+    return 0;
+}
+
+/**
+ * bind github token and an email
+ */
+int
+lmd_oauth_mail_bind_github(
+    lmd* obj)
+{
+    return lmd_oauth_mail_github_bind(obj);
+}
+
+
+/* vi: se ts=4 sw=4 et: */
