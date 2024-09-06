@@ -14,6 +14,17 @@ lmd_i_alloc(
 }
 
 /**
+ * allocate heap object
+ */
+void*
+lmd_i_alloc_1(
+    unsigned int size)
+{
+    return lmd_i_alloc(size);
+}
+
+
+/**
  * realocate heap object
  */
 void*
