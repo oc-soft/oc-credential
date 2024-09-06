@@ -22,13 +22,14 @@ lmd_requests_load_device_and_user_code(
 	lmd* obj);
 
 /**
- * poll oauth token
+ * poll to get oauth token
  */
 int
 lmd_requests_poll_oauth_token(
     lmd* obj,
     int (*progress)(void*, int, lmd*),
     void* user_data);
+
 
 _LMD_REQUESTS_ITFC_END 
 
