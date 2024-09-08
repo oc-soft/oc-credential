@@ -248,7 +248,6 @@ lmd_oauth_mail_github_get_emails_with_token(
         result = buffer ? 0 : -1;
         if (result == 0) {
             CURLcode curl_res;
-            char* param;
             json_object* json;
             struct curl_slist* hdr_list;
             const char* git_request_url;

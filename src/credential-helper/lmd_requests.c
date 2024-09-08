@@ -324,7 +324,6 @@ lmd_requests_load_oauth(
 {
     int result;
     struct timespec start_time;
-    struct timespec sleep_req;
     double start_sec;
     double last_trying_sec;
     result = 0;
@@ -333,9 +332,7 @@ lmd_requests_load_oauth(
 
     start_sec = start_time.tv_sec;
     start_sec += (double)start_time.tv_nsec * pow(10.0, -9);
-    last_trying_sec = start_sec - 1; 
-    sleep_req.tv_sec = 1;
-    /* sleep_req.tv_nsec = 5l * (long)pow(10, 9); */
+    last_trying_sec = start_sec; 
 
     while (1) {
         int elapse;
@@ -348,18 +345,12 @@ lmd_requests_load_oauth(
         cur_sec = cur_time.tv_sec;
         cur_sec += (double)cur_time.tv_nsec * pow(10.0, -9);
 
-        elapse = (int)round(cur_sec - last_trying_sec);
+        elapse = (int)floor(cur_sec - last_trying_sec);
         
         if (elapse > lmd_get_interval(obj)) {
             result = lmd_requests_try_load_oauth(
                 obj, curl, &having_oauth);
             last_trying_sec = cur_sec;
-            if (result == 0 && lmd_get_verbose_level(obj) >= 5) {
-                printf("user code: %s\n"
-                    "end point url: %s\n",
-                    lmd_get_user_code_ref(obj),
-                    lmd_get_verification_url_ref(obj));
-            }
         }
         elapse = (int)round(cur_sec - start_sec); 
 
@@ -377,11 +368,6 @@ lmd_requests_load_oauth(
             break;
         }
         sleep(1);
-#if 0
-        if (nanosleep(&sleep_req, NULL) == -1) {
-            errno = 0;
-        }
-#endif
     }
     return result;
     

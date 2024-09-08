@@ -375,26 +375,26 @@ mem_dbg: mem_dbg_on.c.in
 all-local: rt_get_01.sh rt_get_02.sh rt_ui_01.sh rt_cli_get_01.sh rt_cli_get_02.sh 
 
 
-rt_get_01.sh : rt_get_01.sh.in
+rt_get_01.sh : rt_get_01.sh.in Makefile credential-ocs/credhelper$(EXTEXT)
 	sed -e 's!%URL_ID_PATH%!$(abs_top_srcdir)/src/config/url-id.txt!' \
 		-e 's!%CLI%!$(abs_builddir)/credential-ocs/credhelper$(EXEEXT)!' \
 		-e 's!%AWK%!$(AWK)!' $< >$@
 	chmod u+x $@
 
-rt_cli_get_01.sh : rt_get_01.sh.in
+rt_cli_get_01.sh : rt_get_01.sh.in Makefile credential-ocs/credhelper$(EXTEXT)
 	sed -e 's!%URL_ID_PATH%!$(abs_top_srcdir)/src/config/url-id.txt!' \
 		-e 's!%CLI%!$(abs_builddir)/credential-ocs/credhelper$(EXEEXT) -e 10 -j off -g on!' \
 		-e 's!%AWK%!$(AWK)!' $< >$@
 	chmod u+x $@
 
-rt_get_02.sh : rt_get_02.sh.in
+rt_get_02.sh : rt_get_02.sh.in Makefile credential-ocs/credhelper$(EXTEXT)
 	sed -e 's!%CLI%!$(abs_builddir)/credential-ocs/credhelper$(EXEEXT)!' \
 		-e 's!%URL_ID_PATH%!$(abs_top_srcdir)/src/config/url-id.txt!' \
 		-e 's!%AWK%!$(AWK)!' $< >$@
 	chmod u+x $@
 
-rt_cli_get_02.sh : rt_get_02.sh.in
-	sed -e 's!%CLI%!$(abs_builddir)/credential-ocs/credhelper$(EXEEXT) -j off -g on!' \
+rt_cli_get_02.sh : rt_get_02.sh.in Makefile credential-ocs/credhelper$(EXTEXT)
+	sed -e 's!%CLI%!$(abs_builddir)/credential-ocs/credhelper$(EXEEXT) -e 10 -j off -g on!' \
 		-e 's!%URL_ID_PATH%!$(abs_top_srcdir)/src/config/url-id.txt!' \
 		-e 's!%AWK%!$(AWK)!' $< >$@
 	chmod u+x $@
@@ -617,7 +617,6 @@ clean-local:
 	rm -f git-credential-data-1.txt
 	rm -f rt_ui_01.sh  rt_cli_get_01.sh
 	rm -f rt_get_01.sh rt_get_02.sh  rt_cli_get_02.sh
-	rm -f mem_dbg_on.c mem_dbg_off.c
 	rm -f exec_names.c
 	rm -f url_id.c
 	rm -f url_services.c
