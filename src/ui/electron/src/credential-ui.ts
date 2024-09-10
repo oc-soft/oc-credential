@@ -5,15 +5,37 @@ import * as path from 'node:path'
 import * as fs from 'node:fs'
 import { Buffer } from 'node:buffer'
 import Config from './config' 
+import { decode } from 'oc-soft/common'
 
-
+/**
+ * get request url
+ */
+function getRequestUrl(
+  descriptorStr?: string): string {
+  let requestUrl: string | undefined
+  if (descriptorStr) {
+    const desc = decode(descriptorStr) 
+    if (desc && desc.protocol && desc.host) {
+      if ('http' == desc.protocol || 'https' == desc.protocol) {
+        requestUrl = `${desc.protocol}://${desc.host}`
+      }
+    }
+  }
+  if (!requestUrl) {
+    requestUrl = Config.requestUrl
+  }
+  return requestUrl as string
+}
+  
 /**
  * create post option for load url
  */
-function createPostOption(initialSelection?: string): object {
+function createPostOption(
+  initialSelection?: string,
+  descriptorStr?: string): object {
 
   const searchParams = new URLSearchParams()
-  searchParams.append('url', Config.requestUrl)
+  searchParams.append('url', getRequestUrl(descriptorStr))
   if (initialSelection) {
     searchParams.append('selection', initialSelection)
   } 
@@ -53,7 +75,7 @@ export function createWindow(
   let loadOption: object | undefined = undefined 
     
   result.loadURL(Config.tokenLoginUrl, 
-    createPostOption(service))
+    createPostOption(service, descriptor))
   // result.webContents.openDevTools()
   return result
 }

@@ -38,7 +38,7 @@ export default class Config {
    */
   static get tokenLoginUrl(): string {
     return this.getConfig('token-login-url',
-      'https://repos.oc-soft.net/oauth-entry')
+      'https://localhost:8080/oauth-entry')
   }
 
   /**
@@ -46,7 +46,7 @@ export default class Config {
    */
   static get requestUrl(): string {
     return this.getConfig('request-url',
-      'https://repos.oc-soft.net')
+      'https://localhost:8080')
   }
 
   /**
@@ -54,7 +54,7 @@ export default class Config {
    */
   static get oauthTokenUrl(): string {
     return this.getConfig('oauth-token-url',
-      'https://repos.oc-soft.net/oauth-token')
+      'https://localhost:8080/oauth-token')
   }
 }
 
