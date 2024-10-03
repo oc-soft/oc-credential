@@ -2,14 +2,6 @@
 CORE_MODULE_DIR=@CORE_MODULE_DIR@
 
 client_src = \
-	client/src/option.ts \
-	client/src/App.vue \
-	client/src/components/Message.vue \
-	client/src/components/Oauth.vue \
-	client/src/io/oauth.ts \
-	client/src/io/codec.ts \
-	client/src/io/index.ts \
-	client/src/main.ts \
 	client/index.html 
 
 electron_src = \
@@ -29,7 +21,7 @@ EXTRA_DIST = $(client_src) $(electron_src) \
 	electron-package.json.in \
 	tsconfig.electron.json.in \
 	tsconfig.json.in \
-	rollup.config.electron.js.in \
+	rollup.config.electron.mjs.in \
 	config/app.json.in \
 	config/config.json.in \
 	package.json.in \
@@ -37,6 +29,7 @@ EXTRA_DIST = $(client_src) $(electron_src) \
 
 ELECTRON_TARGET_CPU=@ELECTRON_TARGET_CPU@
 ELECTRON_TARGET_OS=@ELECTRON_TARGET_OS@
+ELECTRON_VERSION=32.1.0
 GUI_EXE_SUBDIR=@GUI_EXE_SUBDIR@
 OC_EXE_ROOT_NAME=@OC_EXE_ROOT_NAME@
 PKG_DEST_REL_DIR=$(OC_EXE_ROOT_NAME)/$(GUI_EXE_SUBDIR)
@@ -71,7 +64,7 @@ endif
 
 CLEAN_FOR_DEBUG =
 
-electron_version = v22.1.0
+electron_version = v$(ELECTRON_VERSION)
 electron_dist_host = https://github.com
 electron_dist_path_0 = electron/electron/releases/download
 electron_zip = electron-$(electron_version)-$(ELECTRON_TARGET_OS)-$(ELECTRON_TARGET_CPU).zip
@@ -81,6 +74,9 @@ electron_dist_url = $(electron_dist_host)/$(electron_dist_path_0)/$(electron_ver
 electron_extract_dir = pkg
 
 electron_app_dir = $(electron_extract_dir)/$(electron_resource_dir)/app
+
+electron_rebuild_env = CXX=$(CXX) CXXFLAGS=-std=c++20
+
 token_generator_app_dir = $(electron_extract_dir)/$(token_generator_resource_dir)/app
 electron_package_json = $(electron_app_dir)/package.json
 token_generator_package_json = $(token_generator_app_dir)/package.json
@@ -92,45 +88,54 @@ awk_cmd_0=' \
 		gsub(/!SRCDIR!/, srcdir); \
 		gsub(/!ABS_BUILDDIR!/, abs_builddir); \
 		gsub(/!ABS_SRCDIR!/, abs_srcdir); \
+		gsub(/!ELECTRON_VERSION!/, electron_version); \
+		gsub(/!PROJECTDIR!/, projectdir); \
 		print; \
 	} \
 '
 
+
 package-lock.json: package.json
 	$(NPM) install
-
-package.json: package.json.in
+	$(electron_rebuild_env) $(builddir)/node_modules/.bin/electron-rebuild
+	
+package.json: package.json.in Makefile
 	$(AWK) -v srcdir=$(srcdir) \
 		-v abs_builddir=$(abs_builddir) \
 		-v abs_srcdir=$(abs_srcdir) \
 		-v package_name=$(PACKAGE_NAME) \
 		-v package_version=$(PACKAGE_VERSION) \
+		-v electron_version=$(ELECTRON_VERSION) \
+		-v projectdir=$(top_srcdir)/ \
 		$(awk_cmd_0) $< >$@
 
-rollup.config.electron.js: rollup.config.electron.js.in \
-	tsconfig.electron.json
+rollup.config.electron.mjs: rollup.config.electron.mjs.in \
+	tsconfig.electron.json Makefile
 	$(AWK) -v srcdir=$(srcdir) \
 		-v abs_builddir=$(abs_builddir) \
 		-v abs_srcdir=$(abs_srcdir) \
 		-v package_name=$(PACKAGE_NAME) \
 		-v package_version=$(PACKAGE_VERSION) \
+		-v electron_version=$(ELECTRON_VERSION) \
 		$(awk_cmd_0) $< >$@
 
-tsconfig.electron.json: tsconfig.electron.json.in 
+tsconfig.electron.json: tsconfig.electron.json.in Makefile
 	$(AWK) -v srcdir=$(srcdir) \
 		-v abs_builddir=$(abs_builddir) \
 		-v abs_srcdir=$(abs_srcdir) \
 		-v package_name=$(PACKAGE_NAME) \
 		-v package_version=$(PACKAGE_VERSION) \
+		-v electron_version=$(ELECTRON_VERSION) \
 		$(awk_cmd_0) $< >$@
 
 
-tsconfig.json: tsconfig.json.in
+tsconfig.json: tsconfig.json.in Makefile
 	$(AWK) -v srcdir=$(srcdir) \
 		-v abs_builddir=$(abs_builddir) \
 		-v abs_srcdir=$(abs_srcdir) \
 		-v package_name=$(PACKAGE_NAME) \
 		-v package_version=$(PACKAGE_VERSION) \
+		-v electron_version=$(ELECTRON_VERSION) \
 		$(awk_cmd_0) $< >$@
 
 tsconfig.node.json: tsconfig.node.json.in
@@ -139,6 +144,7 @@ tsconfig.node.json: tsconfig.node.json.in
 		-v abs_srcdir=$(abs_srcdir) \
 		-v package_name=$(PACKAGE_NAME) \
 		-v package_version=$(PACKAGE_VERSION) \
+		-v electron_version=$(ELECTRON_VERSION) \
 		$(awk_cmd_0) $< >$@
 
 vite.config.ts: vite.config.ts.in
@@ -147,10 +153,11 @@ vite.config.ts: vite.config.ts.in
 		-v abs_srcdir=$(abs_srcdir) \
 		-v package_name=$(PACKAGE_NAME) \
 		-v package_version=$(PACKAGE_VERSION) \
+		-v electron_version=$(ELECTRON_VERSION) \
 		$(awk_cmd_0) $< >$@
 
 
-ui_const.h: ui_const.h.in
+ui_const.h: ui_const.h.in Makefile
 	$(AWK) ' \
 	{ \
 		gsub(/!TOKEN_GEN_FILE_NAME!/, \
@@ -196,7 +203,7 @@ $(electron_zip):
 
 
 electron-tmstamp: $(electron_zip) | mkdir-tree
-	$(UNZIP) $^ -d $(electron_extract_dir)
+	$(UNZIP) -o $^ -d $(electron_extract_dir)
 if RUN_WIN
 	for f in `find $(electron_extract_dir) -type f`; do \
 		chmod og-w $$f; \
@@ -327,17 +334,18 @@ download-electron: | $(electron_zip)
 .PHONY: download-electron
 
 
-dist/index.html : mksrc-tree $(client_src) \
+dist/index.html : client/index.html mksrc-tree \
 	package-lock.json vite.config.ts 
-	$(NPM) run build-client
+	$(MKDIR_P) $(@D)
+	cp $< $@
 
 dist/main.js: mksrc-tree $(electron_src) \
-	package-lock.json tsconfig.electron.json rollup.config.electron.js
+	package-lock.json tsconfig.electron.json rollup.config.electron.mjs
 	$(NPM) run build-electron
 
-dist/config.json: mksrc-tree
-	mkdir -p dist		
-	cp $(srcdir)/electron/src/config.json $@
+dist/config.json: electron/src/config.json 
+	$(MKDIR_P) $(@D)
+	cp $< $@
 
 build-app: package-lock.json dist/index.html dist/main.js dist/config.json
 
@@ -369,22 +377,31 @@ config/url-services.json: ../config/url-service-web.txt \
 	url-service-json.awk  | mkdir-tree
 	$(AWK) -f $(srcdir)/url-service-json.awk -- -i 2 <$< >$@
 
-
-
 all-local: package-lock.json \
 	package.json \
-	rollup.config.electron.js \
+	rollup.config.electron.mjs \
 	tsconfig.json \
 	tsconfig.node.json \
 	vite.config.ts \
 	config/app.json \
 	| mksrc-tree mkdir-tree build-app rebrand-electron
 
-clean-unziped-electron:
-	rm -r -f $(electron_extract_dir)
-	rm electron-tmstamp
+clean-electron-package-json-tmstamp:
+	rm -f electron-package-json-tmstamp
 
-clean-local:
+clean-electron-package-json: clean-electron-package-json-tmstamp
+	if [ -d $(builddir)/$(electron_extract_dir)/Electron.app ]; then \
+		dest_path=$(electron_package_json); \
+	else \
+		dest_path=$(token_generator_package_json); \
+	fi; \
+	rm -f $$dest_path
+
+clean-unziped-electron: clean-electron-package-json-tmstamp
+	rm -r -f $(electron_extract_dir)
+	rm -f electron-tmstamp
+
+clean-local: clean-electron-package-json
 	rm -f *.json
 	rm -f *.ts
 	rm -f *.js

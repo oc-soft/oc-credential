@@ -4,3 +4,12 @@
 [submodule "pkg/win/cabx"]
 	path = pkg/win/cabx
 	url = ../cabx
+[submodule "npm/ref"]
+	path = npm/ref
+	url = https://github.com/TooTallNate/ref.git
+[submodule "npm/weak"]
+	path = npm/weak
+	url = https://github.com/TooTallNate/node-weak.git
+[submodule "npm/nan"]
+	path = npm/nan
+	url = https://github.com/nodejs/nan.git

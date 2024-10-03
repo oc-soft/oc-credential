@@ -11,6 +11,7 @@ AC_CONFIG_SUBDIRS([oclib pkg/win/cabx])
 LT_LANG([Windows Resource])
 
 AC_PROG_CC
+AC_PROG_CXX
 AC_CHECK_PROG([GPERF], [gperf --version], [gperf])
 AC_CHECK_PROG([HEXDUMP], [hexdump --version], [hexdump])
 AC_CHECK_PROG([SQLITE3], [sqlite3 --version], [sqlite])
