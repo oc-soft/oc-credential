@@ -109,6 +109,7 @@ package.json: package.json.in Makefile
 		-v projectdir=$(top_srcdir)/ \
 		$(awk_cmd_0) $< >$@
 
+
 rollup.config.electron.mjs: rollup.config.electron.mjs.in \
 	tsconfig.electron.json Makefile
 	$(AWK) -v srcdir=$(srcdir) \
@@ -127,7 +128,6 @@ tsconfig.electron.json: tsconfig.electron.json.in Makefile
 		-v package_version=$(PACKAGE_VERSION) \
 		-v electron_version=$(ELECTRON_VERSION) \
 		$(awk_cmd_0) $< >$@
-
 
 tsconfig.json: tsconfig.json.in Makefile
 	$(AWK) -v srcdir=$(srcdir) \
@@ -225,6 +225,7 @@ electron-app-dir:
 electron-resources: electron-tmstamp electron-package-json build-app \
 	| mkdir-tree electron-app-dir 
 	cp -R dist $(token_generator_app_dir) 
+	$(SHELL) $(src_dir)/resolve-node-module.sh -d $(token_generator_app_dir) 	
 
 .PHONY: electron-resources
 
