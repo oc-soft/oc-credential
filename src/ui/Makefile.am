@@ -225,7 +225,7 @@ electron-app-dir:
 electron-resources: electron-tmstamp electron-package-json build-app \
 	| mkdir-tree electron-app-dir 
 	cp -R dist $(token_generator_app_dir) 
-	$(SHELL) $(src_dir)/resolve-node-module.sh -d $(token_generator_app_dir) 	
+	$(SHELL) $(srcdir)/resolve-node-module.sh -d $(token_generator_app_dir) 	
 
 .PHONY: electron-resources
 
