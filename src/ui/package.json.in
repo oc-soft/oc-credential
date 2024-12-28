@@ -26,8 +26,6 @@
   "devDependencies": {
     "@rollup/plugin-typescript": "latest",
     "@rollup/plugin-json": "latest",
-    "@types/ffi": "latest",
-    "@types/ref": "latest",
     "@types/node": "latest",
     "@electron/rebuild": "latest",
     "rollup": "latest",

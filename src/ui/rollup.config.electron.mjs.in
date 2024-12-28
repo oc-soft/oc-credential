@@ -9,7 +9,7 @@ const external = [
 ]
 const output = {
   dir: 'dist',
-  format: 'cjs'
+  format: 'es'
 }
 const plugins = [
   typescript({

@@ -335,6 +335,11 @@ download-electron: | $(electron_zip)
 .PHONY: download-electron
 
 
+npm-up: electron-package-json
+	$(NPM) up	
+
+.PHONY: electron-resources
+
 dist/index.html : client/index.html mksrc-tree \
 	package-lock.json vite.config.ts 
 	$(MKDIR_P) $(@D)

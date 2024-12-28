@@ -17,11 +17,11 @@ export default class Config {
     if (!this.configObj) {
       try {
         const contents = fs.readFileSync(
-          path.join(__dirname, 'config.json'), {
+          path.join(import.meta.dirname, 'config.json'), {
             encoding: 'utf8'
           })
         this.configObj = JSON.parse(contents) as { [key: string] : string }
-      } catch {
+      } catch(e) {
       }
     }
 

@@ -12,6 +12,7 @@ export class Locale implements LocaleCommon {
   LC_MONETARY = 3
   LC_NUMERIC = 4
   LC_TIME = 5
+  LC_MESSAGES = 1729
 }
 
 
