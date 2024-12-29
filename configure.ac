@@ -197,6 +197,7 @@ AC_CONFIG_FILES([Makefile
     src/credential-helper/Makefile
     src/credential-helper/logging_win.h
     src/ui/Makefile
+    src/ui/intl/Makefile
     resource/Makefile
     pkg/Makefile
     pkg/win/Makefile

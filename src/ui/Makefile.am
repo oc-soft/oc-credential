@@ -1,4 +1,4 @@
-
+SUBDIRS = intl
 CORE_MODULE_DIR=@CORE_MODULE_DIR@
 
 client_src = \
