@@ -7,6 +7,7 @@ import {
   readDescriptor, 
   writeDescriptor,
 } from './desc'
+import { attachMenu } from './menu'
 import { createWindow } from './credential-ui'
 import config from 'oc-soft/config/app.json'
 
@@ -50,6 +51,7 @@ export class Credential {
         function closeHdlr(event: Event) {
           resolve(undefined)
         }
+        attachMenu()
         const win = createWindow(descriptor, service, 
           tokenHdlr, handleCloseRequest) 
         win.on('close', closeHdlr)

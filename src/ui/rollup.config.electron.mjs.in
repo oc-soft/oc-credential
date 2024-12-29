@@ -1,11 +1,14 @@
 import typescript from '@rollup/plugin-typescript'
 import json from '@rollup/plugin-json'
 const external = [
+  'ffi',
+  'ref',
   'electron',
   'node:path',
   'node:buffer',
   'node:fs',
-  'node:url'
+  'node:url',
+  'node:os'
 ]
 const output = {
   dir: 'dist',

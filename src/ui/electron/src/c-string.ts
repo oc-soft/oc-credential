@@ -1,4 +1,5 @@
 import { Buffer } from 'node:buffer'
+import type { TypeBase } from 'ref'
 import ref from 'ref'
 import { Library as LibraryFFI } from 'ffi'
 
@@ -31,12 +32,16 @@ export default class CString {
         'strlen': [ ref.types.size_t, [ ref.refType(ref.types.char, true) ]] 
       })
     const result = {
-      strlen: (str: object): number? => {
+      strlen: (str: object): number | undefined => {
         let result = undefined
-        if (Buffer.isBuffer(str) && str.type.indirection == 2) {
-          const nullPtr = ref.getNullPointer(true)
-          if (ref.comparePointer(str, nullPtr) != 0) {
-            result = lib.strlen(str) 
+        const strObj = str as { [key: string]: object }
+        if (Buffer.isBuffer(str) && strObj.type) {
+          const strType = strObj.type as TypeBase
+          if (strType.indirection == 2) {
+            const nullPtr = ref.getNullPointer(true)
+            if (ref.comparePointer(str, nullPtr) != 0) {
+              result = lib.strlen(str) 
+            }
           }
         } 
         return result

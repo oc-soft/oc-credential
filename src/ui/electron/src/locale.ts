@@ -49,7 +49,7 @@ export default class Locale {
     case 'win32':
       libName = 'ucrtbase'
     } 
-    return Locale.loadLocaleLibraryI(libName)
+    return this.loadLocaleLibraryI(libName)
   }
 
 
@@ -62,7 +62,7 @@ export default class Locale {
     const intType = ref.types.int
     const exCharPtr = ref.refType(charType, true)
     const charPtr = ref.refType(charType)
-    const lib = LibraryFFI('libc',
+    const lib = LibraryFFI(library,
       {
         'setlocale': [ exCharPtr, [ intType, charPtr] ]
       })
@@ -108,10 +108,7 @@ export default class Locale {
     category: number,
     locale: string | undefined): string | null | undefined {
     const lib = Locale.getLocaleLibrary()
-    const result = lib.setlocale(Locale.LC_MESSAGES, null)
-
-    console.log(result)
-
+    const result = lib.setlocale(category, locale)
     return result
   }
 }
