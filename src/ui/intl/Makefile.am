@@ -8,24 +8,35 @@ MSGINIT = msginit
 MSGCONV = msgconv
 MSGFILTER = msgfilter
 
+LOCALE_DIR = $(srcdir)/locale
+
 XGET_OPTION = -L JavaScript -kIntl.gettext
 
 UI_MENU_POT_SRC = $(srcdir)/../electron/src/menu-linux.ts
 
+include $(srcdir)/catalogs-vars.mk
 
 $(srcdir)/ui-menu.pot: $(UI_MENU_POT_SRC)
 	$(XGETTEXT) $(XGET_OPTION) -o $@ $^
 
 make-pot: $(srcdir)/ui-menu.pot
-
-
-ja/ui-menu.po: $(srdir)/ui-menu.pot
-	$(MSGMERGE_UPDATE) $@ $<		
-
 .PHONY: make-pot
 
-clean-local:
 
+$(srcdir)/ja/ui-menu.po: $(srcdir)/ui-menu.pot
+	$(MSGMERGE_UPDATE) $@ $<
+
+
+msg-catalog: $(CATALOGS)
+.PHONY: msg-catalog
+
+all-local: msg-catalog
+
+include $(srcdir)/catalogs-depends.mk
+
+
+clean-local:
+	rm -r $(LOCALE_DIR)
 
 
 # vi: se ts=4 sw=4 noet:

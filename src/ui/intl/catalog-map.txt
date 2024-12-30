@@ -1,0 +1,3 @@
+# catalog src,source file directory, destination directory
+ui-menu,ja,ja
+ui-menu,ja,ja_JP

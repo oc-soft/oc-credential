@@ -97,7 +97,7 @@ awk_cmd_0=' \
 
 package-lock.json: package.json
 	$(NPM) install
-	$(electron_rebuild_env) $(builddir)/node_modules/.bin/electron-rebuild
+
 	
 package.json: package.json.in Makefile
 	$(AWK) -v srcdir=$(srcdir) \
@@ -221,11 +221,20 @@ electron-app-dir:
 		$(MKDIR_P) $(electron_app_dir) ; \
 	fi
 
+rebuild-electron-tmstamp: package-lock.json
+	$(electron_rebuild_env) $(builddir)/node_modules/.bin/electron-rebuild
+	:> $@
+
+electron-rebuild: rebuild-electron-tmstamp
+
+.PHONY: electron-rebuild
 
 electron-resources: electron-tmstamp electron-package-json build-app \
+	electron-rebuild \
 	| mkdir-tree electron-app-dir 
 	cp -R dist $(token_generator_app_dir) 
-	$(SHELL) $(srcdir)/resolve-node-module.sh -d $(token_generator_app_dir) 	
+	$(SHELL) $(srcdir)/resolve-node-module.sh -d $(token_generator_app_dir)
+	cp -R $(srcdir)/intl/locale $(token_generator_app_dir)
 
 .PHONY: electron-resources
 
@@ -415,6 +424,7 @@ clean-local: clean-electron-package-json
 	rm -f electron-tmstamp
 	rm -f rebrand-electron-contents-tmstamp
 	rm -f rebrand-electron-tmstamp
+	rm -f rebuild-electron-tmstamp
 	rm -f config/app.json
 	rm -f config/service-id.json
 	rm -f config/service-url-client.json
