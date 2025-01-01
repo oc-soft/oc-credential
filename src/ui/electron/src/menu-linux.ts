@@ -3,9 +3,10 @@ import type {
   BaseWindow,
   MenuItem,
   KeyboardEvent } from 'electron'
-import { Menu, app } from 'electron'
+import { Menu, app, BrowserWindow } from 'electron'
 
 import Intl from './intl'
+import type { AboutInfo } from './common-types'
 
 
 /**
@@ -124,6 +125,13 @@ export class MenuLinux {
             click: async (menuItem: MenuItem,
               window: BaseWindow | undefined,
               event: KeyboardEvent) => {
+              if (window instanceof BrowserWindow) {
+                const aboutInfo = {
+                  version: app.getVersion()
+                }
+                window.webContents.send('visible-about', true, aboutInfo)
+              }
+                 
               console.log('About clicked')
             }
           } 

@@ -76,7 +76,7 @@ export function createWindow(
     
   result.loadURL(Config.tokenLoginUrl, 
     createPostOption(service, descriptor))
-  // result.webContents.openDevTools()
+  result.webContents.openDevTools()
   return result
 }
 
