@@ -121,7 +121,7 @@ export class MenuLinux {
         role: 'help',
         submenu: [
           {
-            label: Intl.gettext('&About...'),
+            label: Intl.gettext('&ToggleAbout'),
             click: async (menuItem: MenuItem,
               window: BaseWindow | undefined,
               event: KeyboardEvent) => {
@@ -129,10 +129,8 @@ export class MenuLinux {
                 const aboutInfo = {
                   version: app.getVersion()
                 }
-                window.webContents.send('visible-about', true, aboutInfo)
+                window.webContents.send('toggle-about', aboutInfo)
               }
-                 
-              console.log('About clicked')
             }
           } 
         ]

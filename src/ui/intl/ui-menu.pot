@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-12-29 22:08+0900\n"
+"POT-Creation-Date: 2025-01-02 10:10+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,94 +17,94 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:23
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:24
 msgid "&File"
 msgstr ""
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:26
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:27
 msgid "E&xit"
 msgstr ""
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:33
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:34
 msgid "&Edit"
 msgstr ""
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:36
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:37
 msgid "&Undo"
 msgstr ""
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:40
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:41
 msgid "&Redo"
 msgstr ""
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:45
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:46
 msgid "C&ut"
 msgstr ""
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:49
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:50
 msgid "&Copy"
 msgstr ""
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:53
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:54
 msgid "&Paste"
 msgstr ""
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:57
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:58
 msgid "&Delete"
 msgstr ""
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:62
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:63
 msgid "&Select all"
 msgstr ""
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:69
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:70
 msgid "&View"
 msgstr ""
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:72
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:73
 msgid "&Restart"
 msgstr ""
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:76
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:77
 msgid "R&estart no cache"
 msgstr ""
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:80
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:81
 msgid "Toggle &DevTools"
 msgstr ""
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:85
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:86
 msgid "Re&set zoom"
 msgstr ""
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:89
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:90
 msgid "Zoom &in"
 msgstr ""
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:93
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:94
 msgid "Zoom &out"
 msgstr ""
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:98
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:99
 msgid "Toggle &fullscreen"
 msgstr ""
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:106
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:107
 msgid "&Window"
 msgstr ""
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:109
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:110
 msgid "&Minimize"
 msgstr ""
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:113
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:114
 msgid "&Zoom"
 msgstr ""
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:119
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:120
 msgid "&Help"
 msgstr ""
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:123
-msgid "&About..."
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:124
+msgid "&ToggleAbout"
 msgstr ""

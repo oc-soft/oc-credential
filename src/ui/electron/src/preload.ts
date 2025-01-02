@@ -15,12 +15,11 @@ function bind() {
     requestCloseWindow: async () => {
       return await ipcRenderer.invoke('request-close-window')
     },
-    onVisbleAbout: async (
-      callback: (visible: boolean, info?: AboutInfo) => Promise<boolean>) => {
-      ipcRenderer.on('visible-about',
-        async (_event: IpcRendererEvent,
-          visible: boolean, info?: AboutInfo) => {
-        await callback(visible, info)
+    onToggleAbout: async (
+      callback: (info?: AboutInfo) => Promise<void>) => {
+      ipcRenderer.on('toggle-about',
+        async (_event: IpcRendererEvent, info?: AboutInfo) => {
+        await callback(info)
       }) 
     }
   })

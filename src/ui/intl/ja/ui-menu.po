@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-12-29 22:08+0900\n"
+"POT-Creation-Date: 2025-01-02 07:25+0900\n"
 "PO-Revision-Date: 2024-12-29 22:25+0900\n"
 "Last-Translator: Toshiyuki Ogawa <toshi@oc-soft.net>\n"
 "Language-Team: ja <info@oc-soft.net>\n"
@@ -17,95 +17,97 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:23
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:24
 msgid "&File"
 msgstr "ファイル(&F)"
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:26
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:27
 msgid "E&xit"
 msgstr "終了(&X)"
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:33
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:34
 msgid "&Edit"
 msgstr "編集(&E)"
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:36
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:37
 msgid "&Undo"
 msgstr "元に戻す(&U)"
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:40
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:41
 msgid "&Redo"
 msgstr "やり直し(&R)"
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:45
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:46
 msgid "C&ut"
 msgstr "切り取り(&U)"
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:49
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:50
 msgid "&Copy"
 msgstr "コピー(&C)"
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:53
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:54
 msgid "&Paste"
 msgstr "ペースト(&P)"
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:57
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:58
 msgid "&Delete"
 msgstr "削除(&D)"
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:62
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:63
 msgid "&Select all"
 msgstr "全て選択(&S)"
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:69
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:70
 msgid "&View"
 msgstr "ビュー(&V)"
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:72
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:73
 msgid "&Restart"
 msgstr "最初から(&R)"
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:76
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:77
 msgid "R&estart no cache"
 msgstr "キャッシュなしで最初から(&E)"
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:80
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:81
 msgid "Toggle &DevTools"
 msgstr "開発者ツール切り替え(&D)"
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:85
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:86
 msgid "Re&set zoom"
 msgstr "ズームリセット(&S)"
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:89
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:90
 msgid "Zoom &in"
 msgstr "ズームイン(&I)"
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:93
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:94
 msgid "Zoom &out"
 msgstr "ズームアウト(&O)"
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:98
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:99
 msgid "Toggle &fullscreen"
 msgstr "フルスクリーン切り替え(&F)"
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:106
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:107
 msgid "&Window"
 msgstr "ウインドウ(&W)"
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:109
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:110
 msgid "&Minimize"
 msgstr "最小化(&M)"
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:113
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:114
 msgid "&Zoom"
 msgstr "ズーム(&Z)"
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:119
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:120
 msgid "&Help"
 msgstr "ヘルプ(&H)"
 
-#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:123
-msgid "&About..."
-msgstr "アプリについて...(&A)"
+#: ../../../../src/ui/intl/../electron/src/menu-linux.ts:124
+msgid "&ToggleAbout"
+msgstr "アプリ情報表示切り替え(&T)"
+
+#~ msgid "&About..."
+#~ msgstr "アプリについて...(&A)"
