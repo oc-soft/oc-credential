@@ -8,7 +8,9 @@ const external = [
   'node:buffer',
   'node:fs',
   'node:url',
-  'node:os'
+  'node:os',
+  'node:url',
+  'node:process'
 ]
 const output = {
   dir: 'dist',

@@ -1,10 +1,16 @@
-import { BrowserWindow } from 'electron'
-import type { UploadRawData } from 'electron'
+import { BrowserWindow, session } from 'electron'
+import type {
+  UploadRawData,
+  LoginAuthenticationResponseDetails,
+  AuthInfo,
+  WebPreferences
+} from 'electron'
 import { bind as bindIpc } from './ipc'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
 import { Buffer } from 'node:buffer'
 import Config from './config' 
+import Proxy from './proxy'
 import { decode } from 'oc-soft/common'
 
 /**
@@ -57,18 +63,46 @@ function createPostOption(
 /**
  * create window
  */
-export function createWindow(
+export async function createWindow(
   descriptor: string | undefined,
   service: string | undefined,
   tokenHdlr: (token: string) => void,
-  closeRequestHdlr: (win: BrowserWindow) => void): BrowserWindow {
+  closeRequestHdlr: (win: BrowserWindow) => void): Promise<BrowserWindow> {
+
+  const webPreferences: WebPreferences = {
+    preload: path.join(import.meta.dirname, 'preload.js')
+  }
+  const proxyConfig = Proxy.config
+  if (proxyConfig) {
+    const ses = session.defaultSession  
+    await ses.setProxy(proxyConfig.config) 
+    webPreferences.session = ses
+  }
+
   const result = new BrowserWindow({
     width: 800,
     height: 600,
-    webPreferences: {
-      preload: path.join(import.meta.dirname, 'preload.js')
-    }
+    webPreferences 
   })
+  if (proxyConfig) {
+    result.webContents.on('login',
+      (event: Event,
+        details: LoginAuthenticationResponseDetails,
+        authInfo: AuthInfo,
+        callback: (username?: string, password?: string) => void) => {
+        let authKey
+        if (authInfo.port) {
+          authKey = `${authInfo.host}:${authInfo.port}`
+        } else {
+          authKey = `${authInfo.host}`
+        }
+        const userPass = proxyConfig.authentication[authKey]
+        if (userPass) {
+          callback(userPass.name, userPass.password)
+        }
+    })
+  }
+
   
   bindIpc(tokenHdlr, () => closeRequestHdlr(result))
 
@@ -76,7 +110,7 @@ export function createWindow(
     
   result.loadURL(Config.tokenLoginUrl, 
     createPostOption(service, descriptor))
-  result.webContents.openDevTools()
+  // result.webContents.openDevTools()
   return result
 }
 

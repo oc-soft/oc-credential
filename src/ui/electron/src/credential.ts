@@ -40,7 +40,7 @@ export class Credential {
     service: string | undefined): Promise<string | undefined> {
     const self = this
     return new Promise<string | undefined> (
-      (resolve, reject) => {
+      async (resolve, reject) => {
         function tokenHdlr(token0: string){
           resolve(token0)
           win.off('close', closeHdlr)
@@ -52,7 +52,7 @@ export class Credential {
           resolve(undefined)
         }
         attachMenu()
-        const win = createWindow(descriptor, service, 
+        const win = await createWindow(descriptor, service, 
           tokenHdlr, handleCloseRequest) 
         win.on('close', closeHdlr)
     })
