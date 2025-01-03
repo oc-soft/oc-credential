@@ -1,3 +1,4 @@
+import process from 'node:process'
 
 /**
  * descriptor keys 
@@ -10,15 +11,20 @@ const descriptorKeys: Set<string> = new Set<string>([
   'password'
   ])
 
+
 /**
  * read descriptor from stdin
  */
 export async function readDescriptor(): Promise<string | undefined> {
-  return await new Promise<string | undefined>((resolve, reject) => {
+  return new Promise<string | undefined>((resolve, reject) => {
     let buf: string | undefined
     function dataHdlr(chunk: string) {
       buf = buf || ""
       buf += chunk
+
+      if (buf.endsWith("\n\n") || buf.endsWith("\r\n\r\n")) {
+        resolve(buf)
+      }
     }
     function errHdlr(err: Error) {
       process.stdin.off('error', errHdlr)

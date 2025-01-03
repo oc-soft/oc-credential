@@ -13,11 +13,8 @@ export function attachMenu() {
 
   let localePathDbg
   localePathDbg = Intl.bindtextdomain('ui-menu', localePath)
-  console.log(localePathDbg)
   let codeSetDbg = Intl.bindTextdomainCodeset('ui-menu', 'UTF-8')
-  console.log(codeSetDbg)
   let currentDomain = Intl.textdomain('ui-menu')
-  console.log(currentDomain)
 
   switch (os.platform()) {
   case 'win32':

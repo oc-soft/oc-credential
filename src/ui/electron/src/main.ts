@@ -9,7 +9,6 @@ import Intl from './intl'
   await app.whenReady()
 
   Locale.setlocale(Locale.LC_MESSAGES, '')
-  console.log(Intl.textdomain(null))
   const opt = new Option()
   const cred = new Credential()
 
