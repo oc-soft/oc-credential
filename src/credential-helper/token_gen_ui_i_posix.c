@@ -89,6 +89,10 @@ token_gen_ui_i_run(
         argv_param[argc] = NULL;
     }
     if (result == 0) {
+        logging_log(LOG_LEVEL_DEBUG, "write to stdin %*s", 
+            in_data_size,
+            in_data);
+
         written_size[1] = fd_io_write(
             std_in_fd,
             &in_data[written_size[0]], rest_in_data);
@@ -98,6 +102,8 @@ token_gen_ui_i_run(
         } else {
             result = -1;
         }
+        logging_log(LOG_LEVEL_DEBUG, "writen to stdin %d", written_size[1]);
+        logging_log(LOG_LEVEL_DEBUG, "rest_in_data %d", rest_in_data);
     }
     if (result == 0) {
         result = posix_spawn(&child_pid, program, NULL, NULL,
@@ -126,6 +132,7 @@ token_gen_ui_i_run(
                 } else {
                     result = -1;
                 }
+                logging_log(LOG_LEVEL_DEBUG, "write to stdin");
             } 
             state_change_pid = waitpid(child_pid, &wstate, WNOHANG); 
             if (state_change_pid) {
