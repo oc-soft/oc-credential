@@ -52,7 +52,10 @@ export class Credential {
         function closeHdlr(event: Event) {
           resolve(undefined)
         }
-        attachMenu()
+        attachMenu({
+          descriptor,
+          service
+        })
         const win = await createWindow(descriptor, service, 
           tokenHdlr, handleCloseRequest) 
         win.on('close', closeHdlr)

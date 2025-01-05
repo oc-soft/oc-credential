@@ -12,6 +12,8 @@ import { Buffer } from 'node:buffer'
 import Config from './config' 
 import Proxy from './proxy'
 import { decode } from 'oc-soft/common'
+import { attachMenu } from './menu'
+import type { StartUrlParam } from './common-types'
 
 /**
  * get request url
@@ -61,6 +63,16 @@ function createPostOption(
 }
 
 /**
+ * load the url on starting point
+ */
+export async function loadStartUrl(
+  window: BrowserWindow,
+  startUrlParam: StartUrlParam): Promise<void> {
+  await window.loadURL(Config.tokenLoginUrl, 
+    createPostOption(startUrlParam.service, startUrlParam.descriptor))
+}
+
+/**
  * create window
  */
 export async function createWindow(
@@ -102,14 +114,17 @@ export async function createWindow(
         }
     })
   }
-
+  const startUrlParam = { 
+    service,
+    descriptor
+  }
+  attachMenu(startUrlParam, result)
   
   bindIpc(tokenHdlr, () => closeRequestHdlr(result))
 
   let loadOption: object | undefined = undefined 
     
-  result.loadURL(Config.tokenLoginUrl, 
-    createPostOption(service, descriptor))
+  loadStartUrl(result, startUrlParam)
   // result.webContents.openDevTools()
   return result
 }
