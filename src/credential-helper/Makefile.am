@@ -118,6 +118,7 @@ EXTRA_DIST = \
 	credhelper_const.h.in \
 	mem_dbg_off.c.in \
 	rt_get_02.sh.in \
+	rt_get_03.sh.in \
 	exec_names.c.in \
 	t_store_01.sh \
 	t_erase_01.sh \
@@ -372,7 +373,7 @@ mem_dbg: mem_dbg_on.c.in
 .PHONY: mem_dbg
 
 
-all-local: rt_get_01.sh rt_get_02.sh rt_ui_01.sh rt_cli_get_01.sh rt_cli_get_02.sh 
+all-local: rt_get_01.sh rt_get_02.sh rt_ui_01.sh rt_cli_get_01.sh rt_cli_get_02.sh rt_cli_get_03.sh
 
 
 rt_get_01.sh : rt_get_01.sh.in Makefile credential-ocs/credhelper$(EXTEXT)
@@ -399,6 +400,12 @@ rt_cli_get_02.sh : rt_get_02.sh.in Makefile credential-ocs/credhelper$(EXTEXT)
 		-e 's!%AWK%!$(AWK)!' $< >$@
 	chmod u+x $@
 
+rt_cli_get_03.sh : rt_get_03.sh.in Makefile credential-ocs/credhelper$(EXTEXT)
+	sed -e 's!%CLI%!$(abs_builddir)/credential-ocs/credhelper$(EXEEXT) -e 10 -j off -g on!' \
+		-e 's!%URL_ID_PATH%!$(abs_top_srcdir)/src/config/url-id.txt!' \
+		-e 's!%AWK%!$(AWK)!' $< >$@
+	chmod u+x $@
+	
 
 rt_ui_01.sh : rt_ui_01.sh.in | link-ui
 	sed -e 's!%UI_EXE_RELPATH%!credential-ocs/$(ui_exe_relative_path)!' $< >$@
@@ -617,6 +624,7 @@ clean-local:
 	rm -f git-credential-data-1.txt
 	rm -f rt_ui_01.sh  rt_cli_get_01.sh
 	rm -f rt_get_01.sh rt_get_02.sh  rt_cli_get_02.sh
+	rm -f rt_cli_get_03.sh 
 	rm -f exec_names.c
 	rm -f url_id.c
 	rm -f url_services.c

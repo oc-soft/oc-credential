@@ -93,6 +93,15 @@ cred_helper_op_erase(
     cred_helper* obj,
     credential_desc* desc);
 
+/**
+ * find pattern 
+ */
+static int
+cred_helper_op_contains_pattern(
+    buffer_char_buffer* buffer,
+    size_t start_idx,
+    const char* pattern,
+    size_t pattern_size);
 
 /**
  * run credential operation
@@ -270,7 +279,33 @@ get_oauth_token_with_lmd(
     }
     return result;
 }
-    
+
+/**
+ * find pattern 
+ */
+int
+cred_helper_op_contains_pattern(
+    buffer_char_buffer* buffer,
+    size_t start_idx,
+    const char* pattern,
+    size_t pattern_size)
+{
+    int result;
+    result = 0;
+    if (buffer_char_buffer_get_size(buffer) >= pattern_size) {
+        size_t idx;
+        const char* cnt = buffer_char_buffer_get_data(buffer);
+        for (idx = start_idx;
+            idx <= buffer_char_buffer_get_size(buffer) - pattern_size;
+            idx++) {
+            result = memcmp(&cnt[idx], pattern, pattern_size) == 0;
+            if (result) {
+                break;
+            } 
+        }
+    }
+    return result;  
+}
 
 /**
  * read contents from stdin
@@ -283,7 +318,12 @@ cred_helper_op_read_all(
     int result;
     buffer_char_buffer* buffer; 
     char* tmp_buffer; 
-    const size_t tmp_buffer_size = 256;
+    size_t ptn_idx;
+    const char* nl_pattern = "\n\n";
+    const char* crnl_pattern = "\r\n\r\n";
+    const size_t tmp_buffer_size = 16;
+    size_t nl_pattern_size = strlen(nl_pattern);
+    size_t crnl_pattern_size = strlen(crnl_pattern);
     tmp_buffer = NULL;
     buffer = buffer_char_buffer_create_00(
         cred_helper_i_alloc,
@@ -298,6 +338,8 @@ cred_helper_op_read_all(
         result = tmp_buffer ? 0 : -1;
     } 
 
+    ptn_idx = 0;
+
     while (!result) {
         size_t read_size;
         read_size = fread(tmp_buffer, 1, tmp_buffer_size, stdin);
@@ -305,6 +347,15 @@ cred_helper_op_read_all(
         if (!read_size) {
             break;
         }
+        if (cred_helper_op_contains_pattern(buffer, ptn_idx,
+            nl_pattern, nl_pattern_size)) {
+            break;
+        }
+        if (cred_helper_op_contains_pattern(buffer, ptn_idx,
+            crnl_pattern, crnl_pattern_size)) {
+            break;
+        }
+        ptn_idx += read_size;
     } 
     if (!result) {
         size_t buffer_size;
@@ -342,6 +393,9 @@ cred_helper_op_read_from_stdin()
     contents_length = 0;
     state = cred_helper_op_read_all(&contents, &contents_length);
     if (state == 0) {
+        logging_log(LOG_LEVEL_DEBUG, "stdin contents: %*s",
+            contents_length, contents);
+
         result = credential_desc_decode(contents, contents_length);
     }
 

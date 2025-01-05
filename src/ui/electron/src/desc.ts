@@ -18,13 +18,19 @@ const descriptorKeys: Set<string> = new Set<string>([
 export async function readDescriptor(): Promise<string | undefined> {
   return new Promise<string | undefined>((resolve, reject) => {
     let buf: string | undefined
+    let strSearchIdx = 0
     function dataHdlr(chunk: string) {
       buf = buf || ""
       buf += chunk
 
-      if (buf.endsWith("\n\n") || buf.endsWith("\r\n\r\n")) {
+      if (buf.indexOf("\n\n", strSearchIdx) >= 0
+        || buf.indexOf("\r\n\r\n", strSearchIdx) >= 0) {
+        process.stdin.off('error', errHdlr)
+        process.stdin.off('data', dataHdlr)
+        process.stdin.off('end', endHdlr)
         resolve(buf)
       }
+      strSearchIdx += chunk.length
     }
     function errHdlr(err: Error) {
       process.stdin.off('error', errHdlr)

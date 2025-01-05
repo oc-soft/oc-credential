@@ -1,0 +1,54 @@
+#! /usr/bin/env sh
+url_id_path=%URL_ID_PATH%
+credhelper_cmd="%CLI%"
+awk_cmd=%AWK%
+
+function client_line_to_desc()
+{
+  echo $1 | $awk_cmd '
+    BEGIN {
+      FS=","
+    }
+    {
+      item_count = split($1, proto_host_path, "://")
+      if (item_count > 1) {
+        path_idx = index(proto_host_path[2], "/")
+        if (path_idx) {
+          host = substr(proto_host_path[2], 1, path_idx - 1)
+          path = substr(proto_host_path[2], path_idx + 1)
+        } else {
+          host = proto_host_path[2]
+        }
+        print "protocol=" proto_host_path[1]
+        print "host=" host
+        if (length(path)) {
+          print "path=" path
+        }
+        print ""
+        print "This line is ignored"
+      }
+    }'
+}
+
+function run_test()
+{
+  local res
+  local idx
+  res=0
+  idx=1
+  while read line;
+  do
+    if (( idx == $2 )); then
+      client_line_to_desc $line | $credhelper_cmd get 
+      res=$?
+      break;
+    fi
+    let idx++
+  done < $1
+
+  return $res 
+}
+
+run_test $url_id_path 1
+
+# vi: se ts=2 sw=2 et:
