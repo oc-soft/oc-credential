@@ -14,6 +14,11 @@ XGET_OPTION = -L JavaScript -kIntl.gettext
 
 UI_MENU_POT_SRC = $(srcdir)/../electron/src/menu-linux.ts
 
+dist_pkgdata_DATA = catalogs-vars.mk \
+	catalogs-depends.mk \
+	ui-menu.pot \
+	ja/ui-menu.po 
+
 include $(srcdir)/catalogs-vars.mk
 
 $(srcdir)/ui-menu.pot: $(UI_MENU_POT_SRC)

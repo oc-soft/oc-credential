@@ -108,7 +108,6 @@ EXTRA_DIST = \
 	service_url_lmd_oauth_token_param.gpf.in \
 	url_services.gpf.in \
 	url_id.gpf.in \
-	credhelper_res.rc.in \
 	rt_ui_01.sh.in \
 	mem_dbg_on.c.in \
 	lmd_oauth_mail_github.c.in \
