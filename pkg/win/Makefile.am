@@ -31,11 +31,11 @@ EXTRA_DIST = ServiceControl.idt \
 	ActionText.idt \
 	CompLocator.idt \
 	BindImage.idt \
-	Component.idt.in \
 	Billboard.idt \
 	InstallUISequence.idt \
 	RemoveRegistry.idt \
-	File.idt.in \
+	File-i386.idt.in \
+	File-x86_64.idt.in \
 	LockPermissions.idt \
 	MsiPatchMetadata.idt \
 	Verb.idt \
