@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: credential-ocs 0.1.0\n"
 "Report-Msgid-Bugs-To: toshi@oc-soft.net\n"
-"POT-Creation-Date: 2023-04-25 05:44+0900\n"
+"POT-Creation-Date: 2025-01-06 06:37+0900\n"
 "PO-Revision-Date: 2023-02-27 09:27+0900\n"
 "Last-Translator: Toshiyuki Ogawa <info@oc-soft.net>\n"
 "Language-Team: Japanese <info@oc-soft.net>\n"
@@ -17,7 +17,17 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: src/credential-helper/lmd_op.c:111
+#: src/credential-helper/lmd_op.c:494
+msgid ""
+"Select [1ma number[0m for Oauth token service or enter [1mEsc[0m if you "
+"cancel.\n"
+msgstr ""
+
+#: src/credential-helper/lmd_op.c:498
+msgid "Select a number for Oauth token service or enter Esc if you cancel.\n"
+msgstr ""
+
+#: src/credential-helper/lmd_op.c:677
 #, fuzzy, c-format
 #| msgid ""
 #| "Open browser, visit the url and input the code as above in %d seconds."
@@ -29,7 +39,7 @@ msgid ""
 "%s\n"
 msgstr "ブラウザでURLを開いて、コードを%d秒以内に入力してください。"
 
-#: src/credential-helper/lmd_op.c:145
+#: src/credential-helper/lmd_op.c:729
 #, c-format
 msgid ""
 "URL:\n"
@@ -42,7 +52,7 @@ msgstr ""
 "コード:\n"
 "[1m%s[0m\n"
 
-#: src/credential-helper/lmd_op.c:154
+#: src/credential-helper/lmd_op.c:741
 #, c-format
 msgid "Open browser, visit the url and input the code as above in %d seconds."
 msgstr "ブラウザでURLを開いて、コードを%d秒以内に入力してください。"
