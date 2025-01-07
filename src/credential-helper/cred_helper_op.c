@@ -321,7 +321,7 @@ cred_helper_op_read_all(
     size_t ptn_idx;
     const char* nl_pattern = "\n\n";
     const char* crnl_pattern = "\r\n\r\n";
-    const size_t tmp_buffer_size = 16;
+    const size_t tmp_buffer_size = 256;
     size_t nl_pattern_size = strlen(nl_pattern);
     size_t crnl_pattern_size = strlen(crnl_pattern);
     tmp_buffer = NULL;
