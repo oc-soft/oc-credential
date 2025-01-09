@@ -5,13 +5,27 @@ client_src = \
 	client/index.html 
 
 electron_src = \
+	electron/src/intl.ts \
+	electron/src/locale-common.ts \
 	electron/src/option.ts \
+	electron/src/config.ts \
+	electron/src/c-string.ts \
 	electron/src/desc.ts \
+	electron/src/menu-linux.ts \
 	electron/src/credential.ts \
+	electron/src/menu.ts \
+	electron/src/config.json \
+	electron/src/menu-util.ts \
 	electron/src/ipc.ts \
+	electron/src/locale-dbg-1.ts \
+	electron/src/locale.ts \
+	electron/src/common-types.ts \
+	electron/src/locale-win.ts \
+	electron/src/proxy.ts \
 	electron/src/preload.ts \
 	electron/src/credential-ui.ts \
-	electron/src/main.ts 
+	electron/src/main.ts \
+	electron/src/locale-posix.ts 
 
 src_dirs = client electron common
 
