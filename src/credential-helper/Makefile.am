@@ -4,56 +4,68 @@ check_PROGRAMS = credential-ocs/t01_token_gen_ui_exec \
 	t01_l10n
 noinst_PROGRAMS = credential-ocs/creddef
 
-noinst_HEADERS= cred_helper_types.h \
-	cred_helper.h \
-	cred_helper_i.h \
-	cred_helper_op.h \
-	cred_helper_parser.h \
-	credential_op.h \
-	credential_storage_key_id_table.h \
+credhelper_hdr = l10n_i.h \
+	url_id.h \
+	logging.h \
+	lmd_requests_i.h \
 	dbg.h \
+	mem_dbg.h \
 	exe_info.h \
-	exec_names.h \
-	fd_io.h \
-	fd_io_win.h \
-	http.h \
-	l10n.h \
-	l10n_i.h \
-	lmd_connections.h \
-	lmd_github_connections.h \
-	lmd_google_connections.h \
-	lmd_ms_connections.h \
-	lmd_op.h \
-	lmd.h \
-	lmd_i.h \
-	lmd_ui.h  \
+	client_id.h \
 	lmd_ui_reader.h \
+	lmd_types.h \
+	token_gen_ui_i.h \
+	service_oauth_response_error_parser.h \
+	service_id.h \
+	service_oauth_token_parser.h \
+	lmd_google_connections.h \
+	proc_types.h \
+	time_zone.h \
+	lmd_oauth_token_param_creator.h \
+	lmd_ui.h \
+	service_secret.h \
+	lmd_op_i.h \
+	url_path_iterate.h \
+	ui_token_gen.h \
+	cred_helper_parser.h \
+	token_gen_ui_exec.h \
+	ui_token_gen_i.h \
+	lmd_requests_std.h \
+	l10n.h \
+	lmd_github_connections.h \
+	service_url_lmd_oauth_token_param.h \
+	lmd_connections.h \
+	lmd_oauth_mail.h \
+	url_services.h \
+	lmd_requests_google.h \
+	cred_helper_i.h \
+	path.h \
+	lmd.h \
+	lmd_oauth_mail_github.h \
+	credential_storage_key_id_table.h \
+	url.h \
+	client_secret.h \
 	lmd_parser.h \
 	lmd_requests.h \
-	lmd_types.h \
-	lmd_oauth_mail.h \
-	lmd_oauth_mail_github.h \
-	lmd_oauth_token_param_creator.h \
-	mem_dbg.h \
-	option.h \
-	logging.h \
-	logging_win.h \
-	ui_token_gen.h \
-	ui_token_gen_i.h \
-	ui_token_gen_types.h \
-	token_gen_ui.h \
-	token_gen_ui_exec.h \
-	token_gen_ui_i.h \
-	path.h \
-	proc_sched.h \
-	time_zone.h \
-	url_path_iterate.h
-	service_url_secret.h \
-	service_url_client.h \
 	service_url_device_user_code_param.h \
-	service_url_lmd_oauth_token_param.h \
-	url.h
-
+	option.h \
+	fd_io_win.h \
+	service_url_secret.h \
+	fd_io.h \
+	credential_op.h \
+	cred_helper_op.h \
+	proc_sched.h \
+	lmd_op.h \
+	lmd_i.h \
+	cred_helper_types.h \
+	token_gen_ui.h \
+	cred_helper.h \
+	proc.h \
+	ui_token_gen_types.h \
+	http.h \
+	exec_names.h \
+	lmd_ms_connections.h \
+	service_url_client.h
 
 credhelper_src = main.c \
 	cred_helper.c \
@@ -96,6 +108,10 @@ credhelper_src = main.c \
 	mem_dbg.c
 
 EXTRA_DIST = \
+	key_values_replace.awk \
+	gpf_names_replace.awk \
+	create-git-credential-input.awk \
+	url_services_gen.awk \
 	lmd_connections.gpf \
 	lmd_oauth_mail.gpf \
 	service_oauth_token_parser.gpf \
@@ -124,8 +140,11 @@ EXTRA_DIST = \
 	t_erase_02.sh \
 	t_l10n_01.sh
 
+
+
+
 if !TARGET_WASM
-credential_ocs_credhelper_SOURCES = $(credhelper_src)
+credential_ocs_credhelper_SOURCES = $(credhelper_src) $(credhelper_hdr)
 else
 credential_ocs_credhelper_SOURCES = main_wasm.c
 endif

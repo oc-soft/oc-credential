@@ -39,7 +39,9 @@ EXTRA_DIST = $(client_src) $(electron_src) \
 	config/app.json.in \
 	config/config.json.in \
 	package.json.in \
-	vite.config.ts.in 
+	vite.config.ts.in  \
+	resolve-node-module.sh \
+	dep-list.mjs
 
 ELECTRON_TARGET_CPU=@ELECTRON_TARGET_CPU@
 ELECTRON_TARGET_OS=@ELECTRON_TARGET_OS@
