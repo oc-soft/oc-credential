@@ -14,7 +14,7 @@ XGET_OPTION = -L JavaScript -kIntl.gettext
 
 UI_MENU_POT_SRC = $(srcdir)/../electron/src/menu-linux.ts
 
-dist_pkgdata_DATA = catalogs-vars.mk \
+EXTRA_DIST = catalogs-vars.mk \
 	catalogs-depends.mk \
 	ui-menu.pot \
 	ja/ui-menu.po 
@@ -41,7 +41,7 @@ include $(srcdir)/catalogs-depends.mk
 
 
 clean-local:
-	rm -r $(LOCALE_DIR)
+	rm -f -r $(LOCALE_DIR)
 
 
 # vi: se ts=4 sw=4 noet:
