@@ -91,7 +91,10 @@ electron_extract_dir = pkg
 
 electron_app_dir = $(electron_extract_dir)/$(electron_resource_dir)/app
 
+electron_rebuild_env = 
+if RUN_LINUX
 electron_rebuild_env = CXX=$(CXX) CXXFLAGS=-std=c++20
+endif
 
 token_generator_app_dir = $(electron_extract_dir)/$(token_generator_resource_dir)/app
 electron_package_json = $(electron_app_dir)/package.json
