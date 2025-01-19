@@ -82,14 +82,27 @@ function copy_node_module
 }
 
 #
+# convert path for os
+#
+function convert_path_for_os
+{
+  local a_path=$1
+  case `uname -o` in #((
+    Cygwin)
+      a_path=`cygpath -w $a_path`
+      ;;
+  esac
+  echo $a_path
+}
+
+#
 # run main procedure
 #
 function main_procs
 {
   local prog_path=`realpath $0`
   local prog_dir=`dirname $prog_path`
-  dep_list_script=$prog_dir/dep-list.mjs
-
+  dep_list_script=`convert_path_for_os $prog_dir/dep-list.mjs`
   print_msg copy into $dest_dir
   node $dep_list_script -e nan -e electron | while read ln; do
     copy_node_module $ln 
