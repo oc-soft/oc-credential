@@ -283,24 +283,13 @@ if RUN_DARWIN
 		-i '$(TOKEN_GENERATOR_ICON)'
 endif
 if RUN_WIN
-	REBRAND_CPP_OPTION=`echo $(CPP) $(WINDRES_CPP_OPTION) | awk '\
-		{ \
-			cpp_cmd = $$1; \
-			if (NF > 1) { \
-				cpp_args = " "; \
-				for (i = 2; i <= NF; i++) { \
-					cpp_args = cpp_args	" -e " $$i; \
-				} \
-			} \
-			print "-p " cpp_cmd cpp_args; \
-		}'`; \
 	$(srcdir)/rebranding-win.pl \
 		-s $(builddir)/$(electron_extract_dir)/electron.exe \
 		-d $(builddir)/$(electron_extract_dir)/$(TOKEN_GENERATOR_NAME)$(EXEEXT) \
+		-w $(WINDRES) \
 		-r $(srcdir)/rebranding-win.rc \
-		$$REBRAND_CPP_OPTION -e -D -e RC_INVOKED \
-		-e -I$(top_builddir)/include \
-		-e -I$(builddir) \
+		-n $(top_builddir)/include \
+		-n $(builddir) \
 	  	-i $(top_srcdir)/resource/win-token-generator-16x16.png \
 		-i $(top_srcdir)/resource/win-token-generator-24x24.png \
 		-i $(top_srcdir)/resource/win-token-generator-32x32.png \

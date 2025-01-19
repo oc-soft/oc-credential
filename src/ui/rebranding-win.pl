@@ -890,18 +890,27 @@ sub rc_to_res
     my ($opt, $res) = @_;
     my $rc = $$opt{rc};
     my $cpp = $$opt{cpp};
+    my $cpp_args = $$opt{cpp_args};
+    my $includes = $$opt{res_includes};
+    my $windres = $$opt{windres};
+    $windres = 'windres' if !$windres;
 
     my @cmd;
-    push @cmd, 'windres';
+    push @cmd, $windres;
     if ($cpp) {
         push @cmd, "--preprocessor=${cpp}";
-        my $cpp_args = $$opt{cpp_args};
-        if (scalar @$cpp_args) {
-            push @cmd, (map { "--preprocessor-arg=${_}" } @$cpp_args);
-        }
     }
+    if (scalar @$cpp_args) {
+        push @cmd, (map { "--preprocessor-arg=${_}" } @$cpp_args);
+    }
+    if (scalar @$includes) {
+        push @cmd, (map { ('-I', $_) } @$includes);
+    }
+
     push @cmd, ('-O', 'res', '-i', $rc, '-o', $res);
-    system @cmd;
+    $res = system @cmd;
+
+    $res;
 }
 
 #
@@ -979,7 +988,6 @@ sub read_version_resource
     if ($fh) {
         close $fh;
     }
-   
     if ($state == 0) { 
         $state = rc_to_res $opt, $res_file;
     }
@@ -1378,7 +1386,6 @@ sub run_main_program
         $type_name_lang_ids{$group_icon_key} = $group_icon_res_langs;
     }
 
-
     my $size_icon_id_map;
     if ($state == 0) {
         my $res_data = find_resource_in_handle $mod_hdl, $group_icon_key;
@@ -1388,7 +1395,6 @@ sub run_main_program
                 $res_data, $icon_keys, $opts;
         }   
     }
-
 
     my @icon_resources;
     my %icon_size_map;
@@ -1445,7 +1451,6 @@ sub run_main_program
         Win32::API::FreeLibrary $mod_hdl;
     }
 
- 
     if ($state == 0) {
         $state = update_resource_in_exe 
             $exe_for_rebranding, $group_icon_key,
@@ -1475,6 +1480,7 @@ sub parse_option
     my @icon_files_opt;
     my @icon_sizes_opt;
     my @cpp_args;
+    my @res_inc_opt;
     $opts{cmd} = \&run_main_program;
 
     GetOptions (
@@ -1483,10 +1489,11 @@ sub parse_option
         'dst_exe|dst-exe|d=s',
         'icon-file|i=s' => \@icon_files_opt,
         'icon-size|c=s' => \@icon_sizes_opt,
+        'windres|w=s',
         'rc|rc-file|r=s',
+        'res-include|n=s' => \@res_inc_opt,
         'cpp|preprocessor|p=s',
         'preprocessor-args|e=s' => \@cpp_args,
-        'rc=s',
         'help|h' => \$show_help);
 
     my @icon_files;
@@ -1511,13 +1518,13 @@ sub parse_option
     $opts{icon_file_size} = \%icon_file_size_map;
     $opts{icon_size_file} = \%icon_size_file_map;
     $opts{cpp_args} = \@cpp_args;
+    $opts{res_includes} = \@res_inc_opt;
 
     if ($show_help) {
         $opts{cmd} = \&show_help_message;
     }
     return \%opts; 
 }
-
 
 $opts = parse_option;
 
@@ -1533,6 +1540,8 @@ rebranding-win [OPTIONS]
 
   Options:
     -h,--help                       show helpmessage.
+    -w,--windres=[WINDRES]          specify windres executable path.
+    -n,--res-include=[PATH]         specify additional include path for windres.
     -s,--src-exe=[EXEPATH]          specify source executable path.
     -d,--dst-exe=[EXEPATH]          specify destination executable path.
     -i,--icon-files=[ICONFILE]      specify icon file for rebranding. 
@@ -1545,6 +1554,19 @@ rebranding-win [OPTIONS]
 
 show the manualpage and exists.
 
+=back
+
+=item B<-w,--windres=> WINDRES
+
+specify windres executable path.
+
+=back
+
+=item B<-n,--res-include=> PATH
+
+specify additional include path for windres.
+
+=back
 
 =item B<-s,--src-exe=> EXEPATH
 
@@ -1557,7 +1579,6 @@ specify source executable path for rebranding.
 specify destination executable path for rebranding.
 
 =back
-
 
 =item B<-i,--icon-files=> ICONFILE
 
