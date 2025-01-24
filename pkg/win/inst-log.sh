@@ -41,7 +41,7 @@ function create_old_file_from_git()
     local out_path=$prefix/$tag_0/$src_path
     if [ ! -v options[dryrun] ] && [ ! -v options[list_files] ]; then
       mkdir -p `dirname $out_path`
-      git show $tag_0:$src_path >$out_path
+      git show $tag_0:$src_path 1>$out_path 2>/dev/null
     elif [ -v options[list_files] ]; then
       echo $out_path 
     else
