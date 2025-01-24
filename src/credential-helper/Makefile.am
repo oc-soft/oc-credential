@@ -676,26 +676,12 @@ clean-local:
 	fi
 
 .rc.o:
-	WINDRES_CPP_CMD=`echo $(CPP) $(WINDRES_CPP_OPTION) | awk '\
-		{ \
-			cpp_cmd = $$1; \
-			if (NF > 1) { \
-				cpp_args = " "; \
-				for (i = 2; i <= NF; i++) { \
-					cpp_args = cpp_args	" --preprocessor-arg=" $$i; \
-				} \
-			} \
-			print "--preprocessor=" cpp_cmd cpp_args; \
-		}'`; \
-		echo $$WINDRES_CPP_CMD; \
 	$(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --tag=RC --mode=compile \
-		$(RC) $(RCFLAGS) \
-			$$WINDRES_CPP_CMD \
-			--preprocessor-arg=-D \
-			--preprocessor-arg=RC_INVOKED \
-			--preprocessor-arg=-I$(top_builddir)/include \
-			--preprocessor-arg=-I$(builddir) \
-			--preprocessor-arg=-I$(srcdir) \
+		$(WINDRES) \
+		$(RCFLAGS) \
+			-I $(top_builddir)/include \
+			-I $(builddir) \
+			-I $(srcdir) \
 			-i $< -o $@
 
 
