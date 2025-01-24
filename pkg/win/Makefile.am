@@ -370,18 +370,18 @@ clean-old-inst-sources:
 .PHONY: clean-old-inst-sources
 
 prepare-old-inst-sources:
-	pushd $(top_srcdir); \
+	pushd $(top_srcdir) >/dev/null; \
 		./pkg/win/inst-log.sh -t 'v*$(host_cpu)' \
 			-f pkg/win/File-$(host_cpu).idt.in \
 			-f pkg/win/Component-$(host_cpu).idt.in \
 			-f pkg/win/FeatureComponents-$(host_cpu).idt.in \
 			-p /tmp/old-inst; \
-		popd
+	popd >/dev/null
 
 .PHONY: prepare-old-inst-sources
 
 gen-comp-file-remove : prepare-old-inst-sources
-	pushd $(top_srcdir); \
+	pushd $(top_srcdir) >/dev/null; \
 		file_idts=`./pkg/win/inst-log.sh -i -t 'v*$(host_cpu)' \
 			-f pkg/win/File-$(host_cpu).idt.in \
 			-p /tmp/old-inst | \
@@ -396,8 +396,9 @@ gen-comp-file-remove : prepare-old-inst-sources
 			-r ./pkg/win/RemoveFile-$(host_cpu).idt.in \
 			-m -n -s \
 			-d $(staging_dir)/usr/local/libexec \
-			-e ./pkg/win/RemoveFileHeader.idt \
-			$$file_idts $$comp_idts
+			-e ./pkg/win/RemoveFile.idt \
+			$$file_idts $$comp_idts; \
+	popd >/dev/null
 
 
 .PHONY: gen-comp-file-remove
