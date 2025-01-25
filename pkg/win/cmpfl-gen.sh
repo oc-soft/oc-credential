@@ -179,6 +179,16 @@ declare -A src_pe_prog_arm64
 declare -A src_pe_prog_arm32
 
 #
+# id to value map
+#
+declare -A id_value
+
+#
+# id to old id map
+#
+declare -A id_oldid
+
+#
 # component dictionary from instaration structured image
 #
 # cmpkey: directory_file
@@ -191,12 +201,18 @@ declare -A isi_cmpkey_file
 declare -i exe_sequence=1
 declare -i data_sequence=1
 
+
 #
 # convert string to idt identifier string
 #
 function to_id()
 {
-  echo $1 | sed -e 's/[-\\\/.:]/_/g; s/^\([[:digit:]]\)/_\1/'
+  local -n res=$2
+  local -a ids=(`echo $1 | sha1sum`)
+  local oldid=`echo $1 | sed -e 's/[-\\\/~.:]/_/g; s/^\([[:digit:]]\)/_\1/'`
+  res=${ids[0]}
+  id_oldid[$res]=$oldid
+  id_value[$res]="$1"
 }
 
 function gen_guid()
@@ -489,7 +505,8 @@ function update_component_from_source_programs()
     local src_prog="${programs_l[$idx]}" 
     local prog_path=`file_path_to_install_path \
       "$src_prog" $PROG_PATH_STRIP_LVL`
-    local prog_id=`to_id $prog_path`
+    local prog_id
+    to_id $prog_path prog_id
     local cmp_id="cmp_${prog_id}"
     local guid=`gen_guid`
     local dir=`dirname "$src_prog"`
@@ -555,6 +572,19 @@ function output_merged_comp_table()
     eval {fdn}>&-
   fi
 }
+
+#
+# output id to value map.
+#
+function output_id_value()
+{
+  : {fdn}>${options[id_value_file]}
+  for key in ${!id_value[*]} ; do
+    printf "%s\t%s\t%s\n" $key ${id_oldid[$key]} ${id_value[$key]} >&$fdn
+  done
+  : {fdn}>&-
+}
+
 
 #
 # show component table
@@ -638,7 +668,8 @@ function update_file_from_source_programs()
     local prog_path=`file_path_to_install_path \
       "$src_prog" $PROG_PATH_STRIP_LVL`
     local file_path="${base_dir}/$src_prog"
-    local prog_id=`to_id $prog_path`
+    local prog_id
+    to_id $prog_path prog_id
     local cmp_id="cmp_${prog_id}"
     local -i seq
     local -i idx0
@@ -1014,12 +1045,25 @@ function show_src_target_dir_map()
 }
 
 #
-# create instration source list
+# show id_value map
 #
-function create_instration_sources()
+function show_id_value()
+{
+  printf "total records : %d\n" ${#id_value[*]}
+  for key in ${!id_value[*]} ; do
+    echo "----------"
+    printf "%s \n" $key
+    echo "${id_value[$key]}"
+  done
+}
+
+#
+# create installation source list
+#
+function create_installation_sources()
 {
   local -n src_list=$1
-  for fl in `find -L $2  -type f -printf '%P '`; do
+  for fl in `find -L $2 -type f -printf '%P '`; do
     src_list+=("$fl")
   done
 }
@@ -1059,6 +1103,8 @@ function show_help()
 
 -r [REMOVE_IDT_PATH]      Remove.idt path to be generated.
 
+-u [VALUE_ID_PATH]        specify a file path to save value to id mapping.
+
 -m                        merge file table.
 
 -n                        merge component table.
@@ -1085,7 +1131,7 @@ function show_help()
                           X64    : x86-64 executable files
                           ARM32  : ARM-32 executable files
                           ARM64  : ARM-64 executable files
-
+                          IDVAL  : id value map
 -p                        show progress message
 
 -h                        display this message'
@@ -1097,7 +1143,7 @@ function show_help()
 #
 function parse_options()
 {
-  while getopts 'd:b:c:e:t:f:l:o:q:r:mnsph' opt; do
+  while getopts 'd:b:c:e:t:f:l:o:q:r:u:mnsph' opt; do
     case $opt in
       b)
         options[basedir]=$OPTARG
@@ -1122,6 +1168,9 @@ function parse_options()
         ;;
       r)
         options[out_remove]=$OPTARG
+        ;;
+      u)
+        options[id_value_file]=$OPTARG
         ;;
       d)
         options[appdir]=$OPTARG
@@ -1159,8 +1208,8 @@ function run()
 {
   local -A status
   if [ -v options[appdir] ] && [ -d ${options[appdir]} ]; then
-    progress "getting instration sources"
-    create_instration_sources src_programs ${options[appdir]}
+    progress "getting installation sources"
+    create_installation_sources src_programs ${options[appdir]}
     status[sources]=true
 
     progress "categorize pe files"
@@ -1254,6 +1303,9 @@ function run()
   if [ -v options[merge_remove] ] && [ -v options[out_remove] ]; then
     output_merged_removal_table
   fi
+  if [ -v options[id_value_file] ]; then
+    output_id_value
+  fi
  
   if [ -v options[list] ]; then
     progress 
@@ -1314,6 +1366,9 @@ function run()
         ;;
       ARM32)
         show_src_programs src_pe_prog_arm32
+        ;;
+      IDVAL)
+        show_id_value
         ;;
     esac
   fi
