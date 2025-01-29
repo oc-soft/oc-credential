@@ -61,7 +61,6 @@ EXTRA_DIST = ServiceControl.idt \
 	ODBCDriver.idt \
 	Control.idt \
 	MsiPatchOldAssemblyName.idt \
-	Directory.idt \
 	DrLocator.idt \
 	MsiDigitalCertificate.idt \
 	Icon.idt \
@@ -108,6 +107,7 @@ EXTRA_DIST = ServiceControl.idt \
 	MsiPatchSequence.idt \
 	ProgId.idt \
 	Patch.idt \
+	Directory.idt \
 	FeatureComponents-x86_64.idt.in \
 	FeatureComponents-i386.idt.in \
 	File-x86_64.idt.in \
@@ -335,6 +335,7 @@ staging-install:
 	mv $(staging_dir)$(libexecdir)/credential-ocs/credhelper$(EXEEXT) \
 		$(staging_dir)$(libexecdir)/credential-ocs/$(credhelper_dist_name)$(EXEEXT) 
 	$(MAKE) staging-install-post
+	$(MAKE) staging-directory-idt
 
 staging-uninstall:
 	rm -r -f $(staging_dir)$(libexecdir)/credential-ocs/locale
@@ -360,9 +361,13 @@ staging-install-post:
 	cp -r $(staging_dir)$(localedir) $(staging_dir)$(libexecdir)/credential-ocs 
 
 
+staging-directory-idt:
+	sh $(srcdir)/gen-dir.sh -d $(staging_dir)$(libexecdir) \
+		-i $(srcdir)/Directory.idt -o $(srcdir)/Directory.idt
+
 staging-uninstall-post:
 
-.PHONY: staging-install staging-uninstall staging-install-post
+.PHONY: staging-install staging-uninstall staging-install-post staging-directory-idt
 
 clean-old-inst-sources:
 	rm -f -r /tmp/old-inst
@@ -396,7 +401,7 @@ gen-comp-file-remove : prepare-old-inst-sources
 			-r ./pkg/win/RemoveFile-$(host_cpu).idt.in \
 			-m -n -s \
 			-d $(staging_dir)/usr/local/libexec \
-			-e ./pkg/win/RemoveFile.idt \
+			-e ./pkg/win/RemoveFile-$(host_cpu).idt.in \
 			$$file_idts $$comp_idts; \
 	popd >/dev/null
 
@@ -440,6 +445,7 @@ Property.idt : Property.idt.in $(upgrade_code_txt) $(link_csv)
 		s/%MANUFACTURER%/$(company_name)/; \
 		s/%UPGRADE_CODE%/$$upgrade_code/" $< | \
 	awk -e $(awk_cmd_3) -v help_link=$$help_link - > $@
+
 
 Component.idt : Component-$(host_cpu).idt.in
 	cp $< $@
