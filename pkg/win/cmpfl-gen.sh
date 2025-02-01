@@ -819,7 +819,7 @@ function output_merged_removal_table()
 {
   if [ -v options[out_remove] ]; then
 
-    eval {fdn}>${options[out_remove]}
+    : {fdn}>${options[out_remove]}
     for idx in ${!idt_rm_header[*]}; do
       local line="${idt_rm_header[$idx]}"
       echo -e "${line}\r" >&$fdn
@@ -830,7 +830,7 @@ function output_merged_removal_table()
         "$rk" "${idt2_rmkey_cmp[$rk]}" "${idt2_rmkey_file_name[$rk]}" \
         "${idt2_rmkey_dir_prop[$rk]}" "${idt2_rmkey_ins_mode[$rk]}" >&$fdn
     done 
-    eval {fdn}>&-
+    : {fdn}>&-
   fi
 }
 
@@ -1133,7 +1133,9 @@ function show_help()
                           ARM64  : ARM-64 executable files
                           IDVAL  : id value map
 -p                        show progress message
-
+-g                        specify file idt header file path
+-i                        specify component idt header file path
+-j                        specify remove file idt header file path
 -h                        display this message'
 }
 
@@ -1143,7 +1145,7 @@ function show_help()
 #
 function parse_options()
 {
-  while getopts 'd:b:c:e:t:f:l:o:q:r:u:mnsph' opt; do
+  while getopts d:b:c:e:t:f:g:i:j:l:o:q:r:u:mnsph opt; do
     case $opt in
       b)
         options[basedir]=$OPTARG
@@ -1193,6 +1195,15 @@ function parse_options()
       h)
         options[help]=true
         ;;
+      g)
+        options[file_header_path]=$OPTARG
+        ;;
+      i)
+        options[component_header_path]=$OPTARG
+        ;;
+      j)
+        options[remove_header_path]=$OPTARG
+        ;;
       ?|:) 
         break
         ;;
@@ -1216,13 +1227,23 @@ function run()
     categorize_pe_files 
   fi
 
+  if [ -v options[component_header_path] ]; then
+    progress "load component idt header"
+    read_header idt_cmp_header ${options[component_header_path]} 
+  fi
+  if [ -v options[file_header_path] ]; then
+    progress "load file idt header"
+    read_header idt_fl_header ${options[file_header_path]} 
+  fi
+  if [ -v options[remove_header_path] ]; then
+    progress "load remove idt header"
+    read_header idt_rm_header ${options[remove_header_path]}
+  fi
 
   if [ ${#old_cmp_tbl_files[*]} -gt 0 ]; then
     progress "load component tables"
     load_component_from_old_files idt0_cmpkey_id idt0_cmpkey_dir \
       idt0_cmpkey_attr idt0_cmpkey_cond idt0_cmpkey_key_path 
-
-    read_header idt_cmp_header $old_cmp_tbl_files
     status[src_comp]=true
   fi
 
@@ -1230,7 +1251,6 @@ function run()
     progress "load file table"
     load_file_from_old_files idt0_flkey_cmp idt0_flkey_file idt0_flkey_size \
       idt0_flkey_version idt0_flkey_langs idt0_flkey_attrs idt0_flkey_seq 
-    read_header idt_fl_header $old_fl_tbl_files
     status[src_file]=true
   fi
 
@@ -1238,7 +1258,6 @@ function run()
     progress "load remove table"
     load_removal_from_old_removals idt0_rmkey_cmp idt0_rmkey_file_name \
       idt0_rmkey_dir_prop idt0_rmkey_ins_mode
-    read_header idt_rm_header $old_rm_tbl_files
     status[rm_file]=true
   fi
 

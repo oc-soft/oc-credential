@@ -363,11 +363,12 @@ staging-install-post:
 
 staging-directory-idt:
 	sh $(srcdir)/gen-dir.sh -d $(staging_dir)$(libexecdir) \
-		-i $(srcdir)/Directory.idt -o $(srcdir)/Directory.idt
+		-i $(srcdir)/Directory.idt \
+		-p credential-ocs,MAINPROGDIR -o $(srcdir)/Directory.idt
 
 staging-uninstall-post:
 
-.PHONY: staging-install staging-uninstall staging-install-post staging-directory-idt
+.PHONY: staging-install staging-uninstall staging-install-post staging-directory-idt remove-create-cabs.stmp remove-cabs remove-cabs-input
 
 clean-old-inst-sources:
 	rm -f -r /tmp/old-inst
@@ -380,12 +381,13 @@ prepare-old-inst-sources:
 			-f pkg/win/File-$(host_cpu).idt.in \
 			-f pkg/win/Component-$(host_cpu).idt.in \
 			-f pkg/win/FeatureComponents-$(host_cpu).idt.in \
+			-f pkg/win/RemoveFile-$(host_cpu).idt.in \
 			-p /tmp/old-inst; \
 	popd >/dev/null
 
 .PHONY: prepare-old-inst-sources
 
-gen-comp-file-remove : prepare-old-inst-sources
+gen-comp-file-remove : prepare-old-inst-sources remove-staging-msi remove-cabs remove-cabs-input
 	pushd $(top_srcdir) >/dev/null; \
 		file_idts=`./pkg/win/inst-log.sh -i -t 'v*$(host_cpu)' \
 			-f pkg/win/File-$(host_cpu).idt.in \
@@ -395,14 +397,20 @@ gen-comp-file-remove : prepare-old-inst-sources
 			-f pkg/win/Component-$(host_cpu).idt.in \
 			-p /tmp/old-inst | \
 			sort -V | sed -e 's/^\(.\)/-c \1/'`; \
+		remove_idts=`./pkg/win/inst-log.sh -i -t 'v*$(host_cpu)' \
+			-f pkg/win/Remove-$(host_cpu).idt.in \
+			-p /tmp/old-inst | \
+			sort -V | sed -e 's/^\(.\)/-r \1/'`; \
 		./pkg/win/cmpfl-gen.sh -t ./pkg/win/Directory.idt \
 			-o ./pkg/win/Component-$(host_cpu).idt.in \
 			-q ./pkg/win/File-$(host_cpu).idt.in \
 			-r ./pkg/win/RemoveFile-$(host_cpu).idt.in \
+			-g ./pkg/win/FileHeader.idt \
+			-i ./pkg/win/ComponentHeader.idt \
+			-j ./pkg/win/RemoveFileHeader.idt \
 			-m -n -s \
 			-d $(staging_dir)/usr/local/libexec \
-			-e ./pkg/win/RemoveFile-$(host_cpu).idt.in \
-			$$file_idts $$comp_idts; \
+			$$file_idts $$comp_idts $$remove_idts;\
 	popd >/dev/null
 
 
@@ -477,7 +485,7 @@ credential-ocs.msi: oc-credential_msi_pre $(MSI_TABLES_0) $(MSI_TABLES_1) $(MSI_
 	$(MSIDB) -i -f `cygpath -a -w -d $(srcdir)` -d $@ $(MSI_TABLES_4) && \
 	$(MSIDB) -i -f `cygpath -a -w -d $(srcdir)` -d $@ $(MSI_TABLES_5) && \
 	$(MSIDB) -i -f `cygpath -a -w -d $(builddir)` -d $@ File.idt \
-		Component.idt Property.idt FeatureComponents.idt && \
+		Component.idt Property.idt FeatureComponents.idt RemoveFile.idt && \
 	$(MSIINFO) $@ -a "$(company_name)" -c 20127 -t "Installation Database" \
 		-o "This installer database contains the logic and data required to install $(PACKAGE)" \
 		-k "installer,git,git-credential" \
@@ -492,9 +500,12 @@ $(staging_dir)$(libexecdir)/credential-ocs.msi:credential-ocs.msi
 
 staging-msi:$(staging_dir)$(libexecdir)/credential-ocs.msi
 
-
-
 .PHONY: staging-msi
+
+remove-staging-msi:
+	rm -f $(staging_dir)$(libexecdir)/credential-ocs.msi
+
+.PHONY: remove-staging-msi
 
 
 credential-ocs-ja.msi: credential-ocs.msi \
@@ -534,10 +545,20 @@ create-cabs.stmp:cabeng$(EXEEXT) staging-msi
 create-cabs:create-cabs.stmp
 
 
+remove-create-cabs.stmp:
+	rm -f create-cabs.stmp
+
+
+remove-cabs: remove-create-cabs.stmp
+	rm -f $(staging_dir)$(libexecdir)/*.cab
+
 create-cabs-input:cabeng$(EXEEXT) staging-msi
 	cd $(staging_dir)$(libexecdir);  \
 		$(abs_builddir)/cabeng$(EXEEXT) -m credential-ocs.msi >cabex-in.csv
 
+remove-cabs-input:
+	rm -f $(staging_dir)$(libexecdir)/cabex-in.csv
+	
 setup:
 	$(MKDIR_P) setup
 		

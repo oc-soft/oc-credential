@@ -14,6 +14,11 @@ declare -A dkey_entry
 declare -A options
 
 #
+# predefined keys
+#
+declare -A predefined_keys
+
+#
 # processing procedure on this process
 #
 declare cmd=main_procedure
@@ -49,10 +54,12 @@ function show_help
 directry table generator
 $script_name [OPTIONS]
 
--h          Show this message
--d          Specify root directory to generate.
--i          Specify input directory.idt path
--o          Specify output directory.idt path
+-h                Show this message
+-d                Specify root directory to generate.
+-i                Specify input directory.idt path.
+-o                Specify output directory.idt path.
+-p [KEY,ENTRY]    Specify predefined directory key. You can specify multiple
+                  times.
 EOL
 }
 
@@ -63,8 +70,13 @@ function to_id
 {
   local dir=$1
   local -n res=$2
-  local -a sha1=(`echo $dir | sha1sum -`)
-  res=${sha1[0]}
+  if [ ! -n "${predefined_keys[$dir]}" ]; then
+    local -a sha1=(`echo $dir | sha1sum -`)
+    res=${sha1[0]}
+  else
+    res=${predefined_keys[$dir]}
+  fi
+
 }
 
 #
@@ -182,7 +194,6 @@ function main_procedure
   if [ ${#dkey_entry[*]} -ne 0 ]; then
     create_idt_table_from_directory
   fi
-
   if [ ${#idtkey_parent[*]} -ne 0 ]; then
     output_directory 
   fi
@@ -193,8 +204,8 @@ function main_procedure
 #
 function parse_option
 {
-  while getopts d:o:i:h opt "$@"; do
-    case $opt in #((((
+  while getopts d:o:i:p:h opt "$@"; do
+    case $opt in #(((((
       h)
         cmd=show_help
         ;;
@@ -206,6 +217,11 @@ function parse_option
         ;;
       o)
         options[output_dir_file]=$OPTARG
+        ;;
+      p)
+        local key=`echo $OPTARG | sed 's/\(.\+\),\(.\+\)/\1/'`
+        local val=`echo $OPTARG | sed 's/\(.\+\),\(.\+\)/\2/'`
+        predefined_keys[$key]=$val
         ;;
       :|?)
         ;;
