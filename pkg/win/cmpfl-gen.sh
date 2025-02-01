@@ -210,7 +210,7 @@ function to_id()
   local -n res=$2
   local -a ids=(`echo $1 | sha1sum`)
   local oldid=`echo $1 | sed -e 's/[-\\\/~.:]/_/g; s/^\([[:digit:]]\)/_\1/'`
-  res=${ids[0]}
+  res=_${ids[0]}
   id_oldid[$res]=$oldid
   id_value[$res]="$1"
 }
@@ -507,7 +507,7 @@ function update_component_from_source_programs()
       "$src_prog" $PROG_PATH_STRIP_LVL`
     local prog_id
     to_id $prog_path prog_id
-    local cmp_id="cmp_${prog_id}"
+    local cmp_id="cmp${prog_id}"
     local guid=`gen_guid`
     local dir=`dirname "$src_prog"`
     local dir_key=${src_target_dir_map[$dir]}
@@ -670,7 +670,7 @@ function update_file_from_source_programs()
     local file_path="${base_dir}/$src_prog"
     local prog_id
     to_id $prog_path prog_id
-    local cmp_id="cmp_${prog_id}"
+    local cmp_id="cmp${prog_id}"
     local -i seq
     local -i idx0
     local -a file_ver

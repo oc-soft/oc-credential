@@ -72,7 +72,7 @@ function to_id
   local -n res=$2
   if [ ! -n "${predefined_keys[$dir]}" ]; then
     local -a sha1=(`echo $dir | sha1sum -`)
-    res=${sha1[0]}
+    res=_${sha1[0]}
   else
     res=${predefined_keys[$dir]}
   fi
