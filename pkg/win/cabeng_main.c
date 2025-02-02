@@ -367,6 +367,14 @@ cabeng_alloc_mem(
     size_t size);
 
 /**
+ * get long name from short|long name string
+ */
+static LPCWSTR
+get_long_name(
+    LPCWSTR short_long_name); 
+
+
+/**
  * free memory
  */
 static void
@@ -543,7 +551,8 @@ load_file_entries(
 
         while (i_status == 0) {
             MSIHANDLE rec_hdl;
-            LPWSTR file_name;
+            LPWSTR ds_file_name;
+            LPCWSTR file_name;
             LPWSTR dir_key;
             LPWSTR file_key;
             LPWSTR src_dir_path;
@@ -551,6 +560,7 @@ load_file_entries(
             cabeng_file_entry* entry;
             int seq_num;
             rec_hdl = 0;
+            ds_file_name = NULL;
             file_name = NULL;
             dir_key = NULL;
             file_key = NULL;
@@ -579,9 +589,12 @@ load_file_entries(
                 result = i_status;
             }
             if (i_status == 0) {
-                file_name = read_str_from_record(rec_hdl, 2);
-                i_status = file_name ? 0 : -1;
+                ds_file_name = read_str_from_record(rec_hdl, 2);
+                i_status = ds_file_name ? 0 : -1;
                 result = i_status;
+            }
+            if (i_status == 0) {
+                file_name = get_long_name(ds_file_name);
             }
             if (i_status == 0) {
                 dir_key = read_str_from_record(rec_hdl, 3);
@@ -626,8 +639,8 @@ load_file_entries(
                 cabeng_free_mem(src_dir_path);
             }
             
-            if (file_name) {
-                cabeng_free_mem(file_name);
+            if (ds_file_name) {
+                cabeng_free_mem(ds_file_name);
             }
 
             if (dir_key) {
@@ -689,10 +702,10 @@ read_src_dir(
         if (status == 0) {
             do {
                 MSIHANDLE res_rec_hdl;
-                LPWSTR default_dir;
+                LPWSTR ds_default_dir;
                 LPWSTR parent_key;
                 parent_key = NULL;
-                default_dir = NULL;
+                ds_default_dir = NULL;
                 res_rec_hdl = 0;
                 u_status = MsiRecordSetStringW(param_rec_hdl, 1, dir_key); 
                
@@ -708,12 +721,14 @@ read_src_dir(
                     status = u_status == ERROR_SUCCESS ? 0 : -1;
                 }
                 if (status == 0) {
-                    default_dir = read_str_from_record(res_rec_hdl, 1);
-
-                    if (default_dir) {
+                    ds_default_dir = read_str_from_record(res_rec_hdl, 1);
+                    if (ds_default_dir) {
+                        LPCWSTR ds_parent_dir_path;
                         LPCWSTR parent_dir_path;
-                        parent_dir_path = get_source_dir_from_default_dir(
-                                default_dir);
+                        ds_parent_dir_path = get_source_dir_from_default_dir(
+                                ds_default_dir);
+                        parent_dir_path = get_long_name(ds_parent_dir_path);
+
                         if (wcscmp(L"SourceDir", parent_dir_path) == 0) {
                             parent_dir_path = L".";
                         }
@@ -739,8 +754,8 @@ read_src_dir(
                 }
 
                 
-                if (default_dir) {
-                    cabeng_free_mem(default_dir);
+                if (ds_default_dir) {
+                    cabeng_free_mem(ds_default_dir);
                 }
                 if (parent_key) {
                     cabeng_free_mem(parent_key);
@@ -933,7 +948,7 @@ get_source_dir_from_default_dir(
     LPCWSTR default_dir)
 {
     LPCWSTR result;
-    result = wcsstr(default_dir, L":");
+    result = wcschr(default_dir, L':');
     if (result) {
         result++;
     } else {
@@ -977,6 +992,7 @@ join_path(
     return result;
 }
 
+
 /**
  * read string from record
  */
@@ -1008,6 +1024,24 @@ read_str_from_record(
     }
     return result;
 }
+
+/**
+ * get long name from short|long name string
+ */
+static LPCWSTR
+get_long_name(
+    LPCWSTR short_long_name)
+{
+    LPCWSTR result;
+    LPCWSTR tmp_str;
+    result = short_long_name;
+    tmp_str = wcschr(short_long_name, L'|'); 
+    if (tmp_str) {
+        result = tmp_str + 1;
+    }
+    return result; 
+}
+
 
 /**
  * duplicate string
