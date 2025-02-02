@@ -1,4 +1,14 @@
 #
+# script path
+#
+declare script_path=`realpath $0`
+
+#
+# script directory
+#
+declare script_dir=`dirname $script_path`
+
+#
 # directory entry
 #
 declare -a directories
@@ -76,8 +86,9 @@ function to_id
   else
     res=${predefined_keys[$dir]}
   fi
-
 }
+
+
 
 #
 # load directry.idt headers
@@ -143,12 +154,20 @@ function parent_id
 #
 function create_idt_table_from_directory
 {
+  local root_dir=$1
   for key in ${!dkey_entry[*]}; do
     local p_id
     local dir=${dkey_entry[$key]}
     parent_id $dir p_id
     idtkey_parent[$key]=$p_id
-    idtkey_default[$key]=`basename $dir`
+    local dos_dir=`sh $script_dir/shortpath.sh $root_dir/$dir`
+    local dos_name=`basename $dos_dir`
+    local win_name=`basename $dir`
+    local def=$win_name
+    if [ "$dos_name" != "$win_name" ]; then
+      def="$dos_name|$win_name"
+    fi
+    idtkey_default[$key]=$def
   done
 }
 
@@ -192,12 +211,14 @@ function main_procedure
     create_dirkey_entry
   fi
   if [ ${#dkey_entry[*]} -ne 0 ]; then
-    create_idt_table_from_directory
+    create_idt_table_from_directory ${options[root_dir]}
   fi
   if [ ${#idtkey_parent[*]} -ne 0 ]; then
     output_directory 
   fi
 }
+
+
 
 #
 # parse option

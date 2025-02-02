@@ -1,5 +1,15 @@
 #! /usr/bin/env bash 
 
+#
+# absolute script path
+#
+declare script_path=`realpath $0`
+
+#
+# absolute script directory
+#
+declare script_dir=`dirname $script_path`
+
 # command line options
 declare -A options
 
@@ -653,13 +663,14 @@ function load_file_from_old_files()
 function update_file_from_source_programs()
 {
   local -n programs_l=$1
-  local -n flkey_cmp=$2
-  local -n flkey_file=$3
-  local -n flkey_size=$4
-  local -n flkey_version=$5
-  local -n flkey_langs=$6
-  local -n flkey_attrs=$7
-  local -n flkey_seq=$8
+  local root_dir=$2
+  local -n flkey_cmp=$3
+  local -n flkey_file=$4
+  local -n flkey_size=$5
+  local -n flkey_version=$6
+  local -n flkey_langs=$7
+  local -n flkey_attrs=$8
+  local -n flkey_seq=$9
   local base_dir=${options[appdir]}
   local -i idx 
 
@@ -675,7 +686,13 @@ function update_file_from_source_programs()
     local -i idx0
     local -a file_ver
     flkey_cmp[$prog_id]=$cmp_id
-    flkey_file[$prog_id]=`basename $src_prog`
+    local dos_path=`sh $script_dir/shortpath.sh $root_dir/$src_prog`
+    local dos_name=`basename $dos_path`
+    local file_name=`basename $src_prog`
+    if [ "$dos_name" != "$file_name" ]; then
+      file_name="$dos_name|$file_name"
+    fi
+    flkey_file[$prog_id]=$file_name
     read_file_version $file_path
     for idx0 in ${!file_ver[*]} ; do
       if [ $idx0 -eq 0 ]; then
@@ -967,6 +984,7 @@ function load_directory()
       parent=`remove_cr $parent`
       def=`remove_cr $def`
       key_parent[$dire]=$parent
+      def=`echo $def | sed 's/.*|\(.\+\)/\1/'` 
       key_def[$dire]=$def
     fi
     let idx++
@@ -1278,7 +1296,7 @@ function run()
   fi
   if [ -v status[sources] ]; then
     progress "update file tables from source programs"
-    update_file_from_source_programs src_programs \
+    update_file_from_source_programs src_programs ${options[appdir]} \
       idt1_flkey_cmp idt1_flkey_file idt1_flkey_size idt1_flkey_version \
       idt1_flkey_langs idt1_flkey_attrs idt1_flkey_seq
     status[new_file]=true
