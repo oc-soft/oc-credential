@@ -1,8 +1,8 @@
 
 /**
- * common locale interface
+ * locale constant interface
  */
-export default interface LocaleCommon {
+export default interface LocaleConst {
   LC_CTYPE: number
   LC_NUMERIC: number
   LC_TIME: number

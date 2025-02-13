@@ -1,11 +1,11 @@
-import LocaleCommon from './locale-common'
-
+import LocaleConst from './locale-const'
+import { Intl } from './intl-win'
 
 
 /**
  * windows locale
  */
-export class Locale implements LocaleCommon {
+class LocaleConstImpl implements LocaleConst {
   LC_ALL = 0 
   LC_COLLATE = 1
   LC_CTYPE = 2
@@ -15,6 +15,22 @@ export class Locale implements LocaleCommon {
   LC_MESSAGES = 1729
 }
 
+/**
+ * locale library
+ */
+export class Locale {
 
-export default new Locale()
+  /**
+   * set locale
+   */
+  setlocale(category: number,
+    locale: string | null | undefined) : string | null | undefined {
+    return Intl.library.setlocale(category, locale) 
+  }
+}
+
+
+export const LocaleConstant = new LocaleConstImpl()
+
+
 // vi: se ts=2 sw=2 et:

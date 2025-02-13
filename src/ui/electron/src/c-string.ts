@@ -1,7 +1,9 @@
 import { Buffer } from 'node:buffer'
+import os from 'node:os'
 import type { TypeBase } from 'ref'
 import ref from 'ref'
 import { Library as LibraryFFI } from 'ffi'
+
 
 
 type CStringLibrary = {
@@ -55,7 +57,12 @@ export default class CString {
    */
   static getLibrary(): CStringLibrary {
     if (!CString.stringLib) {
-      CString.stringLib = CString.loadStringLibraryI('libc')
+      let libName = 'libc'
+      switch (os.platform()) {
+      case 'win32':
+        libName = 'ucrtbase'
+      } 
+      CString.stringLib = CString.loadStringLibraryI(libName)
     }
     return CString.stringLib 
   }

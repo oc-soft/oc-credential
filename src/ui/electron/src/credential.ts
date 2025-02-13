@@ -69,9 +69,7 @@ export class Credential {
     let descOut: string | undefined
 
     let descIn: string | undefined
-    process.stderr.write('start read descriptor')
     descIn = await readDescriptor() 
-    process.stderr.write('done read descriptor')
 
     const token = await this.generateToken(descIn, service)
     if (token) {

@@ -14,7 +14,6 @@ export function attachMenu(
   startUrlParam: StartUrlParam,
   window?: BrowserWindow) {
   const localePath = `${app.getAppPath()}/locale`
-
   let localePathDbg
   localePathDbg = Intl.bindtextdomain('ui-menu', localePath)
   let codeSetDbg = Intl.bindTextdomainCodeset('ui-menu', 'UTF-8')
