@@ -306,9 +306,9 @@ function get_pe_file_type()
 }
 
 #
-# get file attribute
+# get file attribute for component
 #
-function file_to_attribute()
+function file_to_attribute_for_comp()
 {
   local pe_type=`get_pe_file_type "$1"`
 
@@ -344,6 +344,24 @@ function get_standard_file_attr()
     echo 0
   fi
 }
+
+
+#
+# get file attribute for file table 
+#
+function file_to_attribute_for_file
+{
+  local pe_type=`get_pe_file_type "$1"`
+
+  case $pe_type in
+    *x64|*x86|*arm64|*arm32)
+      echo 512
+      ;; 
+    *)
+      echo 0
+      ;;
+  esac
+} 
 
 
 #
@@ -523,7 +541,7 @@ function update_component_from_source_programs()
     local dir_key=${src_target_dir_map[$dir]}
     key_id[$cmp_id]=$guid
     key_dir[$cmp_id]=$dir_key
-    key_attr[$cmp_id]=`file_to_attribute "$src_prog"`
+    key_attr[$cmp_id]=`file_to_attribute_for_comp "$src_prog"`
     key_key_path[$cmp_id]=$prog_id
   done
 }
@@ -684,7 +702,7 @@ function update_file_from_source_programs()
     local cmp_id="cmp${prog_id}"
     local -i seq
     local -i idx0
-    local -a file_ver
+    local file_ver
     flkey_cmp[$prog_id]=$cmp_id
     local dos_path=`sh $script_dir/shortpath.sh $root_dir/$src_prog`
     local dos_name=`basename $dos_path`
@@ -693,17 +711,11 @@ function update_file_from_source_programs()
       file_name="$dos_name|$file_name"
     fi
     flkey_file[$prog_id]=$file_name
-    read_file_version $file_path
-    for idx0 in ${!file_ver[*]} ; do
-      if [ $idx0 -eq 0 ]; then
-        flkey_version[$prog_id]="${file_ver[$idx0]}"
-      elif [ -n ${oc_ver_1[$idx0]} ]; then
-        flkey_version[$prog_id]+=".${file_ver[$idx0]}"
-      fi
-    done
-    unset file_ver
+    read_file_version file_ver $file_path
+    flkey_version[$prog_id]="$file_ver"
     create_sequence_from_path "$src_prog"
     flkey_size[$prog_id]=`read_file_size "$file_path"`
+    flkey_attrs[$prog_id]=`file_to_attribute_for_file "$src_prog"`
     flkey_seq[$prog_id]=$seq
   done
 }
@@ -873,48 +885,13 @@ function show_removal()
   done
 }
 
-
-
-#
-# read pe file version
-#
-function read_pe_file_version()
-{
-  local pattern='.\+FILEVERSION\s\+\([[:digit:],\s].\+\)'
-  local str_ver
-
-  strver=`windres "$1" 2>/dev/null | grep -e $pattern | sed -e "s/$pattern/\1/"`
-  if [ -n "$strver" ] ; then
-    IFS=', ';
-    file_ver=($strver)
-    unset IFS
-  fi
-}
-
-#
-# read file version from file name
-#
-function read_file_name_version()
-{
-  local pattern='.\+-\([[:digit:].]\+\)\(\.[[:alnum:]]\+\)*' 
-  local fl_name=`basename $1`
-  local strver=`echo $fl_name | grep -e $pattern | sed -e "s/$pattern/\1/"`
-  if [ -n "$strver" ] ; then
-    IFS='.';
-    file_ver=($strver)
-    unset IFS
-  fi
-}
-
 #
 # read file version
 #
 function read_file_version()
 {
-  read_pe_file_version $1
-  if [ ${#file_ver[*]} -eq 0 ]; then
-    read_file_name_version $1
-  fi
+  local -n res=$1
+  res=`sh $script_dir/file-attr.sh -t version $2`
 }
 
 #

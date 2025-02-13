@@ -6,8 +6,8 @@ CostFinalize		1000
 CostInitialize		800
 ExecuteAction		1300
 ExitDlg		-1
-FatalErrorDlg		-3
+FatalError		-3
 FileCost		900
 PrepareDlg		140
 ProgressDlg		1280
-UserExitDlg		-2
+UserExit		-2

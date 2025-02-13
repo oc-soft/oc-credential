@@ -347,7 +347,12 @@ staging-uninstall:
 	fi
 	$(MAKE) -C $(top_builddir) DESTDIR=$(staging_dir) uninstall
 
-staging-install-post:
+staging-install-post: copy-depends-dll
+	rm $(staging_dir)$(libexecdir)/credential-ocs/locpath.txt 
+	cp -r $(staging_dir)$(localedir) $(staging_dir)$(libexecdir)/credential-ocs 
+
+
+copy-depends-dll:
 	dstdir=$(staging_dir)$(libexecdir)/credential-ocs \
 	inputs=$(staging_dir)$(libexecdir)/credential-ocs/$(credhelper_dist_name)$(EXEEXT) \
 	dll_search_dir=`$(CC) -print-sysroot`/mingw/bin ; \
@@ -357,9 +362,9 @@ staging-install-post:
 				cp $$dll_path/$$dll $$dstdir; \
 			fi; \
 		done) 
-	rm $(staging_dir)$(libexecdir)/credential-ocs/locpath.txt 
-	cp -r $(staging_dir)$(localedir) $(staging_dir)$(libexecdir)/credential-ocs 
 
+
+.PHONY: copy-depends-dll
 
 staging-directory-idt:
 	sh $(srcdir)/gen-dir.sh -d $(staging_dir)$(libexecdir) \

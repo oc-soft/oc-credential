@@ -144,7 +144,7 @@ function parent_id
     to_id $parent id
     res=$id
   else
-    res=ProgramsDir
+    res=ProgramFiles64Folder
   fi
 }
 

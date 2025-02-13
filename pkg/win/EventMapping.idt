@@ -14,7 +14,7 @@ CustomizeDlg	Reset	SelectionNoItems	Enabled
 InstallSettingDlg	DiskCost	SelectionNoItems	Enabled
 InstallSettingDlg	ItemDescription	SelectionDescription	Text
 InstallSettingDlg	ItemSize	SelectionSize	Text
-InstallsettingDlg	Location	SelectionPath	Text
+InstallSettingDlg	Location	SelectionPath	Text
 InstallSettingDlg	Location	SelectionPathOn	Visible
 InstallSettingDlg	LocationLabel	SelectionPathOn	Visible
 InstallSettingDlg	Install	SelectionNoItems	Enabled
