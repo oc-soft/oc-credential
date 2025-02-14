@@ -5,27 +5,32 @@ client_src = \
 	client/index.html 
 
 electron_src = \
-	electron/src/intl.ts \
-	electron/src/locale-common.ts \
-	electron/src/option.ts \
-	electron/src/config.ts \
 	electron/src/c-string.ts \
-	electron/src/desc.ts \
-	electron/src/menu-linux.ts \
-	electron/src/credential.ts \
-	electron/src/menu.ts \
-	electron/src/config.json \
-	electron/src/menu-util.ts \
-	electron/src/ipc.ts \
-	electron/src/locale-dbg-1.ts \
-	electron/src/locale.ts \
 	electron/src/common-types.ts \
-	electron/src/locale-win.ts \
-	electron/src/proxy.ts \
-	electron/src/preload.ts \
+	electron/src/config.json
+	electron/src/config.ts \
 	electron/src/credential-ui.ts \
+	electron/src/credential.ts \
+	electron/src/desc.ts \
+	electron/src/intl-common.ts \
+	electron/src/intl-posix.ts \
+	electron/src/intl-type.ts \
+	electron/src/intl-win.ts \
+	electron/src/intl.ts \
+	electron/src/ipc.ts \
+	electron/src/locale-const.ts \
+	electron/src/locale-posix.ts \
+	electron/src/locale-type.ts \
+	electron/src/locale-win.ts \
+	electron/src/locale.ts \
 	electron/src/main.ts \
-	electron/src/locale-posix.ts 
+	electron/src/menu-linux.ts \
+	electron/src/menu-util.ts \
+	electron/src/menu-win.ts \
+	electron/src/menu.ts \
+	electron/src/option.ts \
+	electron/src/preload.ts \
+	electron/src/proxy.ts
 
 src_dirs = client electron common
 
@@ -91,9 +96,11 @@ electron_extract_dir = pkg
 
 electron_app_dir = $(electron_extract_dir)/$(electron_resource_dir)/app
 
-electron_rebuild_env = 
+
 if RUN_LINUX
 electron_rebuild_env = CXX=$(CXX) CXXFLAGS=-std=c++20
+else
+electron_rebuild_env = 
 endif
 
 token_generator_app_dir = $(electron_extract_dir)/$(token_generator_resource_dir)/app
@@ -249,13 +256,60 @@ electron-rebuild: rebuild-electron-tmstamp
 .PHONY: electron-rebuild
 
 electron-resources: electron-tmstamp electron-package-json build-app \
-	electron-rebuild \
+	electron-rebuild electron-additional-mod \
 	| mkdir-tree electron-app-dir 
 	cp -R dist $(token_generator_app_dir) 
 	$(SHELL) $(srcdir)/resolve-node-module.sh -d $(token_generator_app_dir)
 	cp -R $(srcdir)/intl/locale $(token_generator_app_dir)
 
 .PHONY: electron-resources
+
+if !RUN_WIN
+electron-additional-mod-tmstamp:
+	: >$@
+electron-additional-mod: electron-additional-mod-tmstamp  
+else
+electron-additional-mod-root-tmstamp: dll-entry.txt
+	dll_search_dir=`$(CC) -print-sysroot`/mingw/bin; \
+	while read ln; do \
+		find $$dll_search_dir -regex ".+$$ln\(\.\(dll\|exe\)\)?" \
+			-exec cp '{}' $(electron_extract_dir) \; ;\
+	done <$(srcdir)/dll-entry.txt 
+	: >$@
+
+awk_entry_to_i_opts = ' \
+{ \
+  if ($$0 ~ /.+\.(dll|exe)$$/) { \
+  	lines[NR] = prefix $$0; \
+  } else { \
+  	lines[NR] = prefix $$0 ".dll"; \
+  } \
+} \
+END { \
+  line = ""; \
+  for (idx = 1; idx <= NR; idx++) { \
+    line = line "-i " lines[idx]; \
+    if (idx != NR) { \
+      line = line " "; \
+    } \
+  }	\
+  print line; \
+}'
+
+electron-copy-additional-mod: electron-additional-mod-root-tmstamp
+	inputs_opts=`$(AWK) -v prefix=$(electron_extract_dir)/ $(awk_entry_to_i_opts) $(srcdir)/dll-entry.txt`; \
+	dll_search_dir=`$(CC) -print-sysroot`/mingw/bin ; \
+	$(srcdir)/depends-dll.sh -s $$dll_search_dir $$inputs_opts\
+   	| (IFS=: ; while read dll dll_path; do \
+			if [ -n "$$dll_path" ]; then \
+				cp $$dll_path/$$dll $(electron_extract_dir); \
+			fi; \
+	done)
+electron-additional-mod: electron-additional-mod-root-tmstamp
+
+endif
+
+.PHONY: electron-additional-mod electron-copy-additional-mod
 
 if !RUN_WIN
 rebrand-resource:
