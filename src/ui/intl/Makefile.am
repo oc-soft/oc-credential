@@ -12,7 +12,9 @@ LOCALE_DIR = $(srcdir)/locale
 
 XGET_OPTION = -L JavaScript -kIntl.gettext
 
-UI_MENU_POT_SRC = $(srcdir)/../electron/src/menu-linux.ts
+UI_MENU_POT_SRC = \
+	$(srcdir)/../electron/src/menu-linux.ts \
+	$(srcdir)/../electron/src/menu-win.ts
 
 EXTRA_DIST = catalogs-vars.mk \
 	catalogs-depends.mk \
