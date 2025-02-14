@@ -51,7 +51,6 @@ export class Intl {
 
     const result = {
       textdomain: (domain: string | null) => {
-        console.log('textdomain')
         let domainParam
         if (typeof domain == 'string') {
           domainParam = ref.allocCString(domain) 
@@ -59,34 +58,28 @@ export class Intl {
           domainParam = domain
         }
         const res = lib.textdomain(domainParam)
-        return IntlCommon.toStr(res, null) as string
+        const result = IntlCommon.toStr(res, null) as string
+        return result
       },
       bindtextdomain: (domain: string, dir: string | null) => {
-        console.log('bindtextdomain-1')
         let domainParam
         if (typeof domain == 'string') {
           domainParam = ref.allocCString(domain) 
         } else {
           domainParam = domain
         }
-        console.log('bindtextdomain-2')
         let dirParam
         if (typeof dir == 'string') {
           dirParam = ref.allocCString(dir) 
         } else {
           dirParam = dir
         }
-        console.log('bindtextdomain-3')
    
-        console.log(domainParam)
-        console.log(dirParam)
         const res = lib.bindtextdomain(domainParam, dirParam)
-        console.log('bindtextdomain-4')
- 
-        return IntlCommon.toStr(res, null) as string
+        const result = IntlCommon.toStr(res, null) as string
+        return result
       },
       bindTextdomainCodeset: (domain: string, codeset: string | null) => {
-        console.log('bindtextdomainCodeSet')
         let domainParam
         if (typeof domain == 'string') {
           domainParam = ref.allocCString(domain) 
@@ -103,7 +96,6 @@ export class Intl {
         return IntlCommon.toStr(res, null) as string
       },
       gettext: (msg: string) => {
-        console.log('gettext')
         let msgParam
         if (typeof msg == 'string') {
           msgParam = ref.allocCString(msg) 

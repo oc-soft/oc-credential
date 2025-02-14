@@ -1,5 +1,6 @@
 import os from 'node:os'
 import { MenuLinux } from './menu-linux'
+import { MenuWin } from './menu-win'
 import Intl from './intl'
 import type { BrowserWindow } from 'electron'
 import { app } from 'electron'
@@ -23,6 +24,9 @@ export function attachMenu(
   case 'darwin':
     break
   case 'win32':
+    if (window) {
+      MenuWin.attachMenu(window, startUrlParam) 
+    }
     break
   default:
     if (window) {
