@@ -569,6 +569,7 @@ setup:
 		
 setup/credential-ocs.msi: staging-msi | setup
 	cp $(staging_dir)$(libexecdir)/credential-ocs.msi setup
+	$(MSIINFO) `cygpath -w -d $@` /w 10
 
 setup/credential-ocs-ja.msi: staging-msi-ja | setup
 	cp $(staging_dir)$(libexecdir)/credential-ocs-ja.msi setup
@@ -579,6 +580,15 @@ setup/appmod-0.cab: create-cabs setup/credential-ocs.msi | setup
 
 setup/appmod-1.cab: create-cabs setup/credential-ocs.msi | setup
 	cp $(staging_dir)$(libexecdir)/appmod-1.cab setup
+
+setup/single:
+	$(MKDIR_P) $@
+
+setup/single/credential-ocs.msi: create-cabs setup/credential-ocs.msi | setup/single
+	cp setup/credential-ocs.msi $(@D)
+	$(MSIDB) -i -d `cygpath -a -w -d $@` -f `cygpath -a -w $(srcdir)` Media-Streamed.idt
+	db_path=`cygpath -a -w -d $@`; pushd setup >/dev/null; $(MSIDB) -d $$db_path -a appmod-0.cab -a appmod-1.cab; popd >/dev/null
+
 
 code-sign-cabs.stmp:setup/appmod-0.cab \
 	setup/appmod-1.cab
