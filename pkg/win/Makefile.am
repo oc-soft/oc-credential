@@ -113,7 +113,7 @@ EXTRA_DIST = ServiceControl.idt \
 	File-x86_64.idt.in \
 	File-i386.idt.in \
 	Component-x86_64.idt.in \
-	Component-i386.idt.in
+	Component-i386.idt.in 
 
 
 MSIDB = msidb.exe
@@ -512,12 +512,16 @@ remove-staging-msi:
 
 .PHONY: remove-staging-msi
 
+make-ja:
+	$(MAKE) -C ja
+
+.PHONY: make-ja
 
 credential-ocs-ja.msi: credential-ocs.msi \
 	$(srcdir)/ja/Control.idt \
 	$(srcdir)/ja/UiText.idt \
-	$(srcdir)/ja/Error.idt \
-	$(builddir)/ja/Property.idt
+	$(builddir)/ja/Property.idt \
+	| make-ja
 	cp $< $@
 	pkg_code=`uuidgen | tr [:lower:] [:upper:]`; \
 	$(MSIDB) -i -f `cygpath -a -w -d $(srcdir)/ja` -d $@ Control.idt && \
@@ -573,7 +577,7 @@ setup/credential-ocs.msi: staging-msi | setup
 
 setup/credential-ocs-ja.msi: staging-msi-ja | setup
 	cp $(staging_dir)$(libexecdir)/credential-ocs-ja.msi setup
-
+	$(MSIINFO) `cygpath -w -d $@` /w 10
 
 setup/appmod-0.cab: create-cabs setup/credential-ocs.msi | setup
 	cp $(staging_dir)$(libexecdir)/appmod-0.cab setup
@@ -584,11 +588,24 @@ setup/appmod-1.cab: create-cabs setup/credential-ocs.msi | setup
 setup/single:
 	$(MKDIR_P) $@
 
+setup-installer: setup/appmod-0.cab setup/appmod-1.cab 
+
+
 setup/single/credential-ocs.msi: create-cabs setup/credential-ocs.msi | setup/single
 	cp setup/credential-ocs.msi $(@D)
 	$(MSIDB) -i -d `cygpath -a -w -d $@` -f `cygpath -a -w $(srcdir)` Media-Streamed.idt
 	db_path=`cygpath -a -w -d $@`; pushd setup >/dev/null; $(MSIDB) -d $$db_path -a appmod-0.cab -a appmod-1.cab; popd >/dev/null
 
+setup/single/credential-ocs-ja.msi: create-cabs setup/credential-ocs-ja.msi | setup/single
+	cp setup/credential-ocs-ja.msi $(@D)
+	$(MSIDB) -i -d `cygpath -a -w -d $@` -f `cygpath -a -w $(srcdir)` Media-Streamed.idt
+	db_path=`cygpath -a -w -d $@`; pushd setup >/dev/null; $(MSIDB) -d $$db_path -a appmod-0.cab -a appmod-1.cab; popd >/dev/null
+
+
+setup-single-msi: setup/single/credential-ocs.msi \
+	setup/single/credential-ocs-ja.msi
+
+.PHONY: setup-single-msi
 
 code-sign-cabs.stmp:setup/appmod-0.cab \
 	setup/appmod-1.cab
