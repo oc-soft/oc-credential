@@ -1,7 +1,6 @@
 Dialog_	Control	Type	X	Y	Width	Height	Attributes	Property	Text	Control_Next	Help
 s72	s50	s20	i2	i2	i2	i2	I4	S50	L0	S50	L50
 65001	Control	Dialog_	Control
-AdminBrowseDlg	BannerBitmap	Bitmap	0	0	370	44	1		[BannerBitmap]	PathEdit	
 AdminBrowseDlg	BannerLine	Line	0	44	370	0	1				
 AdminBrowseDlg	BottomLine	Line	0	234	370	0	1				
 AdminBrowseDlg	Cancel	PushButton	240	243	56	17	3		[ButtonText_Cancel]	ComboLabel	
@@ -12,27 +11,25 @@ AdminBrowseDlg	DirectoryList	DirectoryList	25	83	320	110	7	TARGETDIR		PathLabel
 AdminBrowseDlg	NewFolder	PushButton	325	55	19	19	3670019		New	DirectoryList	Create A New Folder|
 AdminBrowseDlg	OK	PushButton	304	243	56	17	3		[ButtonText_OK]	Cancel	
 AdminBrowseDlg	PathEdit	PathEdit	84	202	261	17	3	TARGETDIR		OK	
-AdminBrowseDlg	PathLabel	Text	25	205	59	10	3		フォルダ名(&F):	BannerBitmap	
+AdminBrowseDlg	PathLabel	Text	25	205	59	10	3		フォルダ名(&F):	PathEdit	
 AdminBrowseDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]カレントディレクトリを変更		
-AdminBrowseDlg	Up	PushButton	298	55	19	19	3670019		上	NewFolder	上の階層|
+AdminBrowseDlg	Up	PushButton	298	55	19	19	3670019		Up	NewFolder	Up One Level|
 AdminInstallPointDlg	Back	PushButton	180	243	56	17	3		[ButtonText_Back]	Next	
-AdminInstallPointDlg	BannerBitmap	Bitmap	0	0	370	44	1		[BannerBitmap]	Text	
 AdminInstallPointDlg	BannerLine	Line	0	44	370	0	1				
 AdminInstallPointDlg	BottomLine	Line	0	234	370	0	1				
 AdminInstallPointDlg	Browse	PushButton	289	119	56	17	3		[ButtonText_Browse]	Back	
-AdminInstallPointDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	BannerBitmap	
+AdminInstallPointDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Text	
 AdminInstallPointDlg	Description	Text	25	20	280	20	196611		[ProductName]のサーバーのネットワークパスを設定してください		
 AdminInstallPointDlg	Next	PushButton	236	243	56	17	3		[ButtonText_Next]	Cancel	
 AdminInstallPointDlg	PathEdit	PathEdit	25	93	320	18	3	TARGETDIR		Browse	
 AdminInstallPointDlg	Text	Text	25	80	320	10	3		新しいネットワークパスまた設定のために参照をクリックしてください(&E)	PathEdit	
-AdminInstallPointDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]ネットワークパス		
+AdminInstallPointDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]Network Location		
 AdminRegistrationDlg	Back	PushButton	180	243	56	17	65539		[ButtonText_Back]	Next	
-AdminRegistrationDlg	BannerBitmap	Bitmap	0	0	370	44	1		[BannerBitmap]	OrganizationLabel	
 AdminRegistrationDlg	BannerLine	Line	0	44	370	0	1				
 AdminRegistrationDlg	BottomLine	Line	0	234	370	0	1				
 AdminRegistrationDlg	CDKeyEdit	MaskedEdit	45	143	250	16	3	PIDKEY	[PIDTemplate]	Back	
 AdminRegistrationDlg	CDKeyLabel	Text	45	130	50	10	3		CD &Key:	CDKeyEdit	
-AdminRegistrationDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	BannerBitmap	
+AdminRegistrationDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	OrganizationLabel	
 AdminRegistrationDlg	Description	Text	25	23	280	15	196611		Please enter your company information		
 AdminRegistrationDlg	Next	PushButton	236	243	56	17	3		[ButtonText_Next]	Cancel	
 AdminRegistrationDlg	OrganizationEdit	Edit	45	105	220	18	3	COMPANYNAME	{80}	CDKeyLabel	
@@ -44,17 +41,17 @@ AdminWelcomeDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Back
 AdminWelcomeDlg	Description	Text	135	70	220	30	196611		[Wizard]は[ProductName]のサーバーを指定したネットワークパスに立ち上げます。続ける場合は、次をクリックしてください。		
 AdminWelcomeDlg	Next	PushButton	236	243	56	17	3		[ButtonText_Next]	Cancel	
 AdminWelcomeDlg	Title	Text	135	20	220	60	196611		{\VerdanaBold13}[ProductName] [Wizard]		
-BrowseDlg	Cancel	PushButton	240	243	56	17	3		[ButtonText_Cancel]	ComboLabel	
 BrowseDlg	ComboLabel	Text	25	58	44	10	3		宛先(&D):	DirectoryCombo	
 BrowseDlg	Description	Text	25	23	280	15	196611		宛先フォルダを設定		
+BrowseDlg	Cancel	PushButton	240	243	56	17	3		[ButtonText_Cancel]	ComboLabel	
 BrowseDlg	DirectoryCombo	DirectoryCombo	70	55	220	80	393227	_BrowseProperty		Up	
 BrowseDlg	DirectoryList	DirectoryList	25	83	320	110	11	_BrowseProperty		PathLabel	
 BrowseDlg	NewFolder	PushButton	325	55	19	19	3670019		New	DirectoryList	新しいフォルダを作成|
 BrowseDlg	OK	PushButton	304	243	56	17	3		[ButtonText_OK]	Cancel	
 BrowseDlg	PathEdit	PathEdit	70	202	275	18	11	_BrowseProperty		OK	
 BrowseDlg	PathLabel	Text	25	205	44	10	3		パス(&P):	PathEdit	
-BrowseDlg	Up	PushButton	298	55	19	19	3670019		Up	NewFolder	上の階層|
-CancelDlg	Icon	Icon	15	15	24	24	5242881		[InfoIcon]		Information icon|
+BrowseDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]インストール先を変更		
+BrowseDlg	Up	PushButton	298	55	19	19	3670019		Up	NewFolder	Up One Level|
 CancelDlg	No	PushButton	132	57	56	17	3		[ButtonText_No]	Yes	
 CancelDlg	Text	Text	48	15	194	30	3		[ProductName]のインストールをキャンセルしますか？		
 CancelDlg	Yes	PushButton	72	57	56	17	3		[ButtonText_Yes]	No	
@@ -64,14 +61,14 @@ CustomizeDlg	Browse	PushButton	304	200	56	17	3		[ButtonText_Browse]	Reset
 CustomizeDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Tree	
 CustomizeDlg	Description	Text	25	23	280	15	196611		インストールしたいフィーチャーを選択してください。		
 CustomizeDlg	DiskCost	PushButton	111	243	56	17	3		使用状況(&U)	Back	
-CustomizeDlg	ItemDescription	Text	215	90	131	30	3		Multiline description of the currently selected item.		
-CustomizeDlg	ItemSize	Text	215	130	131	45	3		The size of the currently selected item.		
-CustomizeDlg	Location	Text	75	200	215	20	3		<The selection's path>		
+CustomizeDlg	ItemDescription	Text	215	90	131	30	3		複数行が選択されています。		
+CustomizeDlg	ItemSize	Text	215	130	131	45	3		選択されている項目の容量		
+CustomizeDlg	Location	Text	75	200	215	20	3		<選択している項目のパス>		
 CustomizeDlg	LocationLabel	Text	25	200	50	10	3		パス:		
 CustomizeDlg	Next	PushButton	236	243	56	17	3		[ButtonText_Next]	Cancel	
 CustomizeDlg	Reset	PushButton	42	243	56	17	3		[ButtonText_Reset]	DiskCost	
 CustomizeDlg	Text	Text	25	55	320	20	3		アイコンをクリックすることで、インストールするフィーチャーを変更することができます。		
-CustomizeDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]Custom Setup		
+CustomizeDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]カスタム設定		
 CustomizeDlg	Tree	SelectionTree	25	85	175	95	7	_BrowseProperty	Tree of selections	Browse	
 DiskCostDlg	Description	Text	20	20	280	20	196611		選択したフィーチャーに要求される容量		
 DiskCostDlg	OK	PushButton	304	243	56	17	3		[ButtonText_OK]		
@@ -80,7 +77,6 @@ DiskCostDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]要求される容量
 DiskCostDlg	VolumeList	VolumeCostList	20	100	330	120	393223		{60}{70}{70}{70}{70}		
 ErrorDlg	A	PushButton	100	80	56	17	3		[ButtonText_Cancel]		
 ErrorDlg	C	PushButton	100	80	56	17	3		[ButtonText_Cancel]		
-ErrorDlg	ErrorIcon	Icon	15	15	24	24	5242881		[InfoIcon]		Information icon|
 ErrorDlg	ErrorText	Text	48	15	205	60	3		Information text		
 ErrorDlg	I	PushButton	100	80	56	17	3		[ButtonText_Ignore]		
 ErrorDlg	N	PushButton	100	80	56	17	3		[ButtonText_No]		
@@ -88,32 +84,30 @@ ErrorDlg	O	PushButton	100	80	56	17	3		[ButtonText_OK]
 ErrorDlg	R	PushButton	100	80	56	17	3		[ButtonText_Retry]		
 ErrorDlg	Y	PushButton	100	80	56	17	3		[ButtonText_Yes]		
 ExitDlg	Finish	PushButton	236	243	56	17	3		[ButtonText_Finish]		
-ExitDlg	Title	Text	15	15	320	60	196611		[DltTitleFont][ProductName] [Wizard]は完了しました		
+ExitDlg	Title	Text	20	15	320	60	196611		[DlgTitleFont]Completed the [ProductName] [Wizard]		
 FatalError	Back	PushButton	180	243	56	17	1		[ButtonText_Back]	Finish	
-FatalError	Bitmap	Bitmap	0	0	370	234	1		[DialogBitmap]	Back	
 FatalError	BottomLine	Line	0	234	370	0	1				
-FatalError	Cancel	PushButton	304	243	56	17	1		[ButtonText_Cancel]	Bitmap	
+FatalError	Cancel	PushButton	304	243	56	17	1		[ButtonText_Cancel]	Back	
 FatalError	Description1	Text	135	70	220	40	196611		[ProductName]のセットアップはエラーのため終了しました。システムはセットアップ前の状態です。		
 FatalError	Description2	Text	135	115	220	20	196611		クリックして[Wizard]を終了します.		
 FatalError	Finish	PushButton	236	243	56	17	3		[ButtonText_Finish]	Cancel	
-FatalError	Title	Text	135	20	220	60	196611		{\VerdanaBold13}[ProductName] [Wizard] の終了		
-FilesInUse	BannerBitmap	Bitmap	0	0	370	44	1		[BannerBitmap]	Retry	
+FatalError	Title	Text	135	20	220	60	196611		{\VerdanaBold13}[ProductName] [Wizard] ended prematurely		
 FilesInUse	BannerLine	Line	0	44	370	0	1				
 FilesInUse	BottomLine	Line	0	234	370	0	1				
-FilesInUse	Description	Text	20	23	280	20	196611		使用中のファイルは更新する必要があります。		
-FilesInUse	Exit	PushButton	166	243	56	17	3		[ButtonText_Exit]	BannerBitmap	
+FilesInUse	Description	Text	20	23	280	20	196611		更新が必要なファイルが使用中です。		
+FilesInUse	Exit	PushButton	166	243	56	17	3		[ButtonText_Exit]	Retry	
 FilesInUse	Ignore	PushButton	235	243	56	17	3		[ButtonText_Ignore]	Exit	
 FilesInUse	List	ListBox	20	87	330	130	7	FileInUseProcess			
 FilesInUse	Retry	PushButton	304	243	56	17	3		[ButtonText_Retry]	Ignore	
 FilesInUse	Text	Text	20	55	330	30	3		以下のアプリケーションはセットアップで更新しようとしているファイルを使用しています。ファイルを使用中のアプリケーションを終了して、インストールの再試行をクリックするかキャンセルをクリックしてインストールを取りやめてください。		
-FilesInUse	Title	Text	15	6	200	15	196611		[DlgTitleFont]Files in Use		
+FilesInUse	Title	Text	15	6	200	15	196611		[DlgTitleFont]使用状態のファイル		
 InstallSettingDlg	Box	GroupBox	25	110	321	50	1				
 InstallSettingDlg	Browse	PushButton	304	185	56	15	3		[ButtonText_Browse]	Reset	
 InstallSettingDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Tree	
 InstallSettingDlg	DiskCost	PushButton	111	243	56	17	3		容量一覧(&U)	Install	
 InstallSettingDlg	Install	PushButton	236	243	56	17	3		[ButtonText_Install]	Cancel	
 InstallSettingDlg	ItemDescription	Text	35	120	300	15	3		Multiline description of the currently selected item.		
-InstallSettingDlg	ItemSize	Text	35	135	300	15	3		The size of the currently selected item.		
+InstallSettingDlg	ItemSize	Text	35	135	300	15	3		選択中の項目のサイズ		
 InstallSettingDlg	Location	Text	25	185	215	20	3		[MAINPROGDIR]		
 InstallSettingDlg	LocationLabel	Text	25	175	50	10	3		パス:		
 InstallSettingDlg	Reset	PushButton	42	243	56	17	3		[ButtonText_Reset]	DiskCost	
@@ -122,36 +116,33 @@ InstallSettingDlg	Tree	SelectionTree	25	40	321	60	3	_BrowseProperty	Tree of sele
 InstallSettingDlg	Env	CheckBox	25	210	265	10	3	WRITEENV	環境変数を書き込む		
 LicenseAgreementDlg	AgreementText	ScrollableText	20	60	330	120	7		{\rtf1\ansi\ansicpg1252\deff0\deftab720{\fonttbl{\f0\froman\fprq2 Times New Roman;}}{\colortbl\red0\green0\blue0;} \deflang1033\horzdoc{\*\fchars }{\*\lchars }\pard\plain\f0\fs20 <Your license agreement should go here.>\par }	Buttons	
 LicenseAgreementDlg	Back	PushButton	180	243	56	17	3		[ButtonText_Back]	Next	
-LicenseAgreementDlg	BannerBitmap	Bitmap	0	0	370	44	1		[BannerBitmap]	AgreementText	
 LicenseAgreementDlg	BannerLine	Line	0	44	370	0	1				
 LicenseAgreementDlg	BottomLine	Line	0	234	370	0	1				
 LicenseAgreementDlg	Buttons	RadioButtonGroup	20	187	260	40	3	IAgree		Print	
-LicenseAgreementDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	BannerBitmap	
+LicenseAgreementDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	AgreementText	
 LicenseAgreementDlg	Description	Text	25	23	280	15	196611		ライセンス同意事項を確認してください。		
 LicenseAgreementDlg	Next	PushButton	236	243	56	17	3		[ButtonText_Next]	Cancel	
 LicenseAgreementDlg	Print	PushButton	290	195	56	17	3		[ButtonText_Print]	Back	
 LicenseAgreementDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]エンドユーザーライセンスの同意		
 MaintenanceTypeDlg	Back	PushButton	180	243	56	17	3		[ButtonText_Back]	Next	
-MaintenanceTypeDlg	BannerBitmap	Bitmap	0	0	370	44	1		[BannerBitmap]	ChangeLabel	
 MaintenanceTypeDlg	BannerLine	Line	0	44	370	0	1				
 MaintenanceTypeDlg	BottomLine	Line	0	234	370	0	1				
-MaintenanceTypeDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	BannerBitmap	
-MaintenanceTypeDlg	ChangeButton	PushButton	50	65	38	38	5767171		[CustomSetupIcon]	RepairLabel	インストールの修正|
+MaintenanceTypeDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	ChangeLabel	
+MaintenanceTypeDlg	ChangeButton	PushButton	50	65	38	38	5767171		[CustomSetupIcon]	RepairLabel	Modify Installation|
 MaintenanceTypeDlg	ChangeLabel	Text	105	65	100	10	3		[DlgTitleFont]修正(&M)	ChangeButton	
 MaintenanceTypeDlg	ChangeText	Text	105	78	230	20	3		インストール済のフィーチャーの変更します。		
-MaintenanceTypeDlg	Description	Text	25	23	280	20	196611		Select the operation you wish to perform.		
+MaintenanceTypeDlg	Description	Text	25	23	280	20	196611		実行したいオペレーションを選択してください。		
 MaintenanceTypeDlg	Next	PushButton	236	243	56	17	1		[ButtonText_Next]	Cancel	
 MaintenanceTypeDlg	RemoveButton	PushButton	50	163	38	38	5767171		[RemoveIcon]	Back	Remove Installation|
-MaintenanceTypeDlg	RemoveLabel	Text	105	163	100	10	3		[DlgTitleFont]&Remove	RemoveButton	
-MaintenanceTypeDlg	RemoveText	Text	105	176	230	20	3		Removes [ProductName] from your computer.		
+MaintenanceTypeDlg	RemoveLabel	Text	105	163	100	10	3		[DlgTitleFont]削除(&R)	RemoveButton	
+MaintenanceTypeDlg	RemoveText	Text	105	176	230	20	3		コンピュータから[ProductName]を削除。		
 MaintenanceTypeDlg	RepairButton	PushButton	50	114	38	38	5767171		[RepairIcon]	RemoveLabel	Repair Installation|
-MaintenanceTypeDlg	RepairLabel	Text	105	114	100	10	3		[DlgTitleFont]Re&pair	RepairButton	
+MaintenanceTypeDlg	RepairLabel	Text	105	114	100	10	3		[DlgTitleFont]修復(&P)	RepairButton	
 MaintenanceTypeDlg	RepairText	Text	105	127	230	30	3		エラーまたは、破損したファイル、レジストリの修復を行います。		
 MaintenanceTypeDlg	Title	Text	15	6	240	15	196611		[DlgTitleFont]変更、修正、アンインストール		
 MaintenanceWelcomeDlg	Back	PushButton	180	243	56	17	1		[ButtonText_Back]	Next	
-MaintenanceWelcomeDlg	Bitmap	Bitmap	0	0	370	234	1		[DialogBitmap]	Back	
 MaintenanceWelcomeDlg	BottomLine	Line	0	234	370	0	1				
-MaintenanceWelcomeDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Bitmap	
+MaintenanceWelcomeDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Back	
 MaintenanceWelcomeDlg	Description	Text	135	70	220	60	196611		[Wizard] は[ProductName]のフィーチャーの変更、修復、アンインストールを行います。		
 MaintenanceWelcomeDlg	Next	PushButton	236	243	56	17	3		[ButtonText_Next]	Cancel	
 MaintenanceWelcomeDlg	Title	Text	135	20	220	60	196611		{\VerdanaBold13}[ProductName] [Wizard]		
@@ -160,67 +151,53 @@ MaintenanceDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Tree
 MaintenanceDlg	DiskCost	PushButton	111	243	56	17	3		容量一覧(&U)	Install	
 MaintenanceDlg	Install	PushButton	236	243	56	17	3		[ButtonText_Install]	Cancel	
 MaintenanceDlg	ItemDescription	Text	35	120	300	15	3		Multiline description of the currently selected item.		
-MaintenanceDlg	ItemSize	Text	35	135	300	15	3		The size of the currently selected item.		
+MaintenanceDlg	ItemSize	Text	35	135	300	15	3		選択中の項目の容量。		
 MaintenanceDlg	Location	Text	25	185	215	20	3		[MAINPROGDIR]		
 MaintenanceDlg	LocationLabel	Text	25	175	50	10	3		パス:		
 MaintenanceDlg	Reset	PushButton	42	243	56	17	3		[ButtonText_Reset]	DiskCost	
 MaintenanceDlg	Text	Text	25	15	320	20	3		ツリー内のアイコンをクリックしインストールするフィーチャーを選択します。		
 MaintenanceDlg	Tree	SelectionTree	25	40	321	60	3	_BrowseProperty	Tree of selections	Reset	
 MaintenanceDlg	Env	CheckBox	25	210	265	10	3	WRITEENV	環境変数を書き込む		
-MsiRMFilesInUse	BannerBitmap	Bitmap	0	0	370	44	1		[BannerBitmap]	選択	
-MsiRMFilesInUse	BannerLine	Line	0	44	370	0	1				
-MsiRMFilesInUse	BottomLine	Line	0	234	370	0	1				
-MsiRMFilesInUse	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	BannerBitmap	
-MsiRMFilesInUse	Description	Text	20	23	280	20	196611		使用中のファイルは更新する必要があります。		
-MsiRMFilesInUse	List	ListBox	20	85	330	89	7	FileInUseProcess			
-MsiRMFilesInUse	OK	PushButton	236	243	56	17	3		[ButtonText_OK]	Cancel	
-MsiRMFilesInUse	Options	RadioButtonGroup	20	172	330	54	3	AppsShutdownOption		OK	
-MsiRMFilesInUse	Text	Text	20	55	330	30	3		以下のアプリケーションはセットアップで更新しようとしているファイルを使用しています。ファイルを使用中のアプリケーションを終了して、インストールの再試行をクリックするかキャンセルをクリックしてインストールを取りやめてください。		
-MsiRMFilesInUse	Title	Text	15	6	200	25	196611		[DlgTitleFont]Files in Use		
-OutOfDiskDlg	BannerBitmap	Bitmap	0	0	370	44	1		[BannerBitmap]	OK	
 OutOfDiskDlg	BannerLine	Line	0	44	370	0	1				
 OutOfDiskDlg	BottomLine	Line	0	234	370	0	1				
 OutOfDiskDlg	Description	Text	20	20	280	20	196611		インストールデータの容量が利用できるボリューム容量を超えています。		
-OutOfDiskDlg	OK	PushButton	304	243	56	17	3		[ButtonText_OK]	BannerBitmap	
+OutOfDiskDlg	OK	PushButton	304	243	56	17	3		[ButtonText_OK]		
 OutOfDiskDlg	Text	Text	20	53	330	40	3		マークされているボリュームは選択したフィーチャーに十分な容量をもっていません。マークされているボリュームにインストールするには、ボリューム内のファイルを削除して空きの容量を増やすか、フィーチャーを選びなおして、フィーチャーの容量を減らしてください。マークされていないボリュームには、選択したフィーチャーをインストールできます。		
 OutOfDiskDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]容量不足		
 OutOfDiskDlg	VolumeList	VolumeCostList	20	100	330	120	393223		{120}{70}{70}{70}{70}		
-OutOfRbDiskDlg	BannerBitmap	Bitmap	0	0	370	44	1		[BannerBitmap]	No	
 OutOfRbDiskDlg	BannerLine	Line	0	44	370	0	1				
 OutOfRbDiskDlg	BottomLine	Line	0	234	370	0	1				
-OutOfRbDiskDlg	Description	Text	20	20	280	20	196611		Disk space required for the installation exceeds available disk space.		
+OutOfRbDiskDlg	Description	Text	20	20	280	20	196611		インストールで必要な容量が利用できる容量を上回っています。		
 OutOfRbDiskDlg	No	PushButton	304	243	56	17	3		[ButtonText_No]	Yes	
 OutOfRbDiskDlg	Text	Text	20	53	330	40	3		マークされているボリュームは選択したフィーチャーに十分な容量をもっていません。マークされているボリュームにインストールするには、ボリューム内のファイルを削除して空きの容量を増やすか、フィーチャーを選びなおして、フィーチャーの容量を減らしてください。マークされていないボリュームには、選択したフィーチャーをインストールできます。		
 OutOfRbDiskDlg	Text2	Text	20	94	330	40	3		Alternatively, you may choose to disable the installer's rollback functionalityインストーラのロールバック機能を無効にしてもよいかもしれません。ロールバック機能を無効にすると、インストール以前の状態にシステムを戻すことができくなるなりますので、注意してください。ロールバック機能を無効にする場合は'はい'をクリックしてください。		
 OutOfRbDiskDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]容量不足		
 OutOfRbDiskDlg	VolumeList	VolumeCostList	20	140	330	80	4587527		{120}{70}{70}{70}{70}		
-OutOfRbDiskDlg	Yes	PushButton	240	243	56	17	3		[ButtonText_Yes]	BannerBitmap	
+OutOfRbDiskDlg	Yes	PushButton	240	243	56	17	3		[ButtonText_Yes]	No	
 PrepareDlg	ActionData	Text	135	125	220	30	196611				
 PrepareDlg	ActionText	Text	135	100	220	20	196611				
 PrepareDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Cancel	
 PrepareDlg	Description	Text	25	23	280	15	196611		インストールしたいフィーチャーを選択してください。		
 PrepareDlg	Text	Text	25	55	320	20	3		インストーラはアプリケーションをインストールして修復します。		
-PrepareDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]Custom Setup		
+PrepareDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]カスタム設定		
 ProgressDlg	ActionText	Text	70	100	265	10	3				
 ProgressDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Cancel	
-ProgressDlg	ProgressBar	ProgressBar	35	115	300	10	65537		Progress done		
+ProgressDlg	ProgressBar	ProgressBar	35	115	300	10	65537		完了		
 ProgressDlg	StatusLabel	Text	35	100	35	10	3		状態:		
 ProgressDlg	Text	Text	35	65	300	20	3		[Wizard][ProductName]を[Progress2]。この処理は時間がかかるかもしれません。		
-rogressDlg	Title	Text	20	15	200	15	196611		[DlgTitleFont][ProductName]を[Progress1] 		
+ProgressDlg	Title	Text	20	15	200	15	196611		[DlgTitleFont][ProductName]を[Progress1]		
 ResumeDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Install	
-ResumeDlg	Description	Text	25	15	330	30	196611		[Wizard]は[ProductName]のインストールを完了中です。インストールを継続する場合は'継続'をクリックしてください。		
+ResumeDlg	Description	Text	25	15	330	30	196611		The [Wizard] will complete the installation of [ProductName] on your computer.  Click Install to continue or Cancel to exit the [Wizard].		
 ResumeDlg	Install	PushButton	236	243	56	17	3		[ButtonText_Install]	Cancel	
 SetupTypeDlg	Back	PushButton	180	243	56	17	3		[ButtonText_Back]	Next	
-SetupTypeDlg	BannerBitmap	Bitmap	0	0	370	44	1		[BannerBitmap]	TypicalLabel	
 SetupTypeDlg	BannerLine	Line	0	44	370	0	1				
 SetupTypeDlg	BottomLine	Line	0	234	370	0	1				
-SetupTypeDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	BannerBitmap	
+SetupTypeDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	TypicalLabel	
 SetupTypeDlg	CompleteButton	PushButton	50	171	38	38	5767171		[CompleteSetupIcon]	Back	Complete Installation|
-SetupTypeDlg	CompleteLabel	Text	105	171	100	10	3		[DlgTitleFont]C&omplete	CompleteButton	
-SetupTypeDlg	CompleteText	Text	105	184	230	20	3		全てのフィーチャーをインストールします。		
+SetupTypeDlg	CompleteLabel	Text	105	171	100	10	3		[DlgTitleFont]完了(&O)	CompleteButton	
 SetupTypeDlg	CustomButton	PushButton	50	118	38	38	5767171		[CustomSetupIcon]	CompleteLabel	Custom Installation|
-SetupTypeDlg	CustomLabel	Text	105	118	100	10	3		[DlgTitleFont]C&ustom	CustomButton	
-SetupTypeDlg	CustomText	Text	105	131	230	30	3		選択したフィーチャーをインストールします。		
+SetupTypeDlg	CustomLabel	Text	105	118	100	10	3		[DlgTitleFont]カスタム(&U)	CustomButton	
+SetupTypeDlg	CompleteText	Text	105	184	230	20	3		全てのフィーチャーをインストールします。		
 SetupTypeDlg	Description	Text	25	23	280	15	196611		セットアップタイプを選択してください。		
 SetupTypeDlg	Next	PushButton	236	243	56	17	1		[ButtonText_Next]	Cancel	
 SetupTypeDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]セットアップタイプの選択		
@@ -228,69 +205,61 @@ SetupTypeDlg	TypicalButton	PushButton	50	65	38	38	5767171		[InstallerIcon]	Custo
 SetupTypeDlg	TypicalLabel	Text	105	65	100	10	3		[DlgTitleFont]標準的(&T)	TypicalButton	
 SetupTypeDlg	TypicalText	Text	105	78	230	20	3		標準的なフィーチャーをインストールします。		
 UserExit	Back	PushButton	180	243	56	17	1		[ButtonText_Back]	Finish	
-UserExit	Bitmap	Bitmap	0	0	370	234	1		[DialogBitmap]	Back	
 UserExit	BottomLine	Line	0	234	370	0	1				
-UserExit	Cancel	PushButton	304	243	56	17	1		[ButtonText_Cancel]	Bitmap	
+UserExit	Cancel	PushButton	304	243	56	17	1		[ButtonText_Cancel]	Back	
 UserExit	Description1	Text	135	70	220	40	196611		[ProductName] のセットアップは中断されました。システムはインストール前の状態です。		
 UserExit	Description2	Text	135	115	220	20	196611		クリックして[Wizard]を終了します。		
 UserExit	Finish	PushButton	236	243	56	17	3		[ButtonText_Finish]	Cancel	
 UserExit	Title	Text	135	20	220	60	196611		{\VerdanaBold13}[ProductName]の[Wizard]の中断		
 UserRegistrationDlg	Back	PushButton	180	243	56	17	3		[ButtonText_Back]	Next	
-UserRegistrationDlg	BannerBitmap	Bitmap	0	0	370	44	1		[BannerBitmap]	NameLabel	
 UserRegistrationDlg	BannerLine	Line	0	44	370	0	1				
 UserRegistrationDlg	BottomLine	Line	0	234	370	0	1				
 UserRegistrationDlg	CDKeyEdit	MaskedEdit	45	159	250	16	3	PIDKEY	[PIDTemplate]	Back	
-UserRegistrationDlg	CDKeyLabel	Text	45	147	50	10	3		CDキー(&):	CDKeyEdit	
-UserRegistrationDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	BannerBitmap	
+UserRegistrationDlg	CDKeyLabel	Text	45	147	50	10	3		CD &Key:	CDKeyEdit	
+UserRegistrationDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	NameLabel	
 UserRegistrationDlg	Description	Text	25	23	280	15	196611		ユーザー情報を入力してください。		
 UserRegistrationDlg	NameEdit	Edit	45	85	220	18	3	USERNAME	{80}	OrganizationLabel	
 UserRegistrationDlg	NameLabel	Text	45	73	100	15	3		ユーザー名(&U):	NameEdit	
 UserRegistrationDlg	Next	PushButton	236	243	56	17	3		[ButtonText_Next]	Cancel	
 UserRegistrationDlg	OrganizationEdit	Edit	45	122	220	18	3	COMPANYNAME	{80}	CDKeyLabel	
 UserRegistrationDlg	OrganizationLabel	Text	45	110	100	15	3		組織名(&O):	OrganizationEdit	
-UserRegistrationDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]Customer Information		
+UserRegistrationDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]お客様情報		
 VerifyReadyDlg	Back	PushButton	180	243	56	17	3		[ButtonText_Back]	Install	
-VerifyReadyDlg	BannerBitmap	Bitmap	0	0	370	44	1		[BannerBitmap]	Back	
 VerifyReadyDlg	BannerLine	Line	0	44	370	0	1				
 VerifyReadyDlg	BottomLine	Line	0	234	370	0	1				
-VerifyReadyDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	BannerBitmap	
+VerifyReadyDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Back	
 VerifyReadyDlg	Description	Text	25	23	280	15	196611		[Wizard]は[InstallMode]のインストールの準備ができています。		
 VerifyReadyDlg	Install	PushButton	236	243	56	17	8388611		[ButtonText_Install]	Cancel	
 VerifyReadyDlg	Text	Text	25	70	320	20	3		クリックするとインストールを開始します。インストール設定を再確認または、変更した場合は、'戻る'をクリックしてください。		
-VerifyReadyDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]Ready to Install		
+VerifyReadyDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]インスール準備		
 VerifyRemoveDlg	Back	PushButton	180	243	56	17	3		[ButtonText_Back]	Remove	
-VerifyRemoveDlg	BannerBitmap	Bitmap	0	0	370	44	1		[BannerBitmap]	Back	
 VerifyRemoveDlg	BannerLine	Line	0	44	370	0	1				
 VerifyRemoveDlg	BottomLine	Line	0	234	370	0	1				
-VerifyRemoveDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	BannerBitmap	
+VerifyRemoveDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Back	
 VerifyRemoveDlg	Description	Text	25	23	280	15	196611		アプリケーションをアンインストールします。		
 VerifyRemoveDlg	Remove	PushButton	236	243	56	17	8388611		[ButtonText_Remove]	Cancel	
 VerifyRemoveDlg	Text	Text	25	70	320	30	3		削除をクリックすると[ProductName]をコンピュータから削除します。インストール設定を再確認または、変更した場合は、'戻る'をクリックしてください。		
-VerifyRemoveDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]Remove [ProductName]		
+VerifyRemoveDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont][ProductName]を削除		
 VerifyRepairDlg	Back	PushButton	180	243	56	17	3		[ButtonText_Back]	Repair	
-VerifyRepairDlg	BannerBitmap	Bitmap	0	0	370	44	1		[BannerBitmap]	Back	
 VerifyRepairDlg	BannerLine	Line	0	44	370	0	1				
 VerifyRepairDlg	BottomLine	Line	0	234	370	0	1				
-VerifyRepairDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	BannerBitmap	
-VerifyRepairDlg	Description	Text	25	23	280	15	196611		[Wizard]は[ProductName]の修復の準備ができています。		
+VerifyRepairDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Back	
+VerifyRepairDlg	Description	Text	25	23	280	15	196611		The [Wizard] is ready to begin the repair of [ProductName].		
 VerifyRepairDlg	Repair	PushButton	236	243	56	17	8388611		[ButtonText_Repair]	Cancel	
 VerifyRepairDlg	Text	Text	25	70	320	30	3		修復をクリックすると[ProductName]の修復を行います。インストール設定を再確認または、変更した場合は、'戻る'をクリックしてください。		
-VerifyRepairDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont]Repair [ProductName]		
-WaitForCostingDlg	Icon	Icon	15	15	24	24	5242881		[ExclamationIcon]		Exclamation icon|
+VerifyRepairDlg	Title	Text	15	6	200	15	196611		[DlgTitleFont][ProductName]を修復		
 WaitForCostingDlg	Return	PushButton	102	57	56	17	3		[ButtonText_Return]		
-WaitForCostingDlg	Text	Text	48	15	194	30	3		ボリュームの容量を計算するまでお待ちください。		
+WaitForCostingDlg	Text	Text	48	15	194	30	3		Please wait while the installer finishes determining your disk space requirements.		
 WelcomeDlg	Back	PushButton	180	243	56	17	1		[ButtonText_Back]	Next	
-WelcomeDlg	Bitmap	Bitmap	0	0	370	234	1		[DialogBitmap]	Back	
 WelcomeDlg	BottomLine	Line	0	234	370	0	1				
-WelcomeDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Bitmap	
-WelcomeDlg	Description	Text	135	70	220	30	196611		[Wizard][ProductName]をインストールします。進める場合は、'次'をクリックしてください。		
+WelcomeDlg	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Back	
+WelcomeDlg	Description	Text	135	70	220	30	196611		The [Wizard] will install [ProductName] on your computer.  Click Next to continue or Cancel to exit the [Wizard].		
 WelcomeDlg	Next	PushButton	236	243	56	17	3		[ButtonText_Next]	Cancel	
-WelcomeDlg	Title	Text	135	20	220	60	196611		{\VerdanaBold13}[ProductName]の[Wizard]		
+WelcomeDlg	Title	Text	135	20	220	60	196611		{\VerdanaBold13}Welcome to the [ProductName] [Wizard]		
 WelcomeDlgLink	Back	PushButton	180	243	56	17	1		[ButtonText_Back]	Next	
-WelcomeDlgLink	Bitmap	Bitmap	0	0	370	234	1		[DialogBitmap]	WebLink	
 WelcomeDlgLink	BottomLine	Line	0	234	370	0	1				
-WelcomeDlgLink	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Bitmap	
-WelcomeDlgLink	Description	Text	135	70	220	30	196611		[Wizard]は[ProductName]をインストールします。続ける場合は'次'をクリックします。		
+WelcomeDlgLink	Cancel	PushButton	304	243	56	17	3		[ButtonText_Cancel]	WebLink	
+WelcomeDlgLink	Description	Text	135	70	220	30	196611		The [Wizard] will install [ProductName] on your computer.  Click Next to continue or Cancel to exit the [Wizard].		
 WelcomeDlgLink	Next	PushButton	236	243	56	17	3		[ButtonText_Next]	Cancel	
-WelcomeDlgLink	Title	Text	135	20	220	60	196611		{\VerdanaBold13}[ProductName]の[Wizard]		
+WelcomeDlgLink	Title	Text	135	20	220	60	196611		{\VerdanaBold13}Welcome to the [ProductName] [Wizard]		
 WelcomeDlgLink	WebLink	Hyperlink	135	120	220	30	196611		<A HREF="[LinkURL]">[Link]</A>	Back	

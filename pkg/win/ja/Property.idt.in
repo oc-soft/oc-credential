@@ -54,3 +54,5 @@ Setup	セットアップ
 Wizard	セットアップウィザード
 ShowUserRegistrationDlg	1
 WRITEENV	1
+ALLUSERS	2
+MSIINSTALLPERUSER	1
