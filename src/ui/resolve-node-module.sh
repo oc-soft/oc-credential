@@ -87,8 +87,8 @@ function copy_node_module
 function convert_path_for_os
 {
   local a_path=$1
-  case `uname -o` in #((
-    Cygwin)
+  case `uname -s` in #((
+    CYGWIN*)
       a_path=`cygpath -w $a_path`
       ;;
   esac
