@@ -99,6 +99,10 @@ electron_app_dir = $(electron_extract_dir)/$(electron_resource_dir)/app
 
 if RUN_LINUX
 electron_rebuild_env = CXX=$(CXX) CXXFLAGS=-std=c++20
+endif
+
+if RUN_DARWIN
+electron_rebuild_env = CXXFLAGS=-std=c++20
 else
 electron_rebuild_env = 
 endif
@@ -241,6 +245,14 @@ if RUN_WIN
 endif
 	: > $@
 
+
+if RUN_DARWIN
+token_generator_resource_app_dir=$(electron_extract_dir)/$(electron_resource_dir)/app
+else
+token_generator_resource_app_dir=$(token_generator_app_dir) 
+endif
+
+
 electron-app-dir:
 	if [ ! -d $(token_generator_app_dir) ] \
 		&& [ ! -d $(electron_app_dir) ]; then \
@@ -258,9 +270,11 @@ electron-rebuild: rebuild-electron-tmstamp
 electron-resources: electron-tmstamp electron-package-json build-app \
 	electron-rebuild electron-additional-mod \
 	| mkdir-tree electron-app-dir 
-	cp -R dist $(token_generator_app_dir) 
-	$(SHELL) $(srcdir)/resolve-node-module.sh -d $(token_generator_app_dir)
-	cp -R $(srcdir)/intl/locale $(token_generator_app_dir)
+	if [ -d $(token_generator_resource_app_dir) ]; then \
+		cp -R dist $(token_generator_resource_app_dir); \
+		$(SHELL) $(srcdir)/resolve-node-module.sh -d $(token_generator_resource_app_dir); \
+		cp -R $(srcdir)/intl/locale $(token_generator_resource_app_dir); \
+	fi
 
 .PHONY: electron-resources
 
@@ -392,7 +406,7 @@ electron-package-json-tmstamp: electron-package.json.in | electron-app-dir
 	fi; \
 	$(AWK) -v package_name=$(PACKAGE_NAME) \
 		-v package_version=$(PACKAGE_VERSION) \
-		$(awk_cmd_0) $< >$$dest_path
+		$(awk_cmd_0) $< >$$dest_path 
 	: >$@
 
 
@@ -477,6 +491,12 @@ clean-electron-package-json: clean-electron-package-json-tmstamp
 clean-unziped-electron: clean-electron-package-json-tmstamp
 	rm -r -f $(electron_extract_dir)
 	rm -f electron-tmstamp
+
+if RUN_DARWIN
+clean-rebranding:
+	rm -r -f $(electron_extract_dir)/$(TOKEN_GENERATOR_NAME)
+	rm -f rebrand-electron-tmstamp
+endif
 
 clean-local: clean-electron-package-json
 	rm -f *.json
