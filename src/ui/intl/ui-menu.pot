@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-14 08:14+0900\n"
+"POT-Creation-Date: 2025-03-10 06:42+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,133 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:31
+#, javascript-format
+msgid "About %s"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:36
+msgid "Services"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:41
+#, javascript-format
+msgid "Hide %s"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:45
+msgid "Hide Others"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:49
+msgid "Show all"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:54
+#, javascript-format
+msgid "Quit %s"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:60
+msgid "File"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:64
+msgid "Close"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:71
+msgid "Edit"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:75
+msgid "Undo"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:80
+msgid "Redo"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:86
+msgid "Cut"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:91
+msgid "Copy"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:96
+msgid "Paste"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:101
+msgid "Delete"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:107
+msgid "Select all"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:113
+msgid "Speach"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:127
+msgid "View"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:131
+msgid "Restart"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:143
+msgid "Reload"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:149
+msgid "Reload no cache"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:155
+msgid "Toggle DevTools"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:161
+msgid "Reset zoom"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:166
+msgid "Zoom in"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:171
+msgid "Zoom out"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:177
+msgid "Toggle fullscreen"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:186
+msgid "Window"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:190
+msgid "Minimize"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:195
+msgid "Zoom"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:202
+msgid "Help"
+msgstr ""
+
+#: ../../../../src/ui/intl/../electron/src/menu-darwin.ts:207
+msgid "ToggleAbout"
+msgstr ""
 
 #: ../../../../src/ui/intl/../electron/src/menu-linux.ts:26
 #: ../../../../src/ui/intl/../electron/src/menu-win.ts:26

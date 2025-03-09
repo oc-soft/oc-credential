@@ -9,12 +9,23 @@ import {
   LocaleConstant as LocaleConstantPosix,
   Locale as LocalePosix
 } from './locale-posix'
-import LocaleConst from './locale-common'
+import { 
+  LocaleConstant as LocaleConstantDarwin,
+  Locale as LocaleDarwin
+} from './locale-darwin'
+
+
+
+import LocaleConst from './locale-const'
 
 let localeConstants : LocaleConst = LocaleConstantPosix
 switch (os.platform()) {
   case 'win32':
     localeConstants = LocaleConstantWin
+    break
+  case 'darwin':
+    localeConstants = LocaleConstantDarwin
+    break
 }
 
 
@@ -42,6 +53,9 @@ export default class Locale {
     case 'win32':
       result = new LocaleWin()
       break 
+    case 'darwin':
+      result = new LocaleDarwin()
+      break
     default:
       result = new LocalePosix()
     } 

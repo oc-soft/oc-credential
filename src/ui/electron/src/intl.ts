@@ -6,6 +6,7 @@ import { Library as LibraryFFI } from 'ffi'
 import CString from './c-string'
 import { Intl as IntlPosix } from './intl-posix'
 import { Intl as IntlWin } from './intl-win'
+import { Intl as IntlDarwin } from './intl-darwin'
 import type { IntlLibrary } from './intl-type'
 
 /**
@@ -26,6 +27,10 @@ export default class Intl {
     switch (os.platform()) {
     case 'win32':
       result = IntlWin 
+      break
+    case 'darwin':
+      result = IntlDarwin
+      break
     } 
     return result
   }

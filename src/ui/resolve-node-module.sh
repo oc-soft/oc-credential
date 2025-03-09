@@ -47,16 +47,45 @@ function copy_file
 }
 
 #
-# copy node native module into destinatin directory
+# copy node native module into destination directry with gnu find
 # @param $1 source directory
 #
-function copy_native_modules
+function copy_native_modules_gnu
 {
   local srcdir=$1
   for src_path in `find $srcdir -type f -regex \
     '.+/\(Release\|Debug\)/[-_0-9a-zA-Z]+\.node'` ; do
     copy_file $src_path
   done
+}
+
+#
+# copy node native module into destination directry with BSD find
+# @param $1 source directory
+#
+function copy_native_modules_bsd
+{
+  local srcdir=$1
+  for src_path in `find $srcdir -type f -regex \
+    '.\{1,\}/[-_0-9a-zA-Z]\{1,\}\.node'` ; do
+    copy_file $src_path
+  done
+}
+
+#
+# copy node native module into destinatin directory
+# @param $1 source directory
+#
+function copy_native_modules
+{
+  case `uname -s` in #((
+    Darwin*)
+      copy_native_modules_bsd $1
+      ;;
+    *)
+      copy_native_modules_gnu $1
+      ;;
+  esac
 }
 
 

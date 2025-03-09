@@ -18,12 +18,15 @@ electron_src = \
 	electron/src/intl-win.ts \
 	electron/src/intl.ts \
 	electron/src/ipc.ts \
+	electron/src/library-path.ts \
+	electron/src/library-path-darwin.ts \
 	electron/src/locale-const.ts \
 	electron/src/locale-posix.ts \
 	electron/src/locale-type.ts \
 	electron/src/locale-win.ts \
 	electron/src/locale.ts \
 	electron/src/main.ts \
+	electron/src/menu-darwin.ts \
 	electron/src/menu-linux.ts \
 	electron/src/menu-util.ts \
 	electron/src/menu-win.ts \
@@ -270,11 +273,23 @@ electron-rebuild: rebuild-electron-tmstamp
 electron-resources: electron-tmstamp electron-package-json build-app \
 	electron-rebuild electron-additional-mod \
 	| mkdir-tree electron-app-dir 
+if !RUN_DARWIN
 	if [ -d $(token_generator_resource_app_dir) ]; then \
 		cp -R dist $(token_generator_resource_app_dir); \
 		$(SHELL) $(srcdir)/resolve-node-module.sh -d $(token_generator_resource_app_dir); \
 		cp -R $(srcdir)/intl/locale $(token_generator_resource_app_dir); \
 	fi
+else
+	if [ -d $(token_generator_resource_app_dir) ]; then \
+		cp -R dist $(token_generator_resource_app_dir); \
+		$(SHELL) $(srcdir)/resolve-node-module.sh -d $(token_generator_resource_app_dir); \
+		cp -R $(srcdir)/intl/locale $(token_generator_resource_app_dir); \
+	elif [ -d $(electron_extract_dir)/$(token_generator_resource_dir)/app ]; then \
+		cp -R dist $(electron_extract_dir)/$(token_generator_resource_dir)/app; \
+		$(SHELL) $(srcdir)/resolve-node-module.sh -d $(electron_extract_dir)/$(token_generator_resource_dir)/app; \
+		cp -R $(srcdir)/intl/locale $(electron_extract_dir)/$(token_generator_resource_dir)/app; \
+	fi
+endif
 
 .PHONY: electron-resources
 
@@ -493,9 +508,9 @@ clean-unziped-electron: clean-electron-package-json-tmstamp
 	rm -f electron-tmstamp
 
 if RUN_DARWIN
-clean-rebranding:
-	rm -r -f $(electron_extract_dir)/$(TOKEN_GENERATOR_NAME)
+clean-rebranding:clean-unziped-electron
 	rm -f rebrand-electron-tmstamp
+	rm -f rebrand-electron-contents-tmstamp:
 endif
 
 clean-local: clean-electron-package-json
