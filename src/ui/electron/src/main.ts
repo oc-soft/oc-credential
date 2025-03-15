@@ -15,6 +15,7 @@ import Intl from './intl'
   const argv = process.argv.slice(1)
   opt.parse(argv)
 
+  console.log(app.getPath('exe'))
   
   process.exitCode = await opt.run(cred)
   

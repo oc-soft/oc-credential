@@ -1,0 +1,14 @@
+You can not change DYLD_LIBRARY_PATH environment variables for nodejs.
+nodejs is signed with special system entitlement. When the app with it, you can not change DYLD_LIBARAY_PATH environement variables.
+
+Here is description from System Integrity Progection Guide.
+
+
+When a process is started, the kernel checks to see whether the main executable is protected on disk or is signed with an special system entitlement. If either is true, then a flag is set to denote that it is protected against modification. … Any dynamic linker (dyld) environment variables, such as DYLD_LIBRARY_PATH, are purged when launching protected processes.
+
+
+System Integrity Progection Guide URL
+
+https://developer.apple.com/library/archive/documentation/Security/Conceptual/System_Integrity_Protection_Guide/RuntimeProtections/RuntimeProtections.html#//apple_ref/doc/uid/TP40016462-CH3-SW1
+
+

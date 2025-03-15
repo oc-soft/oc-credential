@@ -284,20 +284,20 @@ else
 		cp -R dist $(token_generator_resource_app_dir); \
 		$(SHELL) $(srcdir)/resolve-node-module.sh -d $(token_generator_resource_app_dir); \
 		cp -R $(srcdir)/intl/locale $(token_generator_resource_app_dir); \
+		$(SHELL) $(srcdir)/copy-dylib-for-ui.sh -d $(token_generator_resource_app_dir)/lib; \
 	elif [ -d $(electron_extract_dir)/$(token_generator_resource_dir)/app ]; then \
 		cp -R dist $(electron_extract_dir)/$(token_generator_resource_dir)/app; \
 		$(SHELL) $(srcdir)/resolve-node-module.sh -d $(electron_extract_dir)/$(token_generator_resource_dir)/app; \
 		cp -R $(srcdir)/intl/locale $(electron_extract_dir)/$(token_generator_resource_dir)/app; \
+		$(SHELL) $(srcdir)/copy-dylib-for-ui.sh -d $(electron_extract_dir)/$(token_generator_resource_dir)/app/lib; \
 	fi
 endif
 
 .PHONY: electron-resources
 
-if !RUN_WIN
-electron-additional-mod-tmstamp:
-	: >$@
-electron-additional-mod: electron-additional-mod-tmstamp  
-else
+
+if RUN_WIN
+
 electron-additional-mod-root-tmstamp: dll-entry.txt
 	dll_search_dir=`$(CC) -print-sysroot`/mingw/bin; \
 	while read ln; do \
@@ -336,6 +336,17 @@ electron-copy-additional-mod: electron-additional-mod-root-tmstamp
 	done)
 electron-additional-mod: electron-additional-mod-root-tmstamp
 
+endif
+
+if RUN_DARWIN
+electron-additional-mod-tmstamp:
+	: >$@
+
+electron-additional-mod: electron-additional-mod-tmstamp
+else
+electron-additional-mod-tmstamp:
+	: >$@
+electron-additional-mod: electron-additional-mod-tmstamp
 endif
 
 .PHONY: electron-additional-mod electron-copy-additional-mod
