@@ -653,8 +653,8 @@ clean-local:
 	rm -f service_url_lmd_oauth_token_param.c
 	rm -f service_url_device_user_code_param.c
 	rm -f service_url_oauth_token_param.c
-	rm -r service_oauth_response_error_parser.c
-	rm -r service_oauth_token_parser.c
+	rm -f service_oauth_response_error_parser.c
+	rm -f service_oauth_token_parser.c
 	rm -f lmd_oauth_mail.c
 	rm -f lmd_oauth_mail_github.c 
 	rm -f l10n_i.c
