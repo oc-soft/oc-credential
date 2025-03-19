@@ -1,5 +1,6 @@
 import path from 'node:path'
 import fs from 'node:fs'
+import { app } from 'electron'
 import type { LibraryPath } from './library-path'
 import { Library as LibraryFFI, LIB_EXT  } from 'ffi'
 
@@ -13,6 +14,7 @@ class LibraryPathImpl {
    * search paths
    */
   static searchPaths: string[] = [
+    `${app.getAppPath()}/lib`,
     '/usr/lib',
     '/opt/local/lib', // macport
     '/usr/local/lib' // brew

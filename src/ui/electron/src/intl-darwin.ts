@@ -29,7 +29,7 @@ export class Intl {
    * load international library
    */
   static loadIntlLibrary(): IntlLibraryDarwin {
-    let libName = LibraryPath.findPath('libintl') as string
+    let libName = LibraryPath.findPath('libintl.8') as string
     return this.loadIntlLibraryI(libName)
   }
 
