@@ -28,6 +28,8 @@ class App {
     const msg=`node unielectron [OPTIONS]
 --x64=[x64 electron path]         specify x64 electron path. 
 --arm64=[arm64 electron path]     specify arm64 electron path.
+--x64-arch=[escape pattern]       specify escape pattern to prevent from doing
+                                  lipo.
 --out=[universal electron path]   specify output path for universal electron.
 --help                            show this message.`
     console.log(msg)
@@ -42,12 +44,14 @@ class App {
       x64AppPath: this.x64,
       arm64AppPath: this.arm64,
       outAppPath: this.out
+
     }
     for (const key in param) {
       if (!path.isAbsolute(param[key])) {
         param[key] = path.join(process.cwd(), param[key])
       }
     }
+    param.x64ArchFiles = this.x64ArchFiles
     electronUniversal.makeUniversalApp(param)
   }
 
@@ -59,6 +63,7 @@ class App {
     const strOptions=[
       [ '--x64=', str => self.x64 = str ],
       [ '--arm64=', str => self.arm64 = str ],
+      [ '--x64-arch=', str=> self.x64ArchFiles = str ],
       [ '--out=', str => self.out = str ]
     ]
     let showHelp = false

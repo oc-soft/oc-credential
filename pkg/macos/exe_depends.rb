@@ -43,7 +43,7 @@ VERB options
 -p, --update-entry-module-ld-path
                                 update ld path in entry modules.
 -c, --copy                      copy depends libraries into destination 
-                                directory which you specify --dest-dir option.
+                                directory which you specify --base-dir option.
 -l, --list                      list depends libraries.
 -h, --help                      show this message.
 
@@ -129,7 +129,7 @@ PARAMETER options
     cmd << base_mod_path
     cmd = cmd.flatten
     IO.popen cmd
-   end
+  end
 
 
    
@@ -331,9 +331,11 @@ PARAMETER options
         new_depends << dep
       end
     end
+
     new_depends.each do |new_dep|
       resolve_depends_0(new_dep, libs, mod_libs)
     end
+
   end
 
 

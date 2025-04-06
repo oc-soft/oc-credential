@@ -263,7 +263,12 @@ electron-app-dir:
 	fi
 
 rebuild-electron-tmstamp: package-lock.json
+if !RUN_DARWIN
 	$(electron_rebuild_env) $(builddir)/node_modules/.bin/electron-rebuild
+else
+	$(electron_rebuild_env) $(builddir)/node_modules/.bin/electron-rebuild \
+		--arch $(ELECTRON_TARGET_CPU)
+endif
 	:> $@
 
 electron-rebuild: rebuild-electron-tmstamp

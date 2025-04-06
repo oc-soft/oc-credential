@@ -67,6 +67,26 @@ function make_all()
 }
 
 #
+# clean build directory
+#
+function make_clean_0()
+{
+  local arch=$1
+  make -C build/$arch clean
+}
+
+#
+# clean build directory
+#
+function make_clean()
+{
+  for arch in x86_64 arm64; do
+    make_clean_0 $arch
+  done
+}
+
+
+#
 # install executable into the staging directories
 #
 function staging_install_0()
@@ -115,7 +135,9 @@ function install_universal_dependents()
   local dest_path=staging/universal/sysroot$app_path
  
   for item in lib libexec; do
-    cp -f -R $src_path/$item/ $dest_path/$item;
+    if [ -d  $src_path/$item ]; then
+      cp -f -R $src_path/$item/ $dest_path/$item;
+    fi
   done
 }
 
@@ -160,7 +182,8 @@ function create_universal_electron()
   rm -f -r staging/universal/sysroot$electron_path
   node unielectron --x64=staging/x86_64/sysroot$electron_path \
     --arm64=staging/arm64/sysroot$electron_path \
-    --out=staging/universal/sysroot$electron_path
+    --out=staging/universal/sysroot$electron_path \
+    --x64-arch='Contents/Resources/app/lib/*.dylib'
 }
 
 #
@@ -207,6 +230,7 @@ function show_help
   echo "build.sh [OPTIONS]
 configure           create configuration for make
 make-all            create executables.
+make-clean          clean build directory.
 staging-install     install executables into staging directory.
 copy-dependent-libraries
                     copy dependent libraries into staging application library
@@ -235,6 +259,9 @@ while [ $# -gt 0 ]; do
       ;;
     make-all)
       cmd=make_all
+      ;;
+    make-clean)
+      cmd=make_clean
       ;;
     staging-install)
       cmd=staging_install
@@ -271,6 +298,9 @@ case $cmd in
     ;;
   make_all)
     make_all
+    ;;
+  make_clean)
+    make_clean
     ;;
   staging_install)
     staging_install
