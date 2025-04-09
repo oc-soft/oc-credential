@@ -110,7 +110,6 @@ export class Intl {
         return result
       },
       setlocale: (category: number, locale?: string | null | undefined) => {
-        process.stderr.write("intl-darwin setlocale\n")
         let localeBuf = null
         if (typeof locale === 'string') {
           localeBuf = ref.allocCString(locale.toString())

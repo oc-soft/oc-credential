@@ -26,8 +26,6 @@ export class Locale {
    */
   setlocale(category: number,
     locale: string | null | undefined) : string | null | undefined {
-    process.stderr.write("locale-darwin setlocale\n")
-
     return Intl.library.setlocale(category, locale) 
   }
 }
